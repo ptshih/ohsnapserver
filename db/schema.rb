@@ -33,9 +33,22 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "facebook_id", :limit => 8, :default => 0
   end
 
+  create_table "gowallas", :force => true do |t|
+    t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
+    t.integer  "place_id",       :limit => 8,                                 :default => 0
+    t.string   "name"
+    t.decimal  "lat",                         :precision => 20, :scale => 16
+    t.decimal  "lng",                         :precision => 20, :scale => 16
+    t.integer  "checkins_count"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "places", :force => true do |t|
     t.integer  "place_id",   :limit => 8,                                 :default => 0
-    t.string   "place_name"
+    t.integer  "yelp_id",    :limit => 8,                                 :default => 0
+    t.integer  "gowalla_id", :limit => 8,                                 :default => 0
+    t.string   "name"
     t.decimal  "lat",                     :precision => 20, :scale => 16
     t.decimal  "lng",                     :precision => 20, :scale => 16
     t.datetime "expires_at"
@@ -51,6 +64,18 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "first_name"
     t.string   "last_name"
     t.string   "gender"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "yelps", :force => true do |t|
+    t.integer  "yelp_id",      :limit => 8,                                 :default => 0
+    t.integer  "place_id",     :limit => 8,                                 :default => 0
+    t.string   "name"
+    t.decimal  "lat",                       :precision => 20, :scale => 16
+    t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.integer  "review_count"
+    t.string   "phone"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
