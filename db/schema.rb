@@ -36,8 +36,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "places", :force => true do |t|
     t.integer  "place_id",   :limit => 8,                                 :default => 0
     t.string   "place_name"
-    t.decimal  "lat",                     :precision => 15, :scale => 11
-    t.decimal  "lng",                     :precision => 15, :scale => 11
+    t.decimal  "lat",                     :precision => 20, :scale => 16
+    t.decimal  "lng",                     :precision => 20, :scale => 16
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
