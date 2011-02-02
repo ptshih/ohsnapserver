@@ -10,6 +10,10 @@ gem 'yajl-ruby'
 
 gem 'typhoeus'
 
+gem 'activerecord-import'
+
+# gem 'delayed_job'
+
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
