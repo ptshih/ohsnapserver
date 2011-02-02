@@ -1,0 +1,2 @@
+class MoogleController < ApplicationController
+end

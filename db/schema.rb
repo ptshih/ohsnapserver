@@ -12,17 +12,19 @@
 
 ActiveRecord::Schema.define(:version => 20110202082319) do
 
-  create_table "applications", :force => true do |t|
-    t.integer  "application_id",   :limit => 8, :default => 0
-    t.string   "application_name"
+  create_table "apps", :force => true do |t|
+    t.integer  "app_id",     :limit => 8, :default => 0
+    t.string   "app_name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "checkins", :force => true do |t|
-    t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.string   "message"
+    t.integer  "checkin_id",      :limit => 8, :default => 0
+    t.integer  "facebook_id",     :limit => 8, :default => 0
+    t.integer  "place_id",        :limit => 8, :default => 0
+    t.integer  "application_id",  :limit => 8, :default => 0
+    t.string   "checkin_message"
     t.datetime "checkin_time"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -36,10 +38,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
     t.integer  "place_id",       :limit => 8,                                 :default => 0
-    t.string   "name"
-    t.decimal  "lat",                         :precision => 20, :scale => 16
-    t.decimal  "lng",                         :precision => 20, :scale => 16
+    t.string   "gowalla_name"
     t.integer  "checkins_count"
+    t.decimal  "gowalla_lat",                 :precision => 20, :scale => 16
+    t.decimal  "gowalla_lng",                 :precision => 20, :scale => 16
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -48,9 +50,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "place_id",   :limit => 8,                                 :default => 0
     t.integer  "yelp_id",    :limit => 8,                                 :default => 0
     t.integer  "gowalla_id", :limit => 8,                                 :default => 0
-    t.string   "name"
-    t.decimal  "lat",                     :precision => 20, :scale => 16
-    t.decimal  "lng",                     :precision => 20, :scale => 16
+    t.string   "place_name"
+    t.decimal  "place_lat",               :precision => 20, :scale => 16
+    t.decimal  "place_lng",               :precision => 20, :scale => 16
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -71,11 +73,11 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "yelps", :force => true do |t|
     t.integer  "yelp_id",      :limit => 8,                                 :default => 0
     t.integer  "place_id",     :limit => 8,                                 :default => 0
-    t.string   "name"
-    t.decimal  "lat",                       :precision => 20, :scale => 16
-    t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.string   "yelp_name"
+    t.string   "yelp_phone"
     t.integer  "review_count"
-    t.string   "phone"
+    t.decimal  "yelp_lat",                  :precision => 20, :scale => 16
+    t.decimal  "yelp_lng",                  :precision => 20, :scale => 16
     t.datetime "created_at"
     t.datetime "updated_at"
   end
