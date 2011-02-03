@@ -1,18 +1,22 @@
 Moogle::Application.routes.draw do
+    
+  # User Routes
+  match ':version/user', :controller => 'user', :action => 'index', :via => :get # List of Users
+  match ':version/user/:id', :controller => 'user', :action => 'show', :via => :get # Single User with ID
   
-  match 'v1/random/:id' => 'mash#random', :via => :get
-  match 'mash/token/:id' => 'mash#token', :via => :post
-  match 'mash/remash/:id' => 'mash#remash', :via => :post
-  match 'mash/result/:id' => 'mash#result', :via => :post
-  match 'mash/profile/:id' => 'mash#profile', :via => :get
-  match 'mash/topplayers/:id' => 'mash#topplayers', :via => :get
-  match 'mash/rankings/:id' => 'mash#rankings', :via => :get
-  match 'mash/recents/:id' => 'mash#recents', :via => :get
-  match 'mash/activity/:id' => 'mash#activity', :via => :get
-  match 'mash/serverstats/:id' => 'mash#serverstats', :via => :get
-  match 'mash/stats/:id' => 'mash#stats', :via => :get
-  match 'mash/globalstats/:id' => 'mash#globalstats', :via => :get
+  # Checkin Routes
+  match ':version/checkin', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins
+  match ':version/checkin/:id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
+  match ':version/checkin/me/:id', :controller => 'checkin', :action => 'me', :via => :get
+  match ':version/checkin/friends/:id', :controller => 'checkin', :action => 'friends', :via => :get
   
+  # Place routes
+  match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places
+  match ':version/place/:id', :controller => 'place', :action => 'show', :via => :get # Single Place with ID
+  
+  # Mobile Server Examples  
+  # map.connect ':version/messages/count', :controller => 'messages', :action => 'count', :conditions => { :method => :get }
+    
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
