@@ -1,4 +1,5 @@
 source 'http://rubygems.org'
+source 'http://gemcutter.org'
 
 gem 'rails', '3.0.3'
 
@@ -9,6 +10,8 @@ gem 'unicorn'
 gem 'yajl-ruby'
 
 gem 'typhoeus'
+
+gem 'oauth'
 
 gem 'activerecord-import'
 
