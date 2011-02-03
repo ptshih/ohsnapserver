@@ -48,16 +48,12 @@ module API
         paramsHash['access_token'] = @@peterAccessToken
       
         response = Typhoeus::Request.get("#{@@fbHost}/#{facebookId}/checkins", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-        # p response.headers_hash
-        # p response.body
-      
         parsedResponse = self.parse_json(response.body)
       
         # Parse checkins
         parsedResponse['data'].each do |checkin|
           self.serialize_checkin(checkin)
         end
-      
       rescue
         return false
       else
@@ -76,16 +72,12 @@ module API
         paramsHash['type'] = 'checkin'
       
         response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-        # p response.headers_hash
-        # p response.body
-      
         parsedResponse = self.parse_json(response.body)
       
         # Parse checkins
         parsedResponse['data'].each do |checkin|
           self.serialize_checkin(checkin)
         end
-      
       rescue
         return false
       else
@@ -99,8 +91,8 @@ module API
         # query is optional
       
         # debug
-        lat = @@peterLatitude
-        lng = @@peterLongitude
+        if lat.nil? then lat = @@peterLatitude end
+        if lng.nil? then lng = @@peterLongitude end
       
         headersHash = Hash.new
         headersHash['Accept'] = 'application/json'
@@ -115,16 +107,12 @@ module API
         end
       
         response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-        # p response.headers_hash
-        # p response.body
-      
         parsedResponse = self.parse_json(response.body)
       
         # Serialize Places
         parsedResponse['data'].each do |place|
           self.serialize_place(place)
         end
-      
       rescue
         return false
       else
@@ -135,15 +123,13 @@ module API
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
     def self.find_place_for_place_id(placeId = nil)      
       begin
-        if placeId.nil?
-          placeId = 57167660895 # cafe zoe
-        end
+        if placeId.nil? then placeId = 57167660895 end # cafe zoe
 
         # fields to get
-        # feed
-        # photos
-        # notes
-        # checkins
+        # feed - all posts/comments on the page
+        # photos - photos posted on the page
+        # notes - not sure?
+        # checkins - shows checkins from friends of current access_token
 
         headersHash = Hash.new
         headersHash['Accept'] = 'application/json'
@@ -153,9 +139,6 @@ module API
         # paramsHash['fields'] = 'feed,photos,notes,checkins'
 
         response = Typhoeus::Request.get("#{@@fbHost}/#{placeId}", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-        # p response.headers_hash
-        # p response.body
-
         parsedResponse = self.parse_json(response.body)
         
         # Serialize Place
@@ -166,6 +149,5 @@ module API
         return true
       end
     end
-    
   end
 end
