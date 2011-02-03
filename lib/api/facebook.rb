@@ -2,12 +2,14 @@ module API
   class Facebook < Api
     @@fbHost = 'https://graph.facebook.com'
     @@peterId = 548430564
+    @@jamesId = 645750651
     
     @@peterLatitude = 37.765223405331
     @@peterLongitude = -122.45003812016
     
     # Peter's access token
     @@peterAccessToken = "H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA"
+    @@jamesAccessToken = "132514440148709|f09dd88ba268a8727e4f3fd5-645750651|k21j0yXPGxYGbJPd0eOEMTy5ZN4"
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
     
     # Create or update checkin in model/database
@@ -121,7 +123,7 @@ module API
     end
     
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
-    def self.find_place_for_place_id(placeId = nil)      
+    def self.find_place_for_place_id(placeId = nil)
       begin
         if placeId.nil? then placeId = 57167660895 end # cafe zoe
 
