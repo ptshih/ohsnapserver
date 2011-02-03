@@ -1,3 +1,17 @@
+== Code Snippets
+
+begin
+# Your normal code block
+rescue SomeException
+# ... handling exception
+else
+# This part only run if the main code did not throw
+# an exception.
+ensure
+# The very last thing to be run before the clause exit.
+# Code in the ensure clause will always get execute.
+end
+
 == Welcome to Rails
 
 Rails is a web-application framework that includes everything needed to create

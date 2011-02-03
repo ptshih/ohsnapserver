@@ -9,4 +9,10 @@ class CheckinController < ApplicationController
   
   def show
   end
+  
+  def me
+  end
+  
+  def friends
+  end
 end

@@ -1,0 +1,61 @@
+{
+   "id": "57167660895",
+   "name": "CAFE Zo\u00eb",
+   "picture": "http://profile.ak.fbcdn.net/hprofile-ak-snc4/hs223.ash2/50256_57167660895_1422855_s.jpg",
+   "link": "http://www.facebook.com/cafezoemenlopark",
+   "category": "Restaurant/cafe",
+   "website": "http://www.cafezoemenlopark.com",
+   "username": "cafezoemenlopark",
+   "location": {
+      "street": "1929 Menalto Ave",
+      "city": "Menlo Park",
+      "state": "CA",
+      "country": "United States",
+      "zip": "94025",
+      "latitude": 37.459097,
+      "longitude": -122.152712
+   },
+   "parking": {
+      "street": 1,
+      "lot": 1
+   },
+   "hours": {
+      "mon_1_open": 399600,
+      "mon_1_close": 435600,
+      "tue_1_open": 486000,
+      "tue_1_close": 522000,
+      "wed_1_open": 572400,
+      "wed_1_close": 608400,
+      "thu_1_open": 54000,
+      "thu_1_close": 90000,
+      "fri_1_open": 140400,
+      "fri_1_close": 187200,
+      "sat_1_open": 230400,
+      "sat_1_close": 255600,
+      "sun_1_open": 316800,
+      "sun_1_close": 342000
+   },
+   "attire": "Casual",
+   "payment_options": {
+      "visa": 1,
+      "mastercard": 1
+   },
+   "price_range": "$ (0-10)",
+   "restaurant_services": {
+      "walkins": 1,
+      "kids": 1,
+      "takeout": 1,
+      "catering": 1,
+      "waiter": 1,
+      "outdoor": 1
+   },
+   "restaurant_specialties": {
+      "breakfast": 1,
+      "lunch": 1,
+      "coffee": 1,
+      "drinks": 1
+   },
+   "phone": "650-322-1926",
+   "checkins": 42,
+   "likes": 175
+}
