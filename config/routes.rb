@@ -1,4 +1,18 @@
 Moogle::Application.routes.draw do
+  
+  match 'v1/random/:id' => 'mash#random', :via => :get
+  match 'mash/token/:id' => 'mash#token', :via => :post
+  match 'mash/remash/:id' => 'mash#remash', :via => :post
+  match 'mash/result/:id' => 'mash#result', :via => :post
+  match 'mash/profile/:id' => 'mash#profile', :via => :get
+  match 'mash/topplayers/:id' => 'mash#topplayers', :via => :get
+  match 'mash/rankings/:id' => 'mash#rankings', :via => :get
+  match 'mash/recents/:id' => 'mash#recents', :via => :get
+  match 'mash/activity/:id' => 'mash#activity', :via => :get
+  match 'mash/serverstats/:id' => 'mash#serverstats', :via => :get
+  match 'mash/stats/:id' => 'mash#stats', :via => :get
+  match 'mash/globalstats/:id' => 'mash#globalstats', :via => :get
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

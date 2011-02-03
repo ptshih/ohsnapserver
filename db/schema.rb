@@ -42,6 +42,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "checkins_count"
     t.decimal  "gowalla_lat",                 :precision => 20, :scale => 16
     t.decimal  "gowalla_lng",                 :precision => 20, :scale => 16
+    t.string   "json" # this stores the raw json string from facebook, in case we need to parse stuff out of it later
+    t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -53,12 +55,12 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.decimal  "place_lat",               :precision => 20, :scale => 16
     t.decimal  "place_lng",               :precision => 20, :scale => 16
     t.string   "place_name"
-    t.sting    "place_street"
+    t.string    "place_street"
     t.string   "place_city"
     t.string   "state"
     t.string   "country"
     t.string   "zip"
-    t.string   "json"
+    t.string   "json" # this stores the raw json string from facebook, in case we need to parse stuff out of it later
     t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
     t.datetime "updated_at"
