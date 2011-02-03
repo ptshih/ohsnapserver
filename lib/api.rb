@@ -36,11 +36,11 @@ module API
       end
     end
     
-    def self.send_oauth_get_request(host = nil, path = nil, consumer_key = nil, consumer_secret = nil, token = nil, token_secret = nil)
-      consumer = OAuth::Consumer.new(consumer_key, consumer_secret, :site => host)
-      access_token = OAuth::AccessToken.new(consumer, token, token_secret)
+    def self.send_oauth_get_request(host = nil, path = nil, consumerKey = nil, consumerSecret = nil, token = nil, tokenSecret = nil)
+      consumer = OAuth::Consumer.new(consumerKey, consumerSecret, :site => host)
+      accessToken = OAuth::AccessToken.new(consumer, token, tokenSecret)
       
-      response = access_token.get(path).body
+      response = accessToken.get(path).body
       
       puts response
     end

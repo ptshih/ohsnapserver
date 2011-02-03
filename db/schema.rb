@@ -50,9 +50,14 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "place_id",   :limit => 8,                                 :default => 0
     t.integer  "yelp_id",    :limit => 8,                                 :default => 0
     t.integer  "gowalla_id", :limit => 8,                                 :default => 0
-    t.string   "place_name"
     t.decimal  "place_lat",               :precision => 20, :scale => 16
     t.decimal  "place_lng",               :precision => 20, :scale => 16
+    t.string   "place_name"
+    t.sting    "place_street"
+    t.string   "place_city"
+    t.string   "state"
+    t.string   "country"
+    t.string   "zip"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
