@@ -31,8 +31,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "checkins_users", :force => true do |t|
-    t.integer "checkin_id",  :limit => 8, :default => 0
-    t.integer "facebook_id", :limit => 8, :default => 0
+    t.integer  "checkin_id",  :limit => 8, :default => 0
+    t.integer  "facebook_id", :limit => 8, :default => 0
   end
 
   create_table "gowallas", :force => true do |t|
@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.decimal  "place_lat",               :precision => 20, :scale => 16
     t.decimal  "place_lng",               :precision => 20, :scale => 16
     t.string   "place_name"
-    t.string    "place_street"
+    t.string   "place_street"
     t.string   "place_city"
     t.string   "state"
     t.string   "country"

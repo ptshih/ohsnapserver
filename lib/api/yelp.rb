@@ -15,7 +15,9 @@ module API
       id = "yelp-san-francisco"
       path = "/v2/business/#{id}"
       
-      self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
+      response = self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
+      
+      parsedResponse = self.parse_json(response)
     end
     
     def self.find_business_by_location(term, latitude, longitude, accuracy, altitude, altitudeAccuracy)

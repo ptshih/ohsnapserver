@@ -36,13 +36,19 @@ module API
       end
     end
     
-    def self.send_oauth_get_request(host = nil, path = nil, consumerKey = nil, consumerSecret = nil, token = nil, tokenSecret = nil)
+    def self.send_oauth_request(host = nil, path = nil, consumerKey = nil, consumerSecret = nil, token = nil, tokenSecret = nil)
       consumer = OAuth::Consumer.new(consumerKey, consumerSecret, :site => host)
       accessToken = OAuth::AccessToken.new(consumer, token, tokenSecret)
       
       response = accessToken.get(path).body
       
-      puts response
+      return response
+    end
+    
+    def self.parse_json(json)
+      puts "Parsing JSON"
+      parsedJson = JSON.parse(json)
+      return parsedJson
     end
   end
 end

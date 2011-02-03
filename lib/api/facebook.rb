@@ -13,29 +13,31 @@ module API
     def self.find_checkins_for_facebook_id(facebookId = @@peterId)
       headersHash = Hash.new
       headersHash['Accept'] = 'application/json'
-      headersHash['Accept-Encoding'] = 'gzip'
       
       paramsHash = Hash.new
       paramsHash['access_token'] = @@peterAccessToken
       
       response = Typhoeus::Request.get("#{@@fbHost}/#{facebookId}/checkins", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-      p response.headers_hash
-      p response.body
+      # p response.headers_hash
+      # p response.body
+      
+      parsedResponse = self.parse_json(response.body)
     end
     
     # https://graph.facebook.com/search?type=checkin&access_token=ACCESS_TOKEN
     def self.find_all_checkins
       headersHash = Hash.new
       headersHash['Accept'] = 'application/json'
-      headersHash['Accept-Encoding'] = 'gzip'
       
       paramsHash = Hash.new
       paramsHash['access_token'] = @@peterAccessToken
       paramsHash['type'] = 'checkin'
       
       response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-      p response.headers_hash
-      p response.body
+      # p response.headers_hash
+      # p response.body
+      
+      parsedResponse = self.parse_json(response.body)
     end
     
     # https://graph.facebook.com/search?q=pizza&type=place&center=lat,long&distance=1000
@@ -48,7 +50,6 @@ module API
       
       headersHash = Hash.new
       headersHash['Accept'] = 'application/json'
-      headersHash['Accept-Encoding'] = 'gzip'
   
       paramsHash = Hash.new
       paramsHash['access_token'] = @@peterAccessToken
@@ -60,9 +61,10 @@ module API
       end
       
       response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-      p response.headers_hash
-      p response.body
+      # p response.headers_hash
+      # p response.body
       
+      parsedResponse = self.parse_json(response.body)
     end
     
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
@@ -79,16 +81,16 @@ module API
 
       headersHash = Hash.new
       headersHash['Accept'] = 'application/json'
-      headersHash['Accept-Encoding'] = 'gzip'
   
       paramsHash = Hash.new
       paramsHash['access_token'] = @@peterAccessToken
-      paramsHash['fields'] = 'feed,photos,notes,checkins'
+      # paramsHash['fields'] = 'feed,photos,notes,checkins'
       
       response = Typhoeus::Request.get("#{@@fbHost}/#{placeId}", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-      p response.headers_hash
-      p response.body   
+      # p response.headers_hash
+      # p response.body
       
+      parsedResponse = self.parse_json(response.body)
     end
     
   end

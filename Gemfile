@@ -8,6 +8,7 @@ gem 'mysql'
 gem 'unicorn'
 
 gem 'yajl-ruby'
+# gem 'json'
 
 gem 'typhoeus'
 
