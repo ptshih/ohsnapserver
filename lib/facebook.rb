@@ -64,5 +64,32 @@ module API
       p response.body
       
     end
+    
+    # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
+    def self.find_place_for_place_id(placeId = nil)
+      if placeId.nil?
+        placeId = 57167660895 # cafe zoe
+      end
+      
+      # fields to get
+      # feed
+      # photos
+      # notes
+      # checkins
+
+      headersHash = Hash.new
+      headersHash['Accept'] = 'application/json'
+      headersHash['Accept-Encoding'] = 'gzip'
+  
+      paramsHash = Hash.new
+      paramsHash['access_token'] = @@peterAccessToken
+      paramsHash['fields'] = 'feed,photos,notes,checkins'
+      
+      response = Typhoeus::Request.get("#{@@fbHost}/#{placeId}", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+      p response.headers_hash
+      p response.body   
+      
+    end
+    
   end
 end

@@ -58,7 +58,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "state"
     t.string   "country"
     t.string   "zip"
-    t.datetime "expires_at"
+    t.string   "json"
+    t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -83,6 +84,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "review_count"
     t.decimal  "yelp_lat",                  :precision => 20, :scale => 16
     t.decimal  "yelp_lng",                  :precision => 20, :scale => 16
+    t.string   "json"
+    t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
     t.datetime "updated_at"
   end
