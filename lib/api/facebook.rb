@@ -22,6 +22,13 @@ module API
       c.checkin_message = checkin['message'].nil? ? nil : checkin['message']
       c.checkin_time = Time.parse(checkin['created_time'])
       c.save
+      
+      # Serialize App
+      self.serialize_app(checkin['application'])
+      
+      # Send request for Facebook Place
+      # Use a non-blocking HTTP queue here
+      self.find_place_for_place_id(checkin['place']['id'])
     end
     
     # Create or update place in model/database
@@ -40,8 +47,16 @@ module API
        p.expires_at = Time.now + 1.days
        p.save
     end
+    
+    # Create or update app in model/database
+    def self.serialize_app(app)
+      a = App.find_or_initialize_by_app_id(app['id'])
+      a.app_id = app['id']
+      a.app_name = app['name']
+      a.save
+    end
       
-    def self.find_checkins_for_facebook_id(facebookId = @@peterId)
+    def self.find_checkins_for_facebook_id(facebookId = @@jamesId)
       begin
         headersHash = Hash.new
         headersHash['Accept'] = 'application/json'
