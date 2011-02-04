@@ -88,8 +88,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "degree", :limit => 1, :default => 0
   end
 
-  create_table "yelp", :force => true do |t|
-    t.string  "yelp_id"
+  create_table "yelps", :force => true do |t|
+    t.string  "yelp_pid"
     t.integer  "place_id",     :limit => 8,                                 :default => 0
     t.string   "name"
     t.string   "phone"
@@ -103,7 +103,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
   
   create_table "yelp_reviews", :force => true do |t|
-    t.string "yelp_review_id" 
+    t.string "yelp_review_pid" 
     t.integer "yelp_id",      :limit  => 8, :default => 0
     t.string  "excerpt"
     t.integer "rating",       :limit  => 1, :default => 0
