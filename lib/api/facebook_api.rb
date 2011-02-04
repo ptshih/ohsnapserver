@@ -109,6 +109,17 @@ module API
       end
     end
     
+    def self.update_last_fetched_checkins(facebookId)
+      u = User.find_by_facebook_id(facebookId)
+      if not u.nil?
+        u.update_attribute('last_fetched_checkins', Time.now)
+      end
+    end
+    
+    #
+    # API CALLS
+    #
+    
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
     def self.find_checkins_for_facebook_id(facebookId = nil)
@@ -128,6 +139,9 @@ module API
         parsedResponse['data'].each do |checkin|
           self.serialize_checkin(checkin)
         end
+        
+        # Update last_fetched_checkins timestamp for user
+        self.update_last_fetched_checkins(facebookId)
       rescue => e
         p e.message
         p e.backtrace
@@ -162,6 +176,11 @@ module API
             self.serialize_checkin(checkin)
           end
         end
+        
+        # Update last_fetched_checkins timestamp for all users
+        facebookIdArray.each do |facebookId|
+          self.update_last_fetched_checkins(facebookId)
+        end
       rescue => e
         p e.message
         p e.backtrace
@@ -172,32 +191,32 @@ module API
     end
     
     # https://graph.facebook.com/search?type=checkin&access_token=ACCESS_TOKEN
-    def self.find_all_checkins
-      begin
-        headersHash = Hash.new
-        headersHash['Accept'] = 'application/json'
-      
-        paramsHash = Hash.new
-        paramsHash['access_token'] = @@peterAccessToken
-        paramsHash['type'] = 'checkin'
-        paramsHash['limit'] = '50'
-      
-        response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
-        p response.headers
-        parsedResponse = self.parse_json(response.body)
-      
-        # Parse checkins
-        parsedResponse['data'].each do |checkin|
-          self.serialize_checkin(checkin)
-        end
-      rescue => e
-        p e.message
-        p e.backtrace
-        return false
-      else
-        return true
-      end
-    end
+    # def self.find_all_checkins
+    #   begin
+    #     headersHash = Hash.new
+    #     headersHash['Accept'] = 'application/json'
+    #   
+    #     paramsHash = Hash.new
+    #     paramsHash['access_token'] = @@peterAccessToken
+    #     paramsHash['type'] = 'checkin'
+    #     paramsHash['limit'] = '50'
+    #   
+    #     response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+    #     p response.headers
+    #     parsedResponse = self.parse_json(response.body)
+    #   
+    #     # Parse checkins
+    #     parsedResponse['data'].each do |checkin|
+    #       self.serialize_checkin(checkin)
+    #     end
+    #   rescue => e
+    #     p e.message
+    #     p e.backtrace
+    #     return false
+    #   else
+    #     return true
+    #   end
+    # end
     
     # https://graph.facebook.com/search?q=pizza&type=place&center=lat,long&distance=1000
     def self.find_places_near_location(lat = nil, lng = nil, distance = 1000, query = nil)
