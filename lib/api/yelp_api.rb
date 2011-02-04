@@ -14,38 +14,45 @@ module API
     
     # Create or update yelp in model/database
     def self.serialize_yelp(yelp)
-       y = Yelp.find_or_initialize_by_place_id(yelp['id'])
-       y.place_id = yelp['id']
-       y.name = yelp['name']
-       y.phone = yelp['phone']
-       y.review_count = yelp['review_count']
-       y.lat = yelp['coordinate']['latitude']
-       y.lng = yelp['coordinate']['longitude']
+
+       y = Yelp.find_or_initialize_by_yelp_pid(yelp['id'])
+       y.yelp_pid = yelp['id']
+       y.name = yelp['name'].nil? ? nil : yelp['name']
+       y.phone = yelp['phone'].nil? ? nil : yelp['phone']
+       y.review_count = yelp['review_count'].nil? ? nil : yelp['review_count']       
+       y.lat = yelp['location']['coordinate']['latitude'].nil? ? nil : yelp['location']['coordinate']['latitude']
+       y.lng = yelp['location']['coordinate']['longitude'].nil? ? nil : yelp['location']['coordinate']['longitude']
        y.raw_hash = yelp
        y.expires_at = Time.now + 1.days
        y.save
        
-       r = YelpReview.find_or_initialize_by_yelp_review_id(yelp['reviews']['id'])
-       r.yelp_id = yelp['id']
-       r.excerpt = yelp['reviews']['excerpt']
-       r.rating = yelp['reviews']['rating']
-       r.time_created = Time.parse(yelp['review']['time_created'])
-       r.user_name = yelp['reviews']['user']['name']
-       r.user_id = yelp['reviews']['user']['id']
-       r.raw_hash = yelp['reviews']
-       r.save
+       yelp['reviews'].each do |review|
+         r = YelpReview.find_or_initialize_by_yelp_review_pid(review['id'])
+          r.yelp_review_pid = review['id']
+          r.yelp_id = y.id
+          r.excerpt = review['excerpt'].nil? ? nil : review['excerpt']
+          r.rating = review['rating'].nil? ? nil : review['rating']
+          r.time_created = Time.at(review['time_created'])
+          r.user_name = review['user']['name'].nil? ? nil : review['user']['name']
+          r.user_id = review['user']['id'].nil? ? nil : review['user']['id']
+          r.raw_hash = review
+          r.save
+       end
+
        
     end
     
     
     
     def self.find_business_by_id(id = nil)
-      id = "yelp-san-francisco"
+      #id = "yelp-san-francisco"
       path = "/v2/business/#{id}"
       
       response = self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
-      
       parsedResponse = self.parse_json(response)
+      
+      self.serialize_yelp(parsedResponse)
+      
     end
     
     def self.find_business_by_location(term, latitude, longitude, accuracy, altitude, altitudeAccuracy)
