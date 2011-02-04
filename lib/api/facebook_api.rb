@@ -18,9 +18,11 @@ module API
     # 1. A single user signs on
     # 2. We fetch the user's friends list
     # 3. Create User entries for user and friends
-    # 4. We fetch all checkins for the user and all his friends
-    # 5. When we parse checkins, we also need to parse tagged_users (which may or may not be his friend)
-    # 6. We need to create User entries for all tagged_users if they don't already exist (do we have access to their checkins?)
+    # 4. Create Friend entries for all friends for the user
+    # 5. We fetch all checkins for the user and all his friends
+    # 6. When we parse checkins, we also need to parse tagged_users (which may or may not be his friend)
+    # 7. We don't want to create User entries for tagged_users who don't already exist because they are not friends (no access), we only have their name/id
+    # 8. Tagged users who are not friends will show up in a checkin, but will be un-interactable (need to check in the API, our DB won't represent this)
     
     # Create or update checkin in model/database
     def self.serialize_checkin(checkin)
