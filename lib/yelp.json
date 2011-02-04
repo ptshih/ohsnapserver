@@ -1,0 +1,86 @@
+# Note: JSON response taken from http://www.yelp.com/developers/documentation/v2/business
+
+{
+      "id": "yelp-san-francisco",
+      "name": "Yelp",
+      "image_url": "http://media4.px.yelpcdn.com/bphoto/7DIHu8a0AHhw-BffrDIxPA/ms",
+      "url": "http://www.yelp.com/biz/yelp-san-francisco"
+      "mobile_url": "http://mobile.yelp.com/biz/4kMBvIEWPxWkWKFN__8SxQ",
+      "phone": "4159083801",
+      "display_phone": "+1-415-908-3801",
+      "review_count": 2804,
+      "categories": [
+        ["Local Flavor", "localflavor"],
+        ["Active Life", "active"],
+        ["Mass Media", "massmedia"]
+      ],
+      "rating_img_url": "http://media3.px.yelpcdn.com/static/200911301235323114/i/ico/stars/stars_3_half.png",
+      "rating_img_url_small": "http://media1.px.yelpcdn.com/static/200911303952475669/i/ico/stars/stars_small_3_half.png",
+      "location": {
+        "address": [
+          "706 Mission St"
+        ],
+        "city": "San Francisco",
+        "coordinate": {
+          "latitude": 37.7862407,
+          "longitude": -122.40212820000001
+        },
+        "country_code": "US",
+        "cross_streets": "3rd St & Opera Aly",
+        "display_address": [
+          "706 Mission St",
+          "(b/t 3rd St & Opera Aly)",
+          "SOMA",
+          "San Francisco, CA 94103"
+        ],
+        "geo_accuracy": 8,
+        "neighborhoods": [
+          "SOMA"
+        ],
+        "postal_code": "94103",
+        "state_code": "CA"
+      },
+      "is_claimed": true,
+      "is_closed": false,
+      "reviews": [
+        {
+          "excerpt": "Dear Yelp,\n\nI still love you. I know we've had our differences in opinions,but I still value your existence. Wait,I have more to say... stop crying. Your...",
+          "id": "kfINhR6ZvC2JkfZZZA0_Pg",
+          "rating": 5,
+          "rating_image_small_url": "http://media4.px.yelpcdn.com/static/200911301949604803/i/ico/stars/stars_small_5.png",
+          "rating_image_url": "http://media2.px.yelpcdn.com/static/200911302578611207/i/ico/stars/stars_5.png",
+          "time_created": 1290452512,
+          "user": {
+            "id": "-t0QCNycjxXk57iGDUYWRg",
+            "image_url": "http://media4.px.yelpcdn.com/photo/B95YMR3NWKxmJv-Ie5z7HQ/ms",
+            "name": "liezl e."
+          }
+        },
+        {
+          "excerpt": "Yelp is not a website I would use to judge everything. Many times Yelp uses it's power to actually defame honest businesses because they do not pay them and...",
+          "id": "grboT2ZpZN6jZZTuEcrbNA",
+          "rating": 1,
+          "rating_image_small_url": "http://media4.px.yelpcdn.com/static/20091130926385439/i/ico/stars/stars_small_1.png",
+          "rating_image_url": "http://media2.px.yelpcdn.com/static/200911302480304591/i/ico/stars/stars_1.png",
+          "time_created": 1290407806,
+          "user": {
+            "id": "SMdG5IsyZJ-K0CcOnGZ_8g",
+            "image_url": "http://media4.px.yelpcdn.com/photo/gW2c4URCp0AIRLN_RAEt1Q/ms",
+            "name": "Jonathan L."
+          }
+        },
+        {
+          "excerpt": "I can't help but YELP...in the car,in bed,and I bet in my sleep too.  LOL I am constantly looking up new places to eat and when I am at any restaurant I...",
+          "id": "nCWMTpm21I6EeLS_CtB4RA",
+          "rating": 5,
+          "rating_image_small_url": "http://media4.px.yelpcdn.com/static/200911301949604803/i/ico/stars/stars_small_5.png",
+          "rating_image_url": "http://media2.px.yelpcdn.com/static/200911302578611207/i/ico/stars/stars_5.png",
+          "time_created": 1290378162,
+          "user": {
+            "id": "lpvpL2z51kxOWWEJtILueQ",
+            "image_url": "http://media3.px.yelpcdn.com/photo/mWq09WrFdE32VYMCtIIjvw/ms",
+            "name": "Nancy M."
+          }
+        }
+      ]
+    }
