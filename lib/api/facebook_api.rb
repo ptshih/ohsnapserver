@@ -92,6 +92,7 @@ module API
       u.last_name = user.has_key?('last_name') ? user['last_name'] : nil
       u.gender = user.has_key?('gender') ? user['gender'] : nil
       u.locale = user.has_key?('locale') ? user['locale'] : nil
+      u.verified = user.has_key?('verified') ? user['verified'] : nil
       u.save
     end
     
@@ -281,7 +282,7 @@ module API
         response = Typhoeus::Request.get("#{@@fbHost}/#{facebookId}/friends", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
         parsedResponse = self.parse_json(response.body)
       
-        # Parse checkins
+        # Parse friends
         parsedResponse['data'].each do |friend|
           self.serialize_user(friend)
           self.serialize_friend(friend, facebookId, 1)
@@ -314,7 +315,7 @@ module API
         response = Typhoeus::Request.get("#{@@fbHost}/friends", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
         parsedResponse = self.parse_json(response.body)
 
-        # Parse checkins for each user
+        # Parse friends for each user
         parsedKeys = parsedResponse.keys
         parsedKeys.each do |key|
           parsedResponse[key]['data'].each do |friend|
@@ -322,6 +323,31 @@ module API
             self.serialize_friend(friend, key.to_i, degree)
           end
         end
+      rescue => e
+        p e.message
+        p e.backtrace
+        return false
+      else
+        return true
+      end
+    end
+    
+    def self.find_user_for_facebook_id(facebookId = nil)
+      begin
+        if facebookId.nil? then facebookId = @@peterId end
+          
+        headersHash = Hash.new
+        headersHash['Accept'] = 'application/json'
+      
+        paramsHash = Hash.new
+        paramsHash['access_token'] = @@peterAccessToken
+        paramsHash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale,verified'
+      
+        response = Typhoeus::Request.get("#{@@fbHost}/#{facebookId}", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+        parsedResponse = self.parse_json(response.body)
+      
+        # Parse user
+        self.serialize_user(parsedResponse)
       rescue => e
         p e.message
         p e.backtrace
