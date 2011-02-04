@@ -30,9 +30,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
-  create_table "checkins_users", :force => true do |t|
+  create_table "tagged_users", :force => true do |t|
     t.integer  "checkin_id",  :limit => 8, :default => 0
     t.integer  "facebook_id", :limit => 8, :default => 0
+    t.string   "name"
   end
 
   create_table "gowallas", :force => true do |t|
