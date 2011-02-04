@@ -21,8 +21,8 @@ module API
       c.facebook_id = checkin['from']['id']
       c.place_id = checkin['place']['id']
       c.app_id = checkin['application']['id']
-      c.checkin_message = checkin['message'].nil? ? nil : checkin['message']
-      c.checkin_time = Time.parse(checkin['created_time'])
+      c.message = checkin['message'].nil? ? nil : checkin['message']
+      c.created_time = Time.parse(checkin['created_time'])
       c.save
       
       # Serialize App
@@ -37,14 +37,14 @@ module API
     def self.serialize_place(place)
        p = Place.find_or_initialize_by_place_id(place['id'])
        p.place_id = place['id']
-       p.place_name = place['name']
-       p.place_lat = place['location']['latitude']
-       p.place_lng = place['location']['longitude']
-       p.place_street = place['location']['street']
-       p.place_city = place['location']['city']
-       p.place_state = place['location']['state']
-       p.place_country = place['location']['country']
-       p.place_zip = place['location']['zip']
+       p.name = place['name']
+       p.lat = place['location']['latitude']
+       p.lng = place['location']['longitude']
+       p.street = place['location']['street']
+       p.city = place['location']['city']
+       p.state = place['location']['state']
+       p.country = place['location']['country']
+       p.zip = place['location']['zip']
        p.raw_hash = place
        p.expires_at = Time.now + 1.days
        p.save
@@ -54,7 +54,7 @@ module API
     def self.serialize_app(app)
       a = App.find_or_initialize_by_app_id(app['id'])
       a.app_id = app['id']
-      a.app_name = app['name']
+      a.name = app['name']
       a.save
     end
       
