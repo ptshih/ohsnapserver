@@ -79,8 +79,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
-  create_table "yelps", :force => true do |t|
-    t.integer  "yelp_id",      :limit => 8,                                 :default => 0
+  create_table "yelp", :force => true do |t|
+    t.string  "yelp_id"
     t.integer  "place_id",     :limit => 8,                                 :default => 0
     t.string   "name"
     t.string   "phone"
@@ -92,5 +92,20 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+  
+  create_table "yelp_reviews", :force => true do |t|
+    t.string "yelp_review_id" 
+    t.integer "yelp_id",      :limit  => 8, :default => 0
+    t.string  "excerpt"
+    t.integer "rating",       :limit  => 1, :default => 0
+    t.datetime  "time_created"
+    t.string  "user_name"
+    t.string  "user_id"
+    t.string  "raw_hash"
+    t.datetime "created_at"
+    t.datetime "updated_at"  
+  end
+
+  
 
 end
