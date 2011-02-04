@@ -14,7 +14,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "apps", :force => true do |t|
     t.integer  "app_id",     :limit => 8, :default => 0
-    t.string   "app_name"
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -24,8 +24,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "facebook_id",     :limit => 8, :default => 0
     t.integer  "place_id",        :limit => 8, :default => 0
     t.integer  "app_id",  :limit => 8, :default => 0
-    t.string   "checkin_message"
-    t.datetime "checkin_time"
+    t.string   "message"
+    t.datetime "created_time"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -38,10 +38,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
     t.integer  "place_id",       :limit => 8,                                 :default => 0
-    t.string   "gowalla_name"
+    t.string   "name"
     t.integer  "checkins_count"
-    t.decimal  "gowalla_lat",                 :precision => 20, :scale => 16
-    t.decimal  "gowalla_lng",                 :precision => 20, :scale => 16
+    t.decimal  "lat",                 :precision => 20, :scale => 16
+    t.decimal  "lng",                 :precision => 20, :scale => 16
     t.string   "raw_hash" # this stores the parsed json, raw hash from gowalla, in case we need to parse stuff out of it later
     t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
@@ -52,14 +52,14 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "place_id",   :limit => 8,                                 :default => 0
     t.integer  "yelp_id",    :limit => 8,                                 :default => 0
     t.integer  "gowalla_id", :limit => 8,                                 :default => 0
-    t.string   "place_name"
-    t.decimal  "place_lat",               :precision => 20, :scale => 16
-    t.decimal  "place_lng",               :precision => 20, :scale => 16
-    t.string   "place_street"
-    t.string   "place_city"
-    t.string   "place_state"
-    t.string   "place_country"
-    t.string   "place_zip"
+    t.string   "name"
+    t.decimal  "lat",               :precision => 20, :scale => 16
+    t.decimal  "lng",               :precision => 20, :scale => 16
+    t.string   "street"
+    t.string   "city"
+    t.string   "state"
+    t.string   "country"
+    t.string   "zip"
     t.string   "raw_hash" # this stores the parsed json, raw hash from facebook, in case we need to parse stuff out of it later
     t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
@@ -74,6 +74,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "first_name"
     t.string   "last_name"
     t.string   "gender"
+    t.datetime  "last_fetched_checkins" # store datetime of last time checkins were fetched from facebook
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -81,11 +82,11 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "yelps", :force => true do |t|
     t.integer  "yelp_id",      :limit => 8,                                 :default => 0
     t.integer  "place_id",     :limit => 8,                                 :default => 0
-    t.string   "yelp_name"
-    t.string   "yelp_phone"
+    t.string   "name"
+    t.string   "phone"
     t.integer  "review_count"
-    t.decimal  "yelp_lat",                  :precision => 20, :scale => 16
-    t.decimal  "yelp_lng",                  :precision => 20, :scale => 16
+    t.decimal  "lat",                  :precision => 20, :scale => 16
+    t.decimal  "lng",                  :precision => 20, :scale => 16
     t.string   "raw_hash" # this stores the parsed json, raw hash from yelp, in case we need to parse stuff out of it later
     t.datetime "expires_at" # this tells the scraper when it should rescrape the place
     t.datetime "created_at"
