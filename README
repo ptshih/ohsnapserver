@@ -4,7 +4,12 @@
 2. Batch requests to get friends checkins (for each of your friends one at a time) - Peter
    Also we need to store the "last_fetched" timestamp for use in Facebook's since API the next time we hit
 3. Serialize more of Facebook places (page) data (serialize_place method in facebook_api.rb) - Tom
-4. Create APIs in controllers for client to test - Peter
+4. Create checkin/place APIs in controllers for client to test - Peter
+
+== Low Priority TODOs
+1. Add Google Places as a potential API partner
+2. Add Foursquare as an API partner
+3. Finish up Gowalla API
 
 == Code Snippets
 
