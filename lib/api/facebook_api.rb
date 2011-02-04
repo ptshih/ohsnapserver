@@ -14,6 +14,14 @@ module API
     @@tomAccessToken = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
     
     
+    # Just some notes here
+    # 1. A single user signs on
+    # 2. We fetch the user's friends list
+    # 3. Create User entries for user and friends
+    # 4. We fetch all checkins for the user and all his friends
+    # 5. When we parse checkins, we also need to parse tagged_users (which may or may not be his friend)
+    # 6. We need to create User entries for all tagged_users if they don't already exist (do we have access to their checkins?)
+    
     # Create or update checkin in model/database
     def self.serialize_checkin(checkin)
       c = Checkin.find_or_initialize_by_checkin_id(checkin['id'])
@@ -72,6 +80,30 @@ module API
       a.app_id = app['id']
       a.name = app['name']
       a.save
+    end
+    
+    # Create or update user
+    def self.serialize_user(user)
+      u = User.find_or_initialize_by_facebook_id(user['id'])
+      u.facebook_id = user['id']
+      u.third_party_id = user['third_party_id']
+      u.full_name = user.has_key?('name') ? user['name'] : nil
+      u.first_name = user.has_key?('first_name') ? user['first_name'] : nil
+      u.last_name = user.has_key?('last_name') ? user['last_name'] : nil
+      u.gender = user.has_key?('gender') ? user['gender'] : nil
+      u.locale = user.has_key?('locale') ? user['locale'] : nil
+      u.save
+    end
+    
+    # Create or update friend
+    def self.serialize_friend(friend, facebookId, degree)
+      if Friend.where("facebook_id = #{facebookId} AND friend_id = #{friend['id']}").empty?
+        f = Friend.create(
+          :facebook_id => facebookId,
+          :friend_id => friend['id'], 
+          :degree => degree
+        )
+      end
     end
     
     # Finds all checkins for one user
@@ -232,5 +264,72 @@ module API
         return true
       end
     end
+    
+    # Finds friends for a single facebook id
+    # https://graph.facebook.com/me/friends?fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    def self.find_friends_for_facebook_id(facebookId = nil)
+      begin
+        if facebookId.nil? then facebookId = @@peterId end
+          
+        headersHash = Hash.new
+        headersHash['Accept'] = 'application/json'
+      
+        paramsHash = Hash.new
+        paramsHash['access_token'] = @@peterAccessToken
+        paramsHash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
+      
+        response = Typhoeus::Request.get("#{@@fbHost}/#{facebookId}/friends", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+        parsedResponse = self.parse_json(response.body)
+      
+        # Parse checkins
+        parsedResponse['data'].each do |friend|
+          self.serialize_user(friend)
+          self.serialize_friend(friend, facebookId, 1)
+        end
+      rescue => e
+        p e.message
+        p e.backtrace
+        return false
+      else
+        return true
+      end
+    end
+    
+    # Finds friends for an array of facebook ids
+    # https://graph.facebook.com/friends?ids=4804606,548430564,645750651&fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    def self.find_friends_for_facebook_id_array(facebookIdArray = nil, degree = 1)
+      begin
+        if facebookIdArray.nil? then 
+          facebookIdArray = [@@peterId, @@tomId, @@jamesId]
+        end
+        
+        headersHash = Hash.new
+        headersHash['Accept'] = 'application/json'
+
+        paramsHash = Hash.new
+        paramsHash['access_token'] = @@peterAccessToken
+        paramsHash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
+        paramsHash['ids'] = facebookIdArray.join(',')
+
+        response = Typhoeus::Request.get("#{@@fbHost}/friends", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+        parsedResponse = self.parse_json(response.body)
+
+        # Parse checkins for each user
+        parsedKeys = parsedResponse.keys
+        parsedKeys.each do |key|
+          parsedResponse[key]['data'].each do |friend|
+            self.serialize_user(friend)
+            self.serialize_friend(friend, key.to_i, degree)
+          end
+        end
+      rescue => e
+        p e.message
+        p e.backtrace
+        return false
+      else
+        return true
+      end
+    end
+    
   end
 end

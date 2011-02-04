@@ -69,15 +69,22 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "users", :force => true do |t|
     t.integer  "facebook_id",    :limit => 8, :default => 0
-    t.integer  "third_party_id", :limit => 8, :default => 0
+    t.string   "third_party_id"
     t.string   "access_token"
     t.string   "full_name"
     t.string   "first_name"
     t.string   "last_name"
     t.string   "gender"
+    t.string   "locale"
     t.datetime  "last_fetched_checkins" # store datetime of last time checkins were fetched from facebook
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+  
+  create_table "friends", :force => true do |t|
+    t.integer  "facebook_id",    :limit => 8, :default => 0
+    t.integer  "friend_id",    :limit => 8, :default => 0
+    t.integer  "degree", :limit => 1, :default => 0
   end
 
   create_table "yelp", :force => true do |t|
