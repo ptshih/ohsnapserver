@@ -1,8 +1,9 @@
 module API
-  class Facebook < Api
+  class FacebookApi < Api
     @@fbHost = 'https://graph.facebook.com'
     @@peterId = 548430564
     @@jamesId = 645750651
+    @@tomId = 4804606
     
     @@peterLatitude = 37.765223405331
     @@peterLongitude = -122.45003812016
@@ -10,6 +11,7 @@ module API
     # Peter's access token
     @@peterAccessToken = "H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA"
     @@jamesAccessToken = "132514440148709|f09dd88ba268a8727e4f3fd5-645750651|k21j0yXPGxYGbJPd0eOEMTy5ZN4"
+    @@tomAccessToken = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
     
     # Create or update checkin in model/database
@@ -87,8 +89,10 @@ module API
         paramsHash = Hash.new
         paramsHash['access_token'] = @@peterAccessToken
         paramsHash['type'] = 'checkin'
+        paramsHash['limit'] = '50'
       
         response = Typhoeus::Request.get("#{@@fbHost}/search", :params => paramsHash, :headers => headersHash, :disable_ssl_peer_verification => true)
+        p response.headers
         parsedResponse = self.parse_json(response.body)
       
         # Parse checkins

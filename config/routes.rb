@@ -10,12 +10,14 @@ Moogle::Application.routes.draw do
   # Checkin Routes
   match ':version/checkin', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins
   match ':version/checkin/:id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
-  match ':version/checkin/me/:id', :controller => 'checkin', :action => 'me', :via => :get
-  match ':version/checkin/friends/:id', :controller => 'checkin', :action => 'friends', :via => :get
+  match ':version/checkin/me/:user_id', :controller => 'checkin', :action => 'me', :via => :get # Checkins from user_id
+  match ':version/checkin/friends/:user_id', :controller => 'checkin', :action => 'friends', :via => :get # Checkins from friends of user_id
   
   # Place routes
   match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places
   match ':version/place/:id', :controller => 'place', :action => 'show', :via => :get # Single Place with ID
+  match ':version/place/me/:user_id', :controller => 'place', :action => 'me', :via => :get # Places that user_id have been to
+  match ':version/place/friends/:user_id', :controller => 'place', :action => 'friends', :via => :get # Places friends of user_id have been to
   
   # Mobile Server Examples  
   # map.connect ':version/messages/count', :controller => 'messages', :action => 'count', :conditions => { :method => :get }

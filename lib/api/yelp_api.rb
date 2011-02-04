@@ -1,5 +1,5 @@
 module API
-  class Yelp < Api
+  class YelpApi < Api
     # Consumer Key  59qAq_rFiMt26wRMTOXTMA
     # Consumer Secret N5BxbhjpRp5g3iA-SXaDx78jWI0
     # Token ifKMaMyp7X9JqmCePD3BzskBGYZ1q0Tb
