@@ -32,7 +32,7 @@ module API
       c.place_id = checkin['place']['id']
       c.app_id = checkin['application']['id']
       c.message = checkin['message'].nil? ? nil : checkin['message']
-      c.created_time = Time.parse(checkin['created_time'])
+      c.created_time = Time.parse(checkin['created_time'].to_s)
       c.save
       
       # Serialize App

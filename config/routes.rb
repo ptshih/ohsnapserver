@@ -10,8 +10,8 @@ Moogle::Application.routes.draw do
   # Checkin Routes
   match ':version/checkin', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins
   match ':version/checkin/:id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
-  match ':version/checkin/me/:user_id', :controller => 'checkin', :action => 'me', :via => :get # Checkins from user_id
-  match ':version/checkin/friends/:user_id', :controller => 'checkin', :action => 'friends', :via => :get # Checkins from friends of user_id
+  match ':version/checkin/me/:facebook_id', :controller => 'checkin', :action => 'me', :via => :get # Checkins from user_id
+  match ':version/checkin/friends/:facebook_id', :controller => 'checkin', :action => 'friends', :via => :get # Checkins from friends of user_id
   
   # Place routes
   match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places
