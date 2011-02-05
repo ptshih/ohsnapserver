@@ -31,6 +31,8 @@ module API
        y.expires_at = Time.now + 1.days
        y.save
        
+       puts yelp['url']
+       
        yelp['reviews'].each do |review|
          r = YelpReview.find_or_initialize_by_yelp_review_pid(review['id'])
           r.yelp_review_pid = review['id']
@@ -50,6 +52,7 @@ module API
     
     
     def self.find_business_by_id(id = nil)
+      #API::YelpApi.find_business_by_id("cafe-zoe-menlo-park")
       #id = "yelp-san-francisco"
       path = "/v2/business/#{id}"
       
@@ -60,9 +63,17 @@ module API
       
     end
     
-    def self.find_business_by_location(term, latitude, longitude, accuracy, altitude, altitudeAccuracy)
+    def self.find_business_by_location(term, latitude, longitude, accuracy=nil, altitude=nil, altitudeAccuracy=nil)
+      
+      #API::YelpApi.find_business_by_location("CAFE Zoe", 37.459097,-122.152712)
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
+      encodedTerm = URI::encode(term)
+      path = "/v2/search?term=#{encodedTerm}&ll=#{latitude},#{longitude}&limit=3"
+      
+      response = self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
+      parsedResponse = self.parse_json(response)
+      
     end
     
   end
