@@ -19,7 +19,12 @@ module API
        y.yelp_pid = yelp['id']
        y.name = yelp['name'].nil? ? nil : yelp['name']
        y.phone = yelp['phone'].nil? ? nil : yelp['phone']
-       y.review_count = yelp['review_count'].nil? ? nil : yelp['review_count']       
+       y.review_count = yelp['review_count'].nil? ? nil : yelp['review_count']
+       y.street = yelp['location']['address'].nil? ? nil : yelp['location']['address']
+       y.city = yelp['location']['city'].nil? ? nil : yelp['location']['city']
+       y.state = yelp['location']['state_code'].nil? ? nil : yelp['location']['state_code']
+       y.country = yelp['location']['country_code'].nil? ? nil : yelp['location']['country_code']
+       y.zip = yelp['location']['postal_code'].nil? ? nil : yelp['location']['postal_code']
        y.lat = yelp['location']['coordinate']['latitude'].nil? ? nil : yelp['location']['coordinate']['latitude']
        y.lng = yelp['location']['coordinate']['longitude'].nil? ? nil : yelp['location']['coordinate']['longitude']
        y.raw_hash = yelp

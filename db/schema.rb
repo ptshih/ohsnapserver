@@ -94,6 +94,11 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "name"
     t.string   "phone"
     t.integer  "review_count"
+    t.string   "street"
+    t.string   "city"
+    t.string   "state"
+    t.string   "country"
+    t.string   "zip"
     t.decimal  "lat",                  :precision => 20, :scale => 16
     t.decimal  "lng",                  :precision => 20, :scale => 16
     t.string   "raw_hash" # this stores the parsed json, raw hash from yelp, in case we need to parse stuff out of it later
