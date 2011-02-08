@@ -10,6 +10,17 @@ class CheckinController < ApplicationController
   def show
   end
 
+  def nearby
+    Rails.logger.info request.query_parameters.inspect
+    
+    response = API::FacebookApi.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
+    
+    respond_to do |format|
+      format.xml  { render :xml => response['data'] }
+      format.json  { render :json => response['data'] }
+    end
+  end
+  
   def me
     # "checkin": {
     #   "app_id": 6628568379,

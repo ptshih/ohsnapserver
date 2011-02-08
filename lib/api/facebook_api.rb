@@ -251,7 +251,7 @@ module API
         p e.backtrace
         return false
       else
-        return true
+        return parsedResponse
       end
     end
     
