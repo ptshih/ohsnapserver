@@ -40,7 +40,7 @@ GEM
     erubis (2.6.6)
       abstract (>= 1.0.0)
     i18n (0.5.0)
-    kgio (2.1.1)
+    kgio (2.2.0)
     mail (2.2.15)
       activesupport (>= 2.3.6)
       i18n (>= 0.4.0)
@@ -78,10 +78,10 @@ GEM
     typhoeus (0.2.1)
       mime-types
     tzinfo (0.3.24)
-    unicorn (3.3.1)
-      kgio (~> 2.1)
+    unicorn (3.4.0)
+      kgio (~> 2.2)
       rack
-    yajl-ruby (0.7.9)
+    yajl-ruby (0.8.0)
 
 PLATFORMS
   ruby
