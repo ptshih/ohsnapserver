@@ -3,6 +3,9 @@ Moogle::Application.routes.draw do
   # Routes will always pass a version
   # Example: http://api.moogle.com/v1/user/54685403
   
+  # Moogle Routes
+  match ':version/moogle/session/:id', :controller => 'moogle', :action => 'session', :via => :post # List of Users
+  
   # User Routes
   match ':version/user', :controller => 'user', :action => 'index', :via => :get # List of Users
   match ':version/user/:id', :controller => 'user', :action => 'show', :via => :get # Single User with ID

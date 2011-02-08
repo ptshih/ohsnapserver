@@ -3,13 +3,13 @@ class CheckinController < ApplicationController
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
   end
-  
+
   def index
   end
-  
+
   def show
   end
-  
+
   def me
     # "checkin": {
     #   "app_id": 6628568379,
@@ -24,9 +24,9 @@ class CheckinController < ApplicationController
     # }
 
     Rails.logger.info request.query_parameters.inspect
-    
+
     responseArray = []
-    
+
     Checkin.where("facebook_id = #{params[:facebook_id].to_i}").each do |checkin|
       responseHash = {
         :checkin_id => checkin['checkin_id'],
@@ -40,13 +40,13 @@ class CheckinController < ApplicationController
       }
       responseArray << responseHash
     end
-    
+
     respond_to do |format|
       format.xml  { render :xml => responseArray }
       format.json  { render :json => responseArray }
     end
   end
-  
+
   def friends
   end
 end
