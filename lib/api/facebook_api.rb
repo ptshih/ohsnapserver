@@ -99,6 +99,7 @@ module API
     
     # Create or update user
     def serialize_user(user, access_token = nil)
+      puts "serializing user with id: #{user['id']}"
       u = User.find_or_initialize_by_facebook_id(user['id'])
       if not access_token.nil? then u.access_token = access_token end
       u.facebook_id = user['id']
@@ -116,26 +117,22 @@ module API
     
     # Create or update friend
     def serialize_friend(friend, facebook_id, degree)
-      f = Friend.find_or_initialize_by_facebook_id_and_friend_id(facebook_id, friend['id'])
-      f.facebook_id = facebook_id
-      f.friend_id = friend['id']
-      f.degree = degree
-            # 
-            # f = Friend.where("facebook_id = #{facebook_id} AND friend_id = #{friend['id']}").limit(1).first
-            # if not f.nil?
-            #   f = Friend.create(
-            #     :facebook_id => facebook_id,
-            #     :friend_id => friend['id'], 
-            #     :degree => degree
-            #   )
-            # end
+      puts "serializing friend with id: #{friend['id']}"
+      f = Friend.where("facebook_id = #{facebook_id} AND friend_id = #{friend['id']}").limit(1).first
+      if f.nil?
+        f = Friend.create(
+          :facebook_id => facebook_id,
+          :friend_id => friend['id'], 
+          :degree => degree
+        )
+      end
       
       return f
     end
     
     def update_last_fetched_checkins(facebook_id)
+      puts "updating #{facebook_id} last fetched checkins"
       u = User.find_by_facebook_id(facebook_id)
-      puts "updating #{u} last fetched checkins"
       if not u.nil?
         u.update_attribute('last_fetched_checkins', Time.now)
       end
@@ -368,6 +365,8 @@ module API
       begin
         if facebook_id.nil? then facebook_id = @@peter_id end
           
+        puts "find friends for facebook_id: #{facebook_id}"
+        
         headers_hash = Hash.new
         headers_hash['Accept'] = 'application/json'
       

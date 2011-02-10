@@ -18,9 +18,13 @@ class MoogleController < ApplicationController
     # should this be a blocking call? or just let the user start playing with cached data
   
     # if last fetched date is under 10 minutes (that is facebook's throttle), don't refetch
-    time_diff = Time.now - @current_user.last_fetched_checkins
+    if not @current_user.last_fetched_checkins.nil?
+      time_diff = Time.now - @current_user.last_fetched_checkins
     
-    puts "Time diff #{time_diff.to_i}"
+      puts "Time diff #{time_diff.to_i}"
+    else
+      time_diff = 601
+    end
     if time_diff.to_i > 600 then
 
       # Get all friends from facebook for the current user again

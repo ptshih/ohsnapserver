@@ -24,18 +24,47 @@ class CheckinController < ApplicationController
     # }
 
     Rails.logger.info request.query_parameters.inspect
+    
+    # Handle filters
+    # People filter
+    if params[:people].nil?
+      filter_people = "me"
+    else
+      filter_people = params[:people]
+    end
+    
+    if filter_people == "me"
+      query = "facebook_id = #{@current_user.facebook_id}"
+    elsif filter_people == "friends"
+      # Get an array of friend_ids
+      facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+      
+      people_list = facebook_id_array.join(",")
+      query = "facebook_id IN (#{people_list})"
+    end
+    
+    # Distance filter
+    # Category filter
 
     response_array = []
 
-    Checkin.where("facebook_id = #{@current_user.facebook_id}").each do |checkin|
+    Checkin.where(query).each do |checkin|
+      if checkin['app_id'].nil?
+        checkin_app_id = nil
+        checkin_app_name = nil
+      else
+        checkin_app_id = checkin['app_id']
+        checkin_app_name = checkin.app['name']
+      end
       response_hash = {
         :checkin_id => checkin['checkin_id'],
         :facebook_id => checkin['facebook_id'],
+        :name => checkin.user['full_name'],
         :message => checkin['message'],
         :place_id => checkin['place_id'],
         :place_name => checkin.place['name'],
-        :app_id => checkin['app_id'],
-        :app_name => checkin.app['name'],
+        :app_id => checkin_app_id,
+        :app_name => checkin_app_name,
         :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
       }
       response_array << response_hash
