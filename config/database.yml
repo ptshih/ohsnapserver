@@ -8,6 +8,7 @@ development:
   username: root
   password:
   socket: /tmp/mysql.sock
+  encoding: utf8
   collation: utf8_general_ci
   
 # development:

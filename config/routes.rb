@@ -4,19 +4,18 @@ Moogle::Application.routes.draw do
   # Example: http://api.moogle.com/v1/user/54685403
   
   # Moogle Routes
-  match ':version/moogle/session/:id', :controller => 'moogle', :action => 'session', :via => :post # List of Users
+  match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user (or register new user)
   
   # User Routes
-  match ':version/user', :controller => 'user', :action => 'index', :via => :get # List of Users
-  match ':version/user/:id', :controller => 'user', :action => 'show', :via => :get # Single User with ID
+  match ':version/users', :controller => 'user', :action => 'index', :via => :get # List of Users
+  match ':version/users/:id', :controller => 'user', :action => 'show', :via => :get # Single User with ID
   
   # Checkin Routes
-  match ':version/checkin', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins
-  match ':version/checkin/:id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
-  match ':version/checkin/me/:facebook_id', :controller => 'checkin', :action => 'me', :via => :get # Checkins from user_id
-  match ':version/checkin/friends/:facebook_id', :controller => 'checkin', :action => 'friends', :via => :get # Checkins from friends of user_id
+  match ':version/checkins', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins, with filters
+  match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
   
-  match ':version/checkin/nearby', :controller => 'checkin', :action => 'nearby', :via => :post # get nearby facebook places
+  # Find nearby facebook places
+  match ':version/checkins/nearby', :controller => 'checkin', :action => 'nearby', :via => :post # get nearby facebook places
   
   # Place routes
   match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places

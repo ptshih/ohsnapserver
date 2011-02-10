@@ -5,15 +5,15 @@ module API
     # Token ifKMaMyp7X9JqmCePD3BzskBGYZ1q0Tb
     # Token Secret  vKrHGl5-gGin81a6Mb5ZIwjiHd0
     
-    @@apiHost = 'api.yelp.com'
-    @@consumerKey = '59qAq_rFiMt26wRMTOXTMA'
-    @@consumerSecret = 'N5BxbhjpRp5g3iA-SXaDx78jWI0'
+    @@api_host = 'api.yelp.com'
+    @@consumer_key = '59qAq_rFiMt26wRMTOXTMA'
+    @@consumer_secret = 'N5BxbhjpRp5g3iA-SXaDx78jWI0'
     @@token = 'ifKMaMyp7X9JqmCePD3BzskBGYZ1q0Tb'
-    @@tokenSecret = 'vKrHGl5-gGin81a6Mb5ZIwjiHd0'
+    @@token_secret = 'vKrHGl5-gGin81a6Mb5ZIwjiHd0'
     
     
     # Create or update yelp in model/database
-    def self.serialize_yelp(yelp)
+    def serialize_yelp(yelp)
 
        y = Yelp.find_or_initialize_by_yelp_pid(yelp['id'])
        y.yelp_pid = yelp['id']
@@ -51,28 +51,28 @@ module API
     
     
     
-    def self.find_business_by_id(id = nil)
+    def find_business_by_id(id = nil)
       #API::YelpApi.find_business_by_id("cafe-zoe-menlo-park")
       #id = "yelp-san-francisco"
       path = "/v2/business/#{id}"
       
-      response = self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
-      parsedResponse = self.parse_json(response)
+      response = self.send_oauth_request("http://#{@@api_host}", path, @@consumer_key, @@consumer_secret, @@token, @@token_secret)
+      parsed_response = self.parse_json(response)
       
-      self.serialize_yelp(parsedResponse)
+      self.serialize_yelp(parsed_response)
       
     end
     
-    def self.find_business_by_location(term, latitude, longitude, accuracy=nil, altitude=nil, altitudeAccuracy=nil)
+    def find_business_by_location(term, latitude, longitude, accuracy=nil, altitude=nil, altitude_accuracy=nil)
       
       #API::YelpApi.find_business_by_location("CAFE Zoe", 37.459097,-122.152712)
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
-      encodedTerm = URI::encode(term)
-      path = "/v2/search?term=#{encodedTerm}&ll=#{latitude},#{longitude}&limit=3"
+      encoded_term = URI::encode(term)
+      path = "/v2/search?term=#{encoded_term}&ll=#{latitude},#{longitude}&limit=3"
       
-      response = self.send_oauth_request("http://#{@@apiHost}", path, @@consumerKey, @@consumerSecret, @@token, @@tokenSecret)
-      parsedResponse = self.parse_json(response)
+      response = self.send_oauth_request("http://#{@@api_host}", path, @@consumer_key, @@consumer_secret, @@token, @@token_secret)
+      parsed_response = self.parse_json(response)
       
     end
     

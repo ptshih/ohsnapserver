@@ -7,7 +7,7 @@ require 'oauth'
 
 module API
   class Api
-    def self.send_request(url = nil, method = :get, headers = nil, params = nil, timeout = 30, body = nil)
+    def send_request(url = nil, method = :get, headers = nil, params = nil, timeout = 30, body = nil)
       begin
         response = Typhoeus::Request.get("http://www.google.com")
       
@@ -21,19 +21,19 @@ module API
       end
     end
     
-    def self.send_oauth_request(host = nil, path = nil, consumerKey = nil, consumerSecret = nil, token = nil, tokenSecret = nil)
-      consumer = OAuth::Consumer.new(consumerKey, consumerSecret, :site => host)
-      accessToken = OAuth::AccessToken.new(consumer, token, tokenSecret)
+    def send_oauth_request(host = nil, path = nil, consumer_key = nil, consumer_secret = nil, token = nil, token_secret = nil)
+      consumer = OAuth::Consumer.new(consumer_key, consumer_secret, :site => host)
+      oauth_access_token = OAuth::AccessToken.new(consumer, token, token_secret)
       
-      response = accessToken.get(path).body
+      response = oauth_access_token.get(path).body
       
       return response
     end
     
-    def self.parse_json(json)
+    def parse_json(json)
       puts "Parsing JSON"
-      parsedJson = JSON.parse(json)
-      return parsedJson
+      parsed_json = JSON.parse(json)
+      return parsed_json
     end
   end
 end

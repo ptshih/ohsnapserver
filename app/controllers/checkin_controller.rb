@@ -1,27 +1,16 @@
 class CheckinController < ApplicationController
+  before_filter :load_facebook_api
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
+    controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
 
-  def index
-  end
-
-  def show
-  end
-
-  def nearby
-    Rails.logger.info request.query_parameters.inspect
-    
-    response = API::FacebookApi.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
-    
-    respond_to do |format|
-      format.xml  { render :xml => response['data'] }
-      format.json  { render :json => response['data'] }
-    end
+  def load_facebook_api
+    @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
-  def me
+  def index
     # "checkin": {
     #   "app_id": 6628568379,
     #   "checkin_id": 629768127509,
@@ -36,10 +25,10 @@ class CheckinController < ApplicationController
 
     Rails.logger.info request.query_parameters.inspect
 
-    responseArray = []
+    response_array = []
 
-    Checkin.where("facebook_id = #{params[:facebook_id].to_i}").each do |checkin|
-      responseHash = {
+    Checkin.where("facebook_id = #{@current_user.facebook_id}").each do |checkin|
+      response_hash = {
         :checkin_id => checkin['checkin_id'],
         :facebook_id => checkin['facebook_id'],
         :message => checkin['message'],
@@ -49,15 +38,29 @@ class CheckinController < ApplicationController
         :app_name => checkin.app['name'],
         :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
       }
-      responseArray << responseHash
+      response_array << response_hash
     end
 
     respond_to do |format|
-      format.xml  { render :xml => responseArray }
-      format.json  { render :json => responseArray }
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
     end
   end
 
-  def friends
+  def show
   end
+
+  def nearby
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    response = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
+    
+    # temporarily just bypass proxy FB's response
+     
+    respond_to do |format|
+      format.xml  { render :xml => response['data'] }
+      format.json  { render :json => response['data'] }
+    end
+  end
+  
 end
