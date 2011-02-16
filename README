@@ -1,3 +1,7 @@
+== Console
+alias mcurlpost='curl -i -H "Accept: application/json" -F "access_token=m0z4AO5qSOtB9Uguk80S2D05eEmng2DfrpAnNGMTJh4.eyJpdiI6IkZ2cFVNbHBSaHByVkswZURhZHF3aFEifQ.F4IKIBxFkQqQQkgEyG5SEeaFVBsPT_d_XGwf88o8j8yQrBX-FliW9ELnioMLEg_8quMqc5rQZvOoiszxnXx6M4kfrWON748kVzQE4CS-Vg5Nuqjfg_IAMt3d4P_judBKoG_xAlGFXWQg-tiXwT_UDA"'
+
+
 == Moogle TODOs
 
 1. Hook up Yelp cross reference API call and store into Yelp objects - Tom
