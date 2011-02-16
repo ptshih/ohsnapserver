@@ -5,11 +5,13 @@ module API
     @@peter_access_token = "H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA"
     @@james_access_token = "132514440148709|f09dd88ba268a8727e4f3fd5-645750651|k21j0yXPGxYGbJPd0eOEMTy5ZN4"
     @@tom_access_token = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
+    @@moone_access_token = ""
     
     @@fb_host = 'https://graph.facebook.com'
     @@peter_id = 548430564
     @@james_id = 645750651
     @@tom_id = 4804606
+    @@moone_id = 100002025298734
     
     @@peter_latitude = 37.765223405331
     @@peter_longitude = -122.45003812016
@@ -57,7 +59,7 @@ module API
 
       # Send request for Facebook Place
       # Use a non-blocking HTTP queue here
-      self.find_place_for_place_id(checkin['place']['id'])
+      # self.find_place_for_place_id(checkin['place']['id'])
     end
     
     # Create or update tagged friend
@@ -138,6 +140,14 @@ module API
       end
     end
     
+    def update_expires_at_place_id(place_id)
+      puts "updating #{place_id} last fetched time"
+      p = Place.find_by_place_id(place_id)
+      if not p.nil?
+        p.update_attribute('expires_at', Time.now)
+      end
+    end
+    
     #
     # API CALLS
     #
@@ -156,14 +166,23 @@ module API
       
         response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         parsed_response = self.parse_json(response.body)
-      
+
+        place_id_array = Array.new
+        
         # Parse checkins
         parsed_response['data'].each do |checkin|
           self.serialize_checkin(checkin)
+          place_id_array << checkin['place']['id']
         end
+        
+        puts "#{place_id_array}"
+        
+        # Serialize unique list of place_ids
+        self.find_place_for_place_id_array(place_id_array.uniq)
         
         # Update last_fetched_checkins timestamp for user
         self.update_last_fetched_checkins(facebook_id)
+        
       rescue => e
         p e.message
         p e.backtrace
@@ -182,77 +201,84 @@ module API
         end
         
         # OLD STYLE BATCHED
-        # headers_hash = Hash.new
-        # headers_hash['Accept'] = 'application/json'
-        # 
-        # params_hash = Hash.new
-        # params_hash['access_token'] = self.access_token
-        # params_hash['ids'] = facebook_id_array.join(',')
-        # 
-        # response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-        # parsed_response = self.parse_json(response.body)
-        
-        # WE NEED TO HANDLE ERRORS
-        # {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
-        
-        # puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
-        
-        # # Parse checkins for each user
-        # parsed_keys = parsed_response.keys
-        # parsed_keys.each do |key|
-        #   parsed_response[key]['data'].each do |checkin|
-        #     self.serialize_checkin(checkin)
-        #   end
-        # end
-        # 
-        # # Update last_fetched_checkins timestamp for all users
-        # facebook_id_array.each do |facebook_id|
-        #   self.update_last_fetched_checkins(facebook_id)
-        # end
-        
-        # END OLD STYLE
-        
-        # NEW QUEUE STYLE
-        # Reason we use this is because each facebook user has a different last_fetched_checkins timestamp
-        
         headers_hash = Hash.new
         headers_hash['Accept'] = 'application/json'
         
-        # Generally, you should be running requests through hydra. Here is how that looks
-        hydra = Typhoeus::Hydra.new
-
-        facebook_id_array.each do |facebook_id|
-          # Configure Params
-          params_hash = Hash.new
-          params_hash['access_token'] = self.access_token
-          
-          # Each person has a different last_fetched_checkins timestamp
-          u = User.find_by_facebook_id(facebook_id)
-          if not u.last_fetched_checkins.nil? then
-            params_hash['since'] = u.last_fetched_checkins.to_i
+        params_hash = Hash.new
+        params_hash['access_token'] = self.access_token
+        params_hash['ids'] = facebook_id_array.join(',')
+        
+        response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        parsed_response = self.parse_json(response.body)
+        
+        # WE NEED TO HANDLE ERRORS
+        {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
+        
+        puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
+        
+        place_id_array = Array.new
+        
+        # Parse checkins for each user
+        parsed_keys = parsed_response.keys
+        parsed_keys.each do |key|
+          parsed_response[key]['data'].each do |checkin|
+            self.serialize_checkin(checkin)
+            place_id_array << checkin['place']['id']
           end
-          
-          r = Typhoeus::Request.new("#{@@fb_host}/#{facebook_id}/checkins", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-          
-          # Run this block when the request completes
-          r.on_complete do |response|
-            parsed_response = self.parse_json(response.body)
-
-            # Parse checkins
-            parsed_response['data'].each do |checkin|
-              self.serialize_checkin(checkin)
-            end
-
-            # Update last_fetched_checkins timestamp for user
-            self.update_last_fetched_checkins(facebook_id)
-          end
-          
-          # Add this request to the queue
-          hydra.queue r
         end
         
-        hydra.run # blocking call to run the queue
+        # Serialize unique list of place_ids
+        self.find_place_for_place_id_array(place_id_array.uniq)
         
+        # Update last_fetched_checkins timestamp for all users
+        facebook_id_array.each do |facebook_id|
+          self.update_last_fetched_checkins(facebook_id)
+        end
+        
+        # END OLD STYLE
+        
+        # # NEW QUEUE STYLE
+        #  # Reason we use this is because each facebook user has a different last_fetched_checkins timestamp
+        #  
+        #  headers_hash = Hash.new
+        #  headers_hash['Accept'] = 'application/json'
+        #  
+        #  # Generally, you should be running requests through hydra. Here is how that looks
+        #  hydra = Typhoeus::Hydra.new
+        # 
+        #  facebook_id_array.each do |facebook_id|
+        #    # Configure Params
+        #    params_hash = Hash.new
+        #    params_hash['access_token'] = self.access_token
+        #    
+        #    # Each person has a different last_fetched_checkins timestamp
+        #    u = User.find_by_facebook_id(facebook_id)
+        #    if not u.last_fetched_checkins.nil? then
+        #      params_hash['since'] = u.last_fetched_checkins.to_i
+        #    end
+        #    
+        #    r = Typhoeus::Request.new("#{@@fb_host}/#{facebook_id}/checkins", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        #    
+        #    # Run this block when the request completes
+        #    r.on_complete do |response|
+        #      parsed_response = self.parse_json(response.body)
+        # 
+        #      # Parse checkins
+        #      parsed_response['data'].each do |checkin|
+        #        self.serialize_checkin(checkin)
+        #      end
+        # 
+        #      # Update last_fetched_checkins timestamp for user
+        #      self.update_last_fetched_checkins(facebook_id)
+        #    end
+        #    
+        #    # Add this request to the queue
+        #    hydra.queue r
+        #  end
+        #  
+        #  hydra.run # blocking call to run the queue
+        # # END NEW QUEUE STYLE        
+      
       rescue => e
         p e.message
         p e.backtrace
@@ -328,6 +354,7 @@ module API
     end
     
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
+    # API::FacebookApi.new.find_place_for_place_id(121328401214612)
     def find_place_for_place_id(place_id = nil)
       begin
         if place_id.nil? then place_id = 57167660895 end # cafe zoe
@@ -357,6 +384,53 @@ module API
       else
         return facebook_place
       end
+    end
+    
+    # Find all places for an array of place_ids
+    # https://graph.facebook.com/?ids=116154718413160,121328401214612,57167660895
+    # API::FacebookApi.new.find_place_for_place_id_array([116154718413160,121328401214612,57167660895])
+    def find_place_for_place_id_array(place_id_array = nil)
+      begin
+        if place_id_array.nil? then  
+          place_id_array = [121328401214612,57167660895] # cafe zoe
+        end
+        
+        headers_hash = Hash.new
+        headers_hash['Accept'] = 'application/json'
+        
+        params_hash = Hash.new
+        params_hash['access_token'] = self.access_token
+        params_hash['ids'] = place_id_array.join(',')
+        
+        response = Typhoeus::Request.get("#{@@fb_host}/", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        parsed_response = self.parse_json(response.body)
+        
+        # WE NEED TO HANDLE ERRORS
+        {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
+        
+        puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
+        
+        # Parse places keys
+        parsed_keys = parsed_response.keys
+        
+        parsed_keys.each do |key|
+          puts "#{key}"
+          facebook_place = self.serialize_place(parsed_response[key])
+        end
+        
+        # Update update_expires_at_place_id timestamp
+        place_id_array.each do |place_id|
+          self.update_expires_at_place_id(place_id)
+        end
+        
+        rescue => e
+          p e.message
+          p e.backtrace
+          return false
+        else
+          return true
+        end
+        
     end
     
     # Finds friends for a single facebook id
