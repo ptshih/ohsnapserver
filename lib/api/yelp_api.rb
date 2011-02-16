@@ -52,7 +52,7 @@ module API
     
     
     def find_business_by_id(id = nil)
-      #API::YelpApi.find_business_by_id("cafe-zoe-menlo-park")
+      # API::YelpApi.new.find_business_by_id("cafe-zoe-menlo-park")
       #id = "yelp-san-francisco"
       path = "/v2/business/#{id}"
       
@@ -65,7 +65,7 @@ module API
     
     def find_business_by_location(term, latitude, longitude, accuracy=nil, altitude=nil, altitude_accuracy=nil)
       
-      #API::YelpApi.find_business_by_location("CAFE Zoe", 37.459097,-122.152712)
+      # API::YelpApi.find_business_by_location("CAFE Zoe", 37.459097,-122.152712)
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
       encoded_term = URI::encode(term)
