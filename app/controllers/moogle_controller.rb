@@ -21,11 +21,16 @@ class MoogleController < ApplicationController
     if not @current_user.last_fetched_checkins.nil?
       time_diff = Time.now - @current_user.last_fetched_checkins
     
-      puts "Time diff #{time_diff.to_i}"
+      puts "\n\nTime diff #{time_diff.to_i}\n\n"
     else
       time_diff = 601
     end
-    if time_diff.to_i > 1 then
+    
+    if time_diff.to_i > 600 then
+      
+      puts "\n\nREFETCHING\n\n"
+      
+      @facebook_api.update_fetch_progress(@current_user.facebook_id, 0, 1) # force progress to 0
 
       # Get all friends from facebook for the current user again
       friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id)
@@ -34,7 +39,7 @@ class MoogleController < ApplicationController
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id)
       
       # Fire off a background job to get all friend checkins
-      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, friend_id_array)
+      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array)
       
       # Later we want to send the entire friendslist back to the client to cache
     end
@@ -49,6 +54,19 @@ class MoogleController < ApplicationController
     respond_to do |format|
       format.xml  { render :xml => session_response_hash.to_xml }
       format.json  { render :json => session_response_hash.to_json }
+    end
+  end
+  
+  def progress
+    
+    progress_response = User.select('fetch_progress').where("facebook_id = #{@current_user.facebook_id}").map {|u| u.fetch_progress.to_i}
+    
+    progress_response_hash = {
+      :progress => progress_response.first.to_i
+    }
+    respond_to do |format|
+      format.xml  { render :xml => progress_response_hash.to_xml }
+      format.json  { render :json => progress_response_hash.to_json }
     end
   end
   

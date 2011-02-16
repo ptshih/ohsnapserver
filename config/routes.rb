@@ -5,6 +5,7 @@ Moogle::Application.routes.draw do
   
   # Moogle Routes
   match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user (or register new user)
+  match ':version/moogle/progress', :controller => 'moogle', :action => 'progress', :via => :get # Start session for user (or register new user)
   
   # User Routes
   match ':version/users', :controller => 'user', :action => 'index', :via => :get # List of Users

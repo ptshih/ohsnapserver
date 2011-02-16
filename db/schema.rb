@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "gender"
     t.string   "locale"
     t.boolean  "verified" # facebook verification boolean flag
+    t.integer  "fetch_progress", :default => 0 # this is a [0 - 100] int value that tells the client fetch progress percent
     t.datetime "last_fetched_checkins" # store datetime of last time checkins were fetched from facebook
     t.datetime "created_at"
     t.datetime "updated_at"
