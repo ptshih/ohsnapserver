@@ -25,23 +25,25 @@ class MoogleController < ApplicationController
     else
       time_diff = 601
     end
-    if time_diff.to_i > 600 then
+    if time_diff.to_i > 1 then
 
       # Get all friends from facebook for the current user again
-      @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id)
-    
-      # Get an array of friend_ids
-      facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
-      facebook_id_array << @current_user.facebook_id # add own facebook_id into array
-    
-      # Find checkins for current user and friends of the current user
-      @facebook_api.find_checkins_for_facebook_id_array(facebook_id_array)
+      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id)
+      
+      # Get all checkins for current user
+      @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id)
+      
+      # Fire off a background job to get all friend checkins
+      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, friend_id_array)
+      
+      # Later we want to send the entire friendslist back to the client to cache
     end
     
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
       :facebook_id => @current_user.facebook_id,
-      :name => @current_user.full_name
+      :name => @current_user.full_name,
+      :friends => friend_id_array
     }
     
     respond_to do |format|
