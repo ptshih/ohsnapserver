@@ -166,8 +166,10 @@ module API
       
         response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         parsed_response = self.parse_json(response.body)
-
+        #puts "Response from facebook: #{response.body}"
+        #puts "Respone status code: #{response.code}"
         place_id_array = Array.new
+        #puts "Showing parsed response: #{parsed_response}"
         
         # Parse checkins
         parsed_response['data'].each do |checkin|
@@ -178,7 +180,9 @@ module API
         puts "#{place_id_array}"
         
         # Serialize unique list of place_ids
-        self.find_place_for_place_id_array(place_id_array.uniq)
+        if !place_id_array.empty?
+          self.find_place_for_place_id_array(place_id_array.uniq)
+        end
         
         # Update last_fetched_checkins timestamp for user
         self.update_last_fetched_checkins(facebook_id)
@@ -197,7 +201,7 @@ module API
     def find_checkins_for_facebook_id_array(facebook_id_array = nil)
       begin
         if facebook_id_array.nil? then 
-          facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
+          facebook_id_array = [@@peter_id, @@tom_id, @@james_id, @@moone_id]
         end
         
         # OLD STYLE BATCHED
@@ -208,11 +212,18 @@ module API
         params_hash['access_token'] = self.access_token
         params_hash['ids'] = facebook_id_array.join(',')
         
+       u = User.find_by_facebook_id(facebook_id_array.last)
+       if not u.last_fetched_checkins.nil? then
+         params_hash['since'] = u.last_fetched_checkins.to_i
+       end
+        
         response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         parsed_response = self.parse_json(response.body)
         
         # WE NEED TO HANDLE ERRORS
         {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
+        
+        puts "Printing body: #{response.body}"
         
         puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
         
@@ -221,14 +232,18 @@ module API
         # Parse checkins for each user
         parsed_keys = parsed_response.keys
         parsed_keys.each do |key|
+
           parsed_response[key]['data'].each do |checkin|
+            puts "asdf"
             self.serialize_checkin(checkin)
             place_id_array << checkin['place']['id']
           end
         end
         
         # Serialize unique list of place_ids
-        self.find_place_for_place_id_array(place_id_array.uniq)
+        if !place_id_array.empty?
+          self.find_place_for_place_id_array(place_id_array.uniq)
+        end
         
         # Update last_fetched_checkins timestamp for all users
         facebook_id_array.each do |facebook_id|
