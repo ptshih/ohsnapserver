@@ -14,14 +14,26 @@ class MoogleController < ApplicationController
   # Receives a POST with access_token from the user
   # This will start the API flow to grab user and friends checkins
   def register
+    # reset fetch_progress
+    @facebook_api.update_fetch_progress(@current_user.facebook_id, 0.1) # force progress to 0
+    
+    u = User.select('last_fetched_checkins, last_fetched_friends').where("facebook_id = #{@current_user.facebook_id}").first
+    
+    
+    has_fetched_friends_before = !u.last_fetched_friends.nil?
+    has_fetched_checkins_before = !u.last_fetched_checkins.nil?
+    
+    puts "Has fetched friends before: #{has_fetched_friends_before}"
+    puts "Has fetched checkins before: #{has_fetched_checkins_before}"
+    
     # Get all friends from facebook for the current user again
-    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, false)
+    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, has_fetched_friends_before)
     
     # Get all checkins for current user
-    @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, false)
+    @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, has_fetched_checkins_before)
     
     # Fire off a background job to get all friend checkins
-    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, false)
+    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, has_fetched_checkins_before)
     
     # Later we want to send the entire friendslist back to the client to cache
     # The response should include the current user ID and name for the client to cache
