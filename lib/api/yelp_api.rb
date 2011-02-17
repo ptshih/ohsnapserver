@@ -94,15 +94,40 @@ module API
             
     end
     
+    # Pass in place id (this is the table place column id value)
     def correlate_yelp_to_place_with_place_id(place_id = nil)
     
       p = Place.find_by_id(place_id)
       
+      # Only correlate if place object exists in database
       if !p.nil?
-        yelp = self.find_business_by_location(p.name, p.lat, p.lng)      
-        p.yelp_id = yelp.id
+        yelp = self.find_business_by_location(p.name, p.lat, p.lng)
+        # Save yelp_id if found correlate Yelp place, else store -1
+        if yelp.nil?
+          p.yelp_id=-1
+        else
+          p.yelp_id = yelp.id
+          puts "Correlated place #{p.id} #{p.name} with yelp #{yelp.yelp_pid} #{yelp.name}"
+        end
         p.save
-        puts "Correlated place #{p.id} #{p.name} with yelp #{yelp.yelp_pid} #{yelp.name}"
+      end
+      
+    end
+    
+    # Pass in place_id array (this is the place_id as used by facebook)
+    # API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array([57167660895])
+    def correlate_yelp_to_place_with_place_place_id_array(place_id_array = nil)
+      
+      # Only look for yelp correlation if there are places
+      if !place_id_array.nil?
+        place_id_array.each do |place_id|
+          p = Place.find_by_place_id(place_id)
+          
+          # Only correlate places which aren't already correlated
+          if p.yelp_id.zero?
+            self.correlate_yelp_to_place_with_place_id(p.id)
+          end
+        end
       end
       
     end
