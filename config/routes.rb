@@ -4,8 +4,9 @@ Moogle::Application.routes.draw do
   # Example: http://api.moogle.com/v1/user/54685403
   
   # Moogle Routes
-  match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user (or register new user)
-  match ':version/moogle/progress', :controller => 'moogle', :action => 'progress', :via => :get # Start session for user (or register new user)
+  match ':version/moogle/register', :controller => 'moogle', :action => 'register', :via => :post # Register new user
+  match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user
+  match ':version/moogle/progress', :controller => 'moogle', :action => 'progress', :via => :get # Polling API
   
   # User Routes
   match ':version/users', :controller => 'user', :action => 'index', :via => :get # List of Users

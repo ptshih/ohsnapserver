@@ -140,6 +140,14 @@ module API
       end
     end
     
+    def update_last_fetched_friends(facebook_id)
+      puts "updating #{facebook_id} last fetched friends"
+      u = User.find_by_facebook_id(facebook_id)
+      if not u.nil?
+        u.update_attribute('last_fetched_friends', Time.now)
+      end
+    end
+    
     def update_expires_at_place_id(place_id)
       puts "updating #{place_id} last fetched time"
       p = Place.find_by_place_id(place_id)
@@ -154,7 +162,7 @@ module API
     
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_checkins_for_facebook_id(facebook_id = nil)
+    def find_checkins_for_facebook_id(facebook_id = nil, since = false)
       begin
         if facebook_id.nil? then facebook_id = @@peter_id end
           
@@ -165,6 +173,13 @@ module API
       
         params_hash = Hash.new
         params_hash['access_token'] = self.access_token
+        if since then
+          u = User.find_by_facebook_id(facebook_id)
+           if not u.last_fetched_checkins.nil? then
+             params_hash['since'] = u.last_fetched_checkins.to_i
+           end
+       end
+        
       
         response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         parsed_response = self.parse_json(response.body)
@@ -199,14 +214,14 @@ module API
     end
     
     
-    def update_fetch_progress(facebook_id, current, total)
-      fetch_percent = current.to_f / total.to_f
-      fetch_percent = (fetch_percent * 100).to_i
-      
-      puts "updating #{facebook_id} fetch percent: #{fetch_percent}"
+    # Params:
+    # User's facebook_id
+    # Percentage between 0.0 -> 1.0
+    def update_fetch_progress(facebook_id, progress)
+      puts "updating #{facebook_id} fetch progress: #{progress}"
        u = User.find_by_facebook_id(facebook_id)
        if not u.nil?
-         u.update_attribute('fetch_progress', fetch_percent)
+         u.update_attribute('fetch_progress', progress)
        end
        
     end
@@ -214,7 +229,7 @@ module API
     
     # Finds all checkins for an array of user ids
     # https://graph.facebook.com/checkins?ids=4804606,548430564,645750651&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_checkins_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil)
+    def find_checkins_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = false)
       begin
         if facebook_id_array.nil? then 
           facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
@@ -241,8 +256,10 @@ module API
        #  end
        #   
        
-       # set the progress to 1%
-       self.update_fetch_progress(facebook_id, 1, 100)
+       # progress indicator
+       num_friends = facebook_id_array.count
+
+       self.update_fetch_progress(facebook_id, 0.25) # set the progress to 25%
        
        
         response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
@@ -260,7 +277,6 @@ module API
         
         # puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
         
-        num_friends = facebook_id_array.count
         
         place_id_array = Array.new
         
@@ -272,7 +288,7 @@ module API
             self.serialize_checkin(checkin)
             place_id_array << checkin['place']['id']
           end
-          self.update_fetch_progress(facebook_id, i, num_friends) # update fetch progress percentage
+          self.update_fetch_progress(facebook_id, ((i.to_f / num_friends.to_f) / 2) + 0.25) # update fetch progress percentage
         end
         
         # Serialize unique list of place_ids
@@ -286,7 +302,7 @@ module API
         end
         
         # Force update progress to 100%
-        self.update_fetch_progress(facebook_id, 1, 1)
+        self.update_fetch_progress(facebook_id, 1.0)
         
         # END OLD STYLE
         
@@ -492,7 +508,7 @@ module API
     
     # Finds friends for a single facebook id
     # https://graph.facebook.com/me/friends?fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_friends_for_facebook_id(facebook_id = nil)
+    def find_friends_for_facebook_id(facebook_id = nil, since = false)
       begin
         if facebook_id.nil? then facebook_id = @@peter_id end
           
@@ -504,6 +520,14 @@ module API
         params_hash = Hash.new
         params_hash['access_token'] = self.access_token
         params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
+        
+        if since then
+          u = User.find_by_facebook_id(facebook_id)
+           if not u.last_fetched_friends.nil? then
+             params_hash['since'] = u.last_fetched_friends.to_i
+           end
+         end
+        
       
         response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/friends", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         parsed_response = self.parse_json(response.body)
@@ -516,6 +540,9 @@ module API
           self.serialize_user(friend)
           self.serialize_friend(friend, facebook_id, 1)
         end
+        
+        # Update last_fetched_friends timestamp for user
+        self.update_last_fetched_friends(facebook_id)
       rescue => e
         p e.message
         p e.backtrace
@@ -527,7 +554,7 @@ module API
     
     # Finds friends for an array of facebook ids
     # https://graph.facebook.com/friends?ids=4804606,548430564,645750651&fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_friends_for_facebook_id_array(facebook_id_array = nil)
+    def find_friends_for_facebook_id_array(facebook_id_array = nil, since = false)
       begin
         if facebook_id_array.nil? then 
           facebook_id_array = [@@peter_id, @@tom_id, @@james_id]

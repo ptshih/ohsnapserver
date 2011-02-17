@@ -10,9 +10,38 @@ class MoogleController < ApplicationController
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
-  # This API registers a new session from a client
+  # This API registers a new first time User from a client
   # Receives a POST with access_token from the user
   # This will start the API flow to grab user and friends checkins
+  def register
+    @facebook_api.update_fetch_progress(@current_user.facebook_id, 0.0) # force progress to 0
+
+    # Get all friends from facebook for the current user again
+    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, false)
+    
+    # Get all checkins for current user
+    @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, false)
+    
+    # Fire off a background job to get all friend checkins
+    Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array, false)
+    
+    # Later we want to send the entire friendslist back to the client to cache
+    # The response should include the current user ID and name for the client to cache
+    session_response_hash = {
+      :facebook_id => @current_user.facebook_id,
+      :name => @current_user.full_name,
+      :friends => friend_id_array
+    }
+    
+    respond_to do |format|
+      format.xml  { render :xml => session_response_hash.to_xml }
+      format.json  { render :json => session_response_hash.to_json }
+    end
+  end
+  
+  # This API registers a new session from a client
+  # Receives a GET with access_token from the user
+  # This will fire since calls for the current user
   def session
     # this API starts a session and tells the server to fetch new checkins for the user and his friends
     # should this be a blocking call? or just let the user start playing with cached data
@@ -27,19 +56,16 @@ class MoogleController < ApplicationController
     end
     
     if time_diff.to_i > 600 then
-      
       puts "\n\nREFETCHING\n\n"
-      
-      @facebook_api.update_fetch_progress(@current_user.facebook_id, 0, 1) # force progress to 0
 
       # Get all friends from facebook for the current user again
-      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id)
+      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, true)
       
       # Get all checkins for current user
-      @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id)
+      @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, true)
       
       # Fire off a background job to get all friend checkins
-      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array)
+      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array, true)
       
       # Later we want to send the entire friendslist back to the client to cache
     end
@@ -47,8 +73,7 @@ class MoogleController < ApplicationController
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
       :facebook_id => @current_user.facebook_id,
-      :name => @current_user.full_name,
-      :friends => friend_id_array
+      :name => @current_user.full_name
     }
     
     respond_to do |format|
@@ -58,11 +83,13 @@ class MoogleController < ApplicationController
   end
   
   def progress
+    # This is a ghetto-temporary API used to poll the progress of the server when an FULL FETCH occurs
+    # Eventually we should really use a persistent connection here between client and server
     
-    progress_response = User.select('fetch_progress').where("facebook_id = #{@current_user.facebook_id}").map {|u| u.fetch_progress.to_i}
+    progress_response = User.select('fetch_progress').where("facebook_id = #{@current_user.facebook_id}").map {|u| u.fetch_progress.to_f}
     
     progress_response_hash = {
-      :progress => progress_response.first.to_i
+      :progress => progress_response.first.to_f
     }
     respond_to do |format|
       format.xml  { render :xml => progress_response_hash.to_xml }
