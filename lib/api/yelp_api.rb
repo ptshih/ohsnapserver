@@ -72,7 +72,7 @@ module API
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
       encoded_term = URI::encode(term)
-      path = "/v2/search?term=#{encoded_term}&ll=#{latitude},#{longitude}&limit=10"
+      path = "/v2/search?term=#{term}&ll=#{latitude},#{longitude}&limit=10"
       
       response = self.send_oauth_request("http://#{@@api_host}", path, @@consumer_key, @@consumer_secret, @@token, @@token_secret)
       parsed_response = self.parse_json(response)
@@ -116,6 +116,7 @@ module API
     
     # Pass in place_id array (this is the place_id as used by facebook)
     # API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array([57167660895])
+    # API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array([152792071397735])
     def correlate_yelp_to_place_with_place_place_id_array(place_id_array = nil)
       
       # Only look for yelp correlation if there are places
