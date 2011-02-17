@@ -230,8 +230,9 @@ module API
       end
 
       puts "find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
-
-      # OLD STYLE BATCHED
+      
+      self.update_fetch_progress(facebook_id, 0.1) # force progress to 0
+    
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
@@ -241,15 +242,16 @@ module API
 
       # progress indicator
       num_friends = facebook_id_array.count
-
-      self.update_fetch_progress(facebook_id, 0.33) # set the progress to 25%
+      num_friends_serialized = 0
+      
+      self.update_fetch_progress(facebook_id, 0.25) # set the progress to 25%
 
       place_id_array = Array.new
 
       # Send Request
       hydra = Typhoeus::Hydra.new
 
-      facebook_id_array.each_with_index do |friend_id, i|
+      facebook_id_array.each do |friend_id|
         # Each person has a different last_fetched_checkins timestamp
         # u = User.find_by_facebook_id(facebook_id)
         # if not u.last_fetched_checkins.nil? then
@@ -260,6 +262,7 @@ module API
 
         # Run this block when the request completes
         r.on_complete do |response|
+          num_friends_serialized += 1
           puts "Printing body: #{response.body}"
           parsed_response = self.parse_json(response.body)
 
@@ -272,14 +275,14 @@ module API
           puts "\n\n\n\n======#{friend_id}======\n\n\n\n"
 
           self.update_last_fetched_checkins(friend_id) # Update last_fetched_checkins timestamp for user
+          
+          self.update_fetch_progress(facebook_id, ((num_friends_serialized.to_f / num_friends.to_f) / 2) + 0.25)
         end
 
         hydra.queue r # add the request to the queue
       end
 
       hydra.run # blocking call to run the queue
-
-      self.update_fetch_progress(facebook_id, 0.66) # update fetch progress percentage
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?

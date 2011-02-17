@@ -1,3 +1,10 @@
+== Facebook API Errors
+{"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
+ - Throttled LOL
+
+{"error_code":1,"error_msg":"An unknown error occurred"}
+ - Seems to happen when using multiquery (ids) and there are too many ids
+
 == Console
 alias mcurlpost='curl -i -H "Accept: application/json" -F "access_token=m0z4AO5qSOtB9Uguk80S2D05eEmng2DfrpAnNGMTJh4.eyJpdiI6IkZ2cFVNbHBSaHByVkswZURhZHF3aFEifQ.F4IKIBxFkQqQQkgEyG5SEeaFVBsPT_d_XGwf88o8j8yQrBX-FliW9ELnioMLEg_8quMqc5rQZvOoiszxnXx6M4kfrWON748kVzQE4CS-Vg5Nuqjfg_IAMt3d4P_judBKoG_xAlGFXWQg-tiXwT_UDA"'
 

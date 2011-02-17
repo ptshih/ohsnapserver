@@ -14,8 +14,6 @@ class MoogleController < ApplicationController
   # Receives a POST with access_token from the user
   # This will start the API flow to grab user and friends checkins
   def register
-    @facebook_api.update_fetch_progress(@current_user.facebook_id, 0.0) # force progress to 0
-
     # Get all friends from facebook for the current user again
     friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, false)
     
