@@ -72,10 +72,14 @@ module API
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
 
-      cgi_term = CGI::escapeHTML(term)
-      encoded_term = URI::encode(cgi_term)
-            
-      path = "/v2/search?term=#{encoded_term}&ll=#{latitude},#{longitude}&limit=10"
+      #cgi_term = CGI::escapeHTML(term)
+      #encoded_term = URI::encode(cgi_term)
+
+      cgi_term = CGI::escape(term)
+      path = "/v2/search?term=#{cgi_term}&ll=#{latitude},#{longitude}&limit=10"
+      
+      puts "Yelp path: #{path}"
+      
       response = self.send_oauth_request("http://#{@@api_host}", path, @@consumer_key, @@consumer_secret, @@token, @@token_secret)
       parsed_response = self.parse_json(response)
       
