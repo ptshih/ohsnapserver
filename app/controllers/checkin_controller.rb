@@ -10,6 +10,7 @@ class CheckinController < ApplicationController
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
+  # This API gets a list of checkins for your you or your friends based on the who param
   def index
     # "checkin": {
     #   "app_id": 6628568379,
@@ -27,10 +28,10 @@ class CheckinController < ApplicationController
     
     # Handle filters
     # People filter
-    if params[:people].nil?
+    if params[:who].nil?
       filter_people = "me"
     else
-      filter_people = params[:people]
+      filter_people = params[:who]
     end
     
     if filter_people == "me"
@@ -75,7 +76,7 @@ class CheckinController < ApplicationController
       format.json  { render :json => response_array }
     end
   end
-
+  
   def show
   end
 
