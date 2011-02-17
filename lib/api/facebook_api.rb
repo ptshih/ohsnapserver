@@ -16,11 +16,13 @@ module API
     @@peter_latitude = 37.765223405331
     @@peter_longitude = -122.45003812016
 
-    attr_accessor :access_token
+    attr_accessor :access_token, :hydra
 
     def initialize(access_token = nil)
-      if access_token.nil? then access_token = @@james_access_token end
+      if access_token.nil? then access_token = @@peter_access_token end
       self.access_token = access_token
+
+      self.hydra = Typhoeus::Hydra.new
     end
 
     # Just some notes here
@@ -248,9 +250,6 @@ module API
 
       place_id_array = Array.new
 
-      # Send Request
-      hydra = Typhoeus::Hydra.new
-
       facebook_id_array.each do |friend_id|
         # Each person has a different last_fetched_checkins timestamp
         # u = User.find_by_facebook_id(facebook_id)
@@ -262,8 +261,10 @@ module API
 
         # Run this block when the request completes
         r.on_complete do |response|
+          puts "Request complete for friend checkins with friend_id: #{friend_id}"
           num_friends_serialized += 1
           puts "Printing body: #{response.body}"
+          puts "Resposne code: #{response.code}"
           parsed_response = self.parse_json(response.body)
 
           # Parse checkins
@@ -279,10 +280,10 @@ module API
           self.update_fetch_progress(facebook_id, ((num_friends_serialized.to_f / num_friends.to_f) / 2) + 0.25)
         end
 
-        hydra.queue r # add the request to the queue
+        self.hydra.queue r # add the request to the queue
       end
 
-      hydra.run # blocking call to run the queue
+      self.hydra.run # blocking call to run the queue
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
@@ -469,7 +470,8 @@ module API
     end
     
     def find_places_for_place_id_array_batch(place_id_array = nil)
-    
+      puts "Requesting places array: #{place_id_array}"
+      
       if place_id_array.nil? then
         place_id_array = [121328401214612,57167660895] # cafe zoe
       end
@@ -480,27 +482,25 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       
-      # Send Request
-      hydra = Typhoeus::Hydra.new
-      
-      place_id_array.each_with_index do |place_id, i|
-      
+      place_id_array.each do |place_id|
         r = Typhoeus::Request.new("#{@@fb_host}/#{place_id}", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
         
         # Run this block when the request completes
         r.on_complete do |response|
+          puts "Request complete for place with place_id: #{place_id}"
           puts "Printing body: #{response.body}"
+          puts "Response code: #{response.code}"
           parsed_response = self.parse_json(response.body)
 
           facebook_place = self.serialize_place(parsed_response)
           self.update_expires_at_place_id(place_id)
         end
         
-        hydra.queue r # add the request to the queue
+        self.hydra.queue r # add the request to the queue
         
       end
   
-      hydra.run # blocking call to run the queue
+      self.hydra.run # blocking call to run the queue
       
     end
     
