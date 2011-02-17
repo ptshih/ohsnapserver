@@ -31,22 +31,25 @@ module API
        y.expires_at = Time.now + 1.days
        y.save
        
-       puts yelp['url']
+       if !yelp['review'].nil?
        
-       yelp['reviews'].each do |review|
-         r = YelpReview.find_or_initialize_by_yelp_review_pid(review['id'])
-          r.yelp_review_pid = review['id']
-          r.yelp_id = y.id
-          r.excerpt = review['excerpt'].nil? ? nil : review['excerpt']
-          r.rating = review['rating'].nil? ? nil : review['rating']
-          r.time_created = Time.at(review['time_created'])
-          r.user_name = review['user']['name'].nil? ? nil : review['user']['name']
-          r.user_id = review['user']['id'].nil? ? nil : review['user']['id']
-          r.raw_hash = review
-          r.save
-       end
+         yelp['reviews'].each do |review|
+           r = YelpReview.find_or_initialize_by_yelp_review_pid(review['id'])
+            r.yelp_review_pid = review['id']
+            r.yelp_id = y.id
+            r.excerpt = review['excerpt'].nil? ? nil : review['excerpt']
+            r.rating = review['rating'].nil? ? nil : review['rating']
+            r.time_created = Time.at(review['time_created'])
+            r.user_name = review['user']['name'].nil? ? nil : review['user']['name']
+            r.user_id = review['user']['id'].nil? ? nil : review['user']['id']
+            r.raw_hash = review
+            r.save
+         end
 
+       end
        
+       return y
+
     end
     
     
@@ -69,10 +72,38 @@ module API
       # http://api.yelp.com/v2/search?term=food&ll=37.788022,-122.399797
       # http://api.yelp.com/v2/search?term=german+food&location=Hayes&cll=37.77493,-122.419415
       encoded_term = URI::encode(term)
-      path = "/v2/search?term=#{encoded_term}&ll=#{latitude},#{longitude}&limit=3"
+      path = "/v2/search?term=#{encoded_term}&ll=#{latitude},#{longitude}&limit=10"
       
       response = self.send_oauth_request("http://#{@@api_host}", path, @@consumer_key, @@consumer_secret, @@token, @@token_secret)
       parsed_response = self.parse_json(response)
+      
+      puts "#{parsed_response}"
+      
+      # Keep the first result as best business match for parameters passed
+      yelp_object=nil
+      
+      parsed_response['businesses'].each do |business|
+        yelp = self.serialize_yelp(business)
+        if yelp_object.nil?
+          yelp_object = yelp
+        end
+      end
+      
+      # return yelp_id to save
+      return yelp_object
+            
+    end
+    
+    def correlate_yelp_to_place_with_place_id(place_id = nil)
+    
+      p = Place.find_by_id(place_id)
+      
+      if !p.nil?
+        yelp = self.find_business_by_location(p.name, p.lat, p.lng)      
+        p.yelp_id = yelp.id
+        p.save
+        puts "Correlated place #{p.id} #{p.name} with yelp #{yelp.yelp_pid} #{yelp.name}"
+      end
       
     end
     
