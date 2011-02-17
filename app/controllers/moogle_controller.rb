@@ -21,7 +21,7 @@ class MoogleController < ApplicationController
     @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, false)
     
     # Fire off a background job to get all friend checkins
-    Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array, false)
+    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, false)
     
     # Later we want to send the entire friendslist back to the client to cache
     # The response should include the current user ID and name for the client to cache
@@ -63,7 +63,7 @@ class MoogleController < ApplicationController
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, true)
       
       # Fire off a background job to get all friend checkins
-      Delayed::Job.enqueue FriendsCheckins.new(@facebook_api, @current_user.facebook_id, friend_id_array, true)
+      Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, true)
       
       # Later we want to send the entire friendslist back to the client to cache
     end
