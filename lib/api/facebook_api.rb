@@ -218,6 +218,15 @@ module API
 
       # Update last_fetched_checkins timestamp for user
       self.update_last_fetched_checkins(facebook_id)
+      
+      # Correlate unique list of place_ids with yelp places
+      # Note: Do in background later
+      if !place_id_array.empty?
+        puts "Start Yelp correlation"
+        API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array(place_id_array.uniq)
+        puts "End Yelp correlation"
+      end
+      
     end
 
     def find_checkins_for_facebook_id_array_batch(facebook_id = nil, facebook_id_array = nil, since = false)
