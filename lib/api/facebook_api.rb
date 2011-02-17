@@ -198,7 +198,7 @@ module API
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_place_for_place_id_array(place_id_array.uniq)
+        self.find_places_for_place_id_array_batch(place_id_array.uniq)
       end
 
       # Update last_fetched_checkins timestamp for user
@@ -286,7 +286,7 @@ module API
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_place_for_place_id_array(place_id_array.uniq)
+        self.find_places_for_place_id_array_batch(place_id_array.uniq)
       end
 
       # Force update progress to 100%
@@ -362,7 +362,7 @@ module API
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_place_for_place_id_array(place_id_array.uniq)
+        self.find_places_for_place_id_array_batch(place_id_array.uniq)
       end
 
       # Update last_fetched_checkins timestamp for all users
@@ -467,11 +467,47 @@ module API
       return facebook_place
 
     end
+    
+    def find_places_for_place_id_array_batch(place_id_array = nil)
+    
+      if place_id_array.nil? then
+        place_id_array = [121328401214612,57167660895] # cafe zoe
+      end
+      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
 
+      params_hash = Hash.new
+      params_hash['access_token'] = self.access_token
+      
+      # Send Request
+      hydra = Typhoeus::Hydra.new
+      
+      place_id_array.each_with_index do |place_id, i|
+      
+        r = Typhoeus::Request.new("#{@@fb_host}/#{place_id}", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        
+        # Run this block when the request completes
+        r.on_complete do |response|
+          puts "Printing body: #{response.body}"
+          parsed_response = self.parse_json(response.body)
+
+          facebook_place = self.serialize_place(parsed_response)
+          self.update_expires_at_place_id(place_id)
+        end
+        
+        hydra.queue r # add the request to the queue
+        
+      end
+  
+      hydra.run # blocking call to run the queue
+      
+    end
+    
     # Find all places for an array of place_ids
     # https://graph.facebook.com/?ids=116154718413160,121328401214612,57167660895
     # API::FacebookApi.new.find_place_for_place_id_array([116154718413160,121328401214612,57167660895])
-    def find_place_for_place_id_array(place_id_array = nil)
+    def find_places_for_place_id_array(place_id_array = nil)
 
       if place_id_array.nil? then
         place_id_array = [121328401214612,57167660895] # cafe zoe
