@@ -27,15 +27,17 @@ class MoogleController < ApplicationController
     puts "Has fetched checkins before: #{has_fetched_checkins_before}"
     
     # Get all friends from facebook for the current user again
-    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, has_fetched_friends_before)
+    fb_friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, has_fetched_friends_before)
     
     # Get all checkins for current user
     @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, has_fetched_checkins_before)
     
     # Fire off a background job to get all friend checkins
-    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, has_fetched_checkins_before)
+    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, fb_friend_id_array, has_fetched_checkins_before)
     
     # Later we want to send the entire friendslist back to the client to cache
+    friend_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id.to_i}
+    
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
       :facebook_id => @current_user.facebook_id,
@@ -69,13 +71,13 @@ class MoogleController < ApplicationController
       puts "\n\nREFETCHING\n\n"
 
       # Get all friends from facebook for the current user again
-      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, true)
+      fb_friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, true)
       
       # Get all checkins for current user
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, true)
       
       # Fire off a background job to get all friend checkins
-      Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, friend_id_array, true)
+      Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, fb_friend_id_array, true)
       
       # Later we want to send the entire friendslist back to the client to cache
     end
