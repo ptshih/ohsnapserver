@@ -78,7 +78,7 @@ class CheckinController < ApplicationController
       response_hash = {
         :checkin_id => checkin['checkin_id'],
         :facebook_id => checkin['facebook_id'],
-        :name => checkin.user['full_name'].nil? ? "Anonymous" : checkin.user['full_name'],
+        :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
         :message => checkin['message'],
         :place_id => checkin['place_id'],
         :place_name => checkin.place['name'],
