@@ -40,13 +40,13 @@ class CheckinController < ApplicationController
     end
     
     if filter_people == "me"
-      query = "facebook_id IN (#{@current_user.facebook_id})"
+      query = "checkins.facebook_id IN (#{@current_user.facebook_id}) OR tagged_users.facebook_id IN (#{@current_user.facebook_id})"
     elsif filter_people == "friends"
       # Get an array of friend_ids
       facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
       
       people_list = facebook_id_array.join(",")
-      query = "facebook_id IN (#{people_list})"
+      query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
     else
       # String param which may contain mulitple people's ids
       query = "facebook_id IN (#{filter_people})"
@@ -65,7 +65,9 @@ class CheckinController < ApplicationController
     # Checkin.find(:all, :conditions=> query, :include=>:tagged_users, :order=>'created_time desc')
 
     #Checkin.where(query).each do |checkin|
-    Checkin.find(:all, :conditions=> query, :include=>:tagged_users, :order=>'created_time desc').each do |checkin|  
+    # Checkin.find(:all, :conditions=> "checkins.facebook_id IN (645750651) OR tagged_users.facebook_id IN (645750651)", :include=>:tagged_users, :joins=>:tagged_users, :order=>'created_time desc')
+    
+    Checkin.find(:all, :select=>"DISTINCT checkins.*", :conditions=> query, :include=>:tagged_users, :joins=>"left join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|  
       if checkin['app_id'].nil?
         checkin_app_id = nil
         checkin_app_name = nil
