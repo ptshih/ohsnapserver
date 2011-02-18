@@ -221,11 +221,11 @@ module API
       
       # Correlate unique list of place_ids with yelp places
       # Note: Do in background later
-      if !place_id_array.empty?
-        puts "Start Yelp correlation"
-        API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array(place_id_array.uniq)
-        puts "End Yelp correlation"
-      end
+      # if !place_id_array.empty?
+      #    puts "Start Yelp correlation"
+      #    API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array(place_id_array.uniq)
+      #    puts "End Yelp correlation"
+      #  end
       
     end
 
@@ -310,11 +310,11 @@ module API
       self.update_fetch_progress(facebook_id, 1.0)
       
       # Correlate unique list of place_ids with yelp places
-      if !place_id_array.empty?
-        puts "Start Yelp correlation"
-        API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array(place_id_array.uniq)
-        puts "End Yelp correlation"
-      end
+      # if !place_id_array.empty?
+      #   puts "Start Yelp correlation"
+      #   API::YelpApi.new.correlate_yelp_to_place_with_place_place_id_array(place_id_array.uniq)
+      #   puts "End Yelp correlation"
+      # end
 
     end
 
