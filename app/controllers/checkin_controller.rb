@@ -11,6 +11,11 @@ class CheckinController < ApplicationController
   end
   
   # This API gets a list of checkins for your you or your friends based on the who param
+  # Who parameter
+  # Distance param (in miles)
+  # Time
+  # Mode trending or timeline mode
+  # (Always passed lat long)
   def index
     # "checkin": {
     #   "app_id": 6628568379,
@@ -35,21 +40,32 @@ class CheckinController < ApplicationController
     end
     
     if filter_people == "me"
-      query = "facebook_id = #{@current_user.facebook_id}"
+      query = "facebook_id IN (#{@current_user.facebook_id})"
     elsif filter_people == "friends"
       # Get an array of friend_ids
       facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
       
       people_list = facebook_id_array.join(",")
       query = "facebook_id IN (#{people_list})"
+    else
+      # String param which may contain mulitple people's ids
+      query = "facebook_id IN (#{filter_people})"
     end
     
     # Distance filter
+    # params[:lat], params[:lng], params[:distance]
+    
+    
     # Category filter
 
     response_array = []
+    
+    # Checkin.find(:all, :select=> 'app_id, checkin_id, facebook_id, message, place_id',:conditions=> "facebook_id=4804606",:group=>'app_id, checkin_id, facebook_id, message, place_id', :include=>:tagged_users, :limit=>10)
 
-    Checkin.where(query).each do |checkin|
+    # Checkin.find(:all, :conditions=> query, :include=>:tagged_users, :order=>'created_time desc')
+
+    #Checkin.where(query).each do |checkin|
+    Checkin.find(:all, :conditions=> query, :include=>:tagged_users, :order=>'created_time desc').each do |checkin|  
       if checkin['app_id'].nil?
         checkin_app_id = nil
         checkin_app_name = nil
