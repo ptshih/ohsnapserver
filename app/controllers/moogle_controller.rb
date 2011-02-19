@@ -35,14 +35,14 @@ class MoogleController < ApplicationController
     # Fire off a background job to get all friend checkins
     Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, fb_friend_id_array, has_fetched_checkins_before)
     
-    # Later we want to send the entire friendslist back to the client to cache
-    friend_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id.to_i}
+    # We want to send the entire friendslist hash of id, name to the client
+    friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
     
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
       :facebook_id => @current_user.facebook_id,
       :name => @current_user.full_name,
-      :friends => friend_id_array
+      :friends => friend_array
     }
     
     respond_to do |format|
