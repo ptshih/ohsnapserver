@@ -49,7 +49,7 @@ class CheckinController < ApplicationController
       query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
     else
       # String param which may contain mulitple people's ids
-      query = "facebook_id IN (#{filter_people})"
+      query = "checkins.facebook_id IN (#{filter_people}) OR tagged_users.facebook_id IN (#{filter_people})"
     end
     
     # Distance filter
