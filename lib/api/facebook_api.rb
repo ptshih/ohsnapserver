@@ -177,7 +177,7 @@ module API
 
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_checkins_for_facebook_id(facebook_id = nil, since = false)
+    def find_checkins_for_facebook_id(facebook_id = nil, since = nil)
       if facebook_id.nil? then facebook_id = @@peter_id end
 
       puts "find checkins for facebook_id: #{facebook_id}"
@@ -188,18 +188,15 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
-      if since then
-        u = User.find_by_facebook_id(facebook_id)
-        if not u.last_fetched_checkins.nil? then
-          params_hash['since'] = u.last_fetched_checkins.to_i
-        end
+      if !since.nil? then
+        params_hash['since'] = since.to_i
       end
 
 
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
       puts "Response from facebook: #{response.body}"
-      puts "Respone status code: #{response.code}"
+      puts "Response status code: #{response.code}"
       place_id_array = Array.new
       #puts "Showing parsed response: #{parsed_response}"
 
@@ -229,7 +226,7 @@ module API
       
     end
 
-    def find_checkins_for_facebook_id_array_batch(facebook_id = nil, facebook_id_array = nil, since = false)
+    def find_checkins_for_facebook_id_array_batch(facebook_id = nil, facebook_id_array = nil, since = nil)
       if facebook_id_array.nil? then
         facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
         #facebook_id_array = ["102167", "107491", "202402", "202451", "206635", "210258", "221423", "222383", "223314", "300994", "404120", "407230", "837181", "1203891", "1204271", "1205313", "1206669", "1207467", "1209924", "1212462", "1214835", "1215870", "1217270", "1217767", "1218796", "1229612", "1237074", "1302698", "2203609", "2414683", "2420700", "2502195", "2502827", "2504814", "2539351", "2602152", "3001631", "3200308", "3200338", "3200785", "3201209", "3207713", "3213585", "3213871", "3213930", "3215015", "3223008", "3224819", "3225115", "3225501", "3302615", "3307216", "3308028", "3312026", "3318595", "3323295", "3400229", "3407534", "3409627", "3414242", "3430753", "3619557", "4804600", "4804606", "4804969", "4805917", "4807345", "4809933", "5505430", "6002685", "6006398", "6010421", "6817010", "7903099", "8620430", "8621075", "8639036", "10703701", "10710317", "10717536", "10718558", "10723087", "10729766", "10731869", "12438683", "12803642", "12805273", "12822783", "13004004", "13704812", "14900845", "67800652", "68600483", "77001082", "500031833", "500676063", "501591312", "503265413", "506408584", "510849527", "543612099", "547177528", "558377300", "573953756", "589860486", "590245157", "591070603", "593399035", "610978642", "624067894", "628447811", "629960217", "645750651", "666112048", "705063052", "707267501", "712743335", "720886950", "745245646", "745938780", "780624163", "802745284", "817333087", "847735037", "883200586", "1008514568", "1017673909", "1059468090", "1067580021", "1099524954", "1121490493", "1155635614", "1184055409", "1224771465", "1316730161", "1321571526", "1483053421", "1653886798", "100000049912171", "100000199684521", "100000576881557", "100000721817834", "100001483789469", "100001893113244"]
@@ -250,11 +247,8 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
-      if since then
-        u = User.find_by_facebook_id(facebook_id)
-        if not u.last_fetched_checkins.nil? then
-          params_hash['since'] = u.last_fetched_checkins.to_i
-        end
+      if !since.nil? then
+        params_hash['since'] = since.to_i
       end
 
       # progress indicator
@@ -267,10 +261,6 @@ module API
 
       facebook_id_array.each do |friend_id|
         # Each person has a different last_fetched_checkins timestamp
-        # u = User.find_by_facebook_id(facebook_id)
-        # if not u.last_fetched_checkins.nil? then
-        #  params_hash['since'] = u.last_fetched_checkins.to_i
-        # end
 
         r = Typhoeus::Request.new("#{@@fb_host}/#{friend_id}/checkins", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
@@ -279,7 +269,7 @@ module API
           puts "Request complete for friend checkins with friend_id: #{friend_id}"
           num_friends_serialized += 1
           puts "Printing body: #{response.body}"
-          puts "Resposne code: #{response.code}"
+          puts "Response code: #{response.code}"
           parsed_response = self.parse_json(response.body)
 
           # Parse checkins
@@ -320,7 +310,7 @@ module API
 
     # Finds all checkins for an array of user ids
     # https://graph.facebook.com/checkins?ids=4804606,548430564,645750651&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_checkins_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = false)
+    def find_checkins_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = nil)
       if facebook_id_array.nil? then
         facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
         # facebook_id_array = ["102167", "107491", "202402", "202451", "206635", "210258", "221423", "222383", "223314", "300994", "404120", "407230", "837181", "1203891", "1204271", "1205313", "1206669", "1207467", "1209924", "1212462", "1214835", "1215870", "1217270", "1217767", "1218796", "1229612", "1237074", "1302698", "2203609", "2414683", "2420700", "2502195", "2502827", "2504814", "2539351", "2602152", "3001631", "3200308", "3200338", "3200785", "3201209", "3207713", "3213585", "3213871", "3213930", "3215015", "3223008", "3224819", "3225115", "3225501", "3302615", "3307216", "3308028", "3312026", "3318595", "3323295", "3400229", "3407534", "3409627", "3414242", "3430753", "3619557", "4804600", "4804606", "4804969", "4805917", "4807345", "4809933", "5505430", "6002685", "6006398", "6010421", "6817010", "7903099", "8620430", "8621075", "8639036", "10703701", "10710317", "10717536", "10718558", "10723087", "10729766", "10731869", "12438683", "12803642", "12805273", "12822783", "13004004", "13704812", "14900845", "67800652", "68600483", "77001082", "500031833", "500676063", "501591312", "503265413", "506408584", "510849527", "543612099", "547177528", "558377300", "573953756", "589860486", "590245157", "591070603", "593399035", "610978642", "624067894", "628447811", "629960217", "645750651", "666112048", "705063052", "707267501", "712743335", "720886950", "745245646", "745938780", "780624163", "802745284", "817333087", "847735037", "883200586", "1008514568", "1017673909", "1059468090", "1067580021", "1099524954", "1121490493", "1155635614", "1184055409", "1224771465", "1316730161", "1321571526", "1483053421", "1653886798", "100000049912171", "100000199684521", "100000576881557", "100000721817834", "100001483789469", "100001893113244"]
@@ -341,18 +331,9 @@ module API
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
       params_hash['ids'] = facebook_id_array.join(',')
-      if since then
-        u = User.find_by_facebook_id(facebook_id)
-        if not u.last_fetched_checkins.nil? then
-          params_hash['since'] = u.last_fetched_checkins.to_i
-        end
+      if !since.nil? then
+        params_hash['since'] = since.to_i
       end
-
-      # u = User.find_by_facebook_id(facebook_id)
-      #  if not u.last_fetched_checkins.nil? then
-      #    params_hash['since'] = u.last_fetched_checkins.to_i
-      #  end
-      #
 
       # progress indicator
       num_friends = facebook_id_array.count
@@ -578,7 +559,7 @@ module API
 
     # Finds friends for a single facebook id
     # https://graph.facebook.com/me/friends?fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_friends_for_facebook_id(facebook_id = nil, since = false)
+    def find_friends_for_facebook_id(facebook_id = nil, since = nil)
 
       if facebook_id.nil? then facebook_id = @@peter_id end
 
@@ -591,11 +572,8 @@ module API
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
 
-      if since then
-        u = User.find_by_facebook_id(facebook_id)
-        if not u.last_fetched_friends.nil? then
-          params_hash['since'] = u.last_fetched_friends.to_i
-        end
+      if !since.nil? then
+        params_hash['since'] = since.to_i
       end
 
 
@@ -620,7 +598,7 @@ module API
 
     # Finds friends for an array of facebook ids
     # https://graph.facebook.com/friends?ids=4804606,548430564,645750651&fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
-    def find_friends_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = false)
+    def find_friends_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = nil)
       
       if facebook_id.nil? then facebook_id = @@peter_id end
         
@@ -637,11 +615,8 @@ module API
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
       params_hash['ids'] = facebook_id_array.join(',')
-      if since then
-        u = User.find_by_facebook_id(facebook_id)
-        if not u.last_fetched_friends.nil? then
-          params_hash['since'] = u.last_fetched_friends.to_i
-        end
+      if !since.nil? then
+        params_hash['since'] = since.to_i
       end
 
       response = Typhoeus::Request.get("#{@@fb_host}/friends", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
