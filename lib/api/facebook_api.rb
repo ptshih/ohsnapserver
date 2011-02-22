@@ -188,6 +188,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
@@ -247,6 +248,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
@@ -433,6 +435,7 @@ module API
       params_hash['type'] = 'place'
       params_hash['center'] = "#{lat},#{lng}"
       params_hash['distance'] = "#{distance.to_i}" # safety force to integer because FBAPI wants int (no decimals)
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if not query.nil?
         params_hash['q'] = "#{query}"
       end
