@@ -88,9 +88,32 @@ module API
       p.state = place['location']['state']
       p.country = place['location']['country']
       p.zip = place['location']['zip']
+      p.phone = place['phone']
+      p.checkins_count = place['checkins']
+      p.like_count = place['likes']
+      p.attire = place['attire']
+      p.website = place['website']
+      p.price_range = place['price_range']
       p.raw_hash = place
       p.expires_at = Time.now + 1.days
       p.save
+    end
+    
+    def serialize_place_post(place_post, place_id)
+      puts "serializing comments for place :#{place_id}"
+      puts "place_post id is this: #{place_post['data']['id']}"
+      pp = PlacePost.find_or_initialize_by_place_post_id(place_post['data']['id'])
+      pp.place_id = place_id
+      #pp.post_type = place_post['data']['type']
+      #pp.from_id = place_post['data']['from']['name']
+      #pp.from_name = place_post['data']['from']['id']
+      #pp.message = place_post['data']['message']
+      #pp.picture = place_post['data']['picture']
+      #pp.link = place_post['data']['link']
+      #pp.name = place_post['data']['name']
+      #pp.post_created_time = Time.parse(checkin['data']['created_time'].to_s)
+      #pp.post_updated_time = Time.parse(checkin['data']['updated_time'].to_s)
+      pp.save
     end
 
     # Create or update app in model/database
@@ -454,6 +477,7 @@ module API
 
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg
     # API::FacebookApi.new.find_place_for_place_id(121328401214612)
+    # API::FacebookApi.new.find_place_for_place_id(57167660895) # cafe zoe
     def find_place_for_place_id(place_id = nil)
 
       if place_id.nil? then place_id = 57167660895 end # cafe zoe
@@ -473,11 +497,28 @@ module API
       params_hash['access_token'] = self.access_token
       # params_hash['fields'] = 'feed,photos,notes,checkins'
 
+      # Get Place
       response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
 
       # Serialize Place
       facebook_place = self.serialize_place(parsed_response)
+      
+      params_hash['limit']=1
+      
+      # Get Place Posts
+      response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      parsed_response = self.parse_json(response.body)
+      
+      puts parsed_response
+      #puts "THis is the place_post id: #{parsed_response['data']['id']}"
+      
+      # Serialize Place posts TODO
+      # facebook_place_posts = self.serialize_place_post(parsed_response, place_id)
+      
+      # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
+      # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
+      # probably don't need to pass token; get publicly accessible information for feeds
 
       return facebook_place
 
@@ -683,6 +724,8 @@ module API
       return facebook_user
 
     end
+    
+
 
   end
 end

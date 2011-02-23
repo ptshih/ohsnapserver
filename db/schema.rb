@@ -86,10 +86,30 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "state"
     t.string   "country"
     t.string   "zip"
+    t.string   "phone"
+    t.integer  "checkins_count", :limit=>8, :default => 0
+    t.integer  "like_count",  :limit=>8, :default => 0
+    t.string   "attire"
+    t.string   "website"
+    t.string   "price_range"
     t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+  
+  create_table "place_posts", :force => true do |t|
+    t.integer "place_id", :limit =>8, :default=>0
+    t.string "place_post_id"
+    t.string  "post_type"
+    t.integer "from_id", :limit =>8, :default =>0
+    t.string  "from_name"
+    t.string  "message"
+    t.string  "picture"
+    t.string  "link"
+    t.string  "name"
+    t.datetime "post_created_time"
+    t.datetime "post_updated_time" 
   end
 
   create_table "tagged_users", :force => true do |t|
