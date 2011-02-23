@@ -30,6 +30,14 @@ class PlaceController < ApplicationController
     place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first
     #place = Place.find(:all, :conditions=> "place_id = #{place_id}").first
 
+    # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
+    d2r = Math::PI/180.0
+    dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
+    dlat = (place.lat.to_f - params[:lat].to_f) * d2r;
+    a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+    c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
+    distance = 3956.0 * c;
+
     response_array = []
     
     # /place/place_id
@@ -42,7 +50,7 @@ class PlaceController < ApplicationController
       :zip => place['zip'],
       :phone => place['phone'],
       :checkins_count => place['checkins_count'],
-      :distance => "3.24 mi",
+      :distance => distance,
       :checkins_friend_count => friend_checkins,
       :like_count => place['like_count'],
       :attire => place['attire'],
