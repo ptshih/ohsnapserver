@@ -37,8 +37,6 @@ class PlaceController < ApplicationController
     a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
     c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
     distance = 3956.0 * c;
-
-    response_array = []
     
     # /place/place_id
     response_hash = {
@@ -57,13 +55,12 @@ class PlaceController < ApplicationController
       :website => place['website'],
       :price => place['price_range'] 
     }
-    response_array << response_hash
     
     #puts response_array.to_json
     
     respond_to do |format|
-      format.xml  { render :xml => response_array }
-      format.json  { render :json => response_array }
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
     end
 
   end
