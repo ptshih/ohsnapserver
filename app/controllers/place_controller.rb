@@ -40,6 +40,7 @@ class PlaceController < ApplicationController
     
     # /place/place_id
     response_hash = {
+      :place_id => place['place_id'],
       :name => place['name'],
       :street => place['street'],
       :city => place['city'],

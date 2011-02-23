@@ -456,6 +456,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['type'] = 'place'
+      params_hash['fields'] = 'id'
       params_hash['center'] = "#{lat},#{lng}"
       params_hash['distance'] = "#{distance.to_i}" # safety force to integer because FBAPI wants int (no decimals)
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
@@ -466,13 +467,23 @@ module API
       response = Typhoeus::Request.get("#{@@fb_host}/search", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
 
-      # Serialize Places
-      parsed_response['data'].each do |place|
-        self.serialize_place(place)
+      place_id_array = []
+      
+      parsed_response['data'].map do |p|
+        place_id_array << p["id"]
       end
-
-      return parsed_response # temporarily just bypass proxy FB's response
-
+      
+      puts "place ids: #{place_id_array}"
+      
+      # Serialize Places
+      # Serialize unique list of place_ids
+      if !place_id_array.empty?
+        self.find_places_for_place_id_array_batch(place_id_array.uniq)
+      end
+      
+      # Temporarily return place_id_array for API to query the DB with
+      # Later we should perform a new distance based query directly to moogle DB
+      return place_id_array
     end
 
     # https://graph.facebook.com/121328401214612?access_token=2227470867%7C2.i5b1iBZNAy0qqtEfcMTGRg__.3600.1296727200-548430564%7Cxm3tEtVeLY9alHMAh-0Us17qpbg

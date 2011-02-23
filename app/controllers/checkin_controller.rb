@@ -101,13 +101,50 @@ class CheckinController < ApplicationController
   def nearby
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
-    response = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
     
-    # temporarily just bypass proxy FB's response
+    place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
+    place_list = place_id_array.join(',')
+    
+    query = "place_id IN (#{place_list})"
+    
+    response_array = []
+    Place.find(:all, :conditions => query).each do |place|
+      # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
+      d2r = Math::PI/180.0
+      dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
+      dlat = (place.lat.to_f - params[:lat].to_f) * d2r;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
+      distance = 3956.0 * c;
+      
+      facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+      people_list = facebook_id_array.join(",")
+      query = "place_id = #{place['place_id']} and tagged_users.facebook_id in (#{people_list})"
+      friend_checkins = Checkin.find(:all, :select=>"tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id").count
+      
+      response_hash = {
+        :place_id => place['place_id'],
+        :name => place['name'],
+        :street => place['street'],
+        :city => place['city'],
+        :state => place['state'],
+        :country => place['country'],
+        :zip => place['zip'],
+        :phone => place['phone'],
+        :checkins_count => place['checkins_count'],
+        :distance => distance,
+        :checkins_friend_count => friend_checkins,
+        :like_count => place['like_count'],
+        :attire => place['attire'],
+        :website => place['website'],
+        :price => place['price_range'] 
+      }
+      response_array << response_hash
+    end
      
     respond_to do |format|
-      format.xml  { render :xml => response['data'] }
-      format.json  { render :json => response['data'] }
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
     end
   end
   
