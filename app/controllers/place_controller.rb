@@ -1,13 +1,64 @@
 class PlaceController < ApplicationController
+  before_filter :load_facebook_api
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
-  
+
+  def load_facebook_api
+    @facebook_api = API::FacebookApi.new(params[:access_token])
+  end
+
   def index
   end
   
   def show
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    # params[:place_id]
+    # params[:lat]
+    # params[:lng]
+      
+    facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+    people_list = facebook_id_array.join(",")
+    query = "place_id = #{params[:place_id]} and tagged_users.facebook_id in (#{people_list})"
+    friend_checkins = Checkin.find(:all, :select=>"tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id").count
+
+  # Checkin.find(:all, :select=>"tagged_users.*", :conditions=> "place_id = 115681115118628 AND tagged_users.facebook_id like '100%'", :include=>:tagged_users, :joins=>"left join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').count
+
+    place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first
+    #place = Place.find(:all, :conditions=> "place_id = #{place_id}").first
+
+    response_array = []
+    
+    # /place/place_id
+    response_hash = {
+      :name => place['name'],
+      :street => place['street'],
+      :city => place['city'],
+      :state => place['state'],
+      :country => place['country'],
+      :zip => place['zip'],
+      :phone => place['phone'],
+      :checkins_count => place['checkins_count'],
+      :distance => "3.24 mi",
+      :checkins_friend_count => friend_checkins,
+      :like_count => place['like_count'],
+      :attire => place['attire'],
+      :website => place['website'],
+      :price => place['price_range'] 
+    }
+    response_array << response_hash
+    
+    #puts response_array.to_json
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+
   end
+  
+  
 end
