@@ -234,7 +234,7 @@ module API
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_places_for_place_id_array_batch(place_id_array.uniq)
+        self.find_places_for_place_id_array(place_id_array.uniq)
       end
 
       # Update last_fetched_checkins timestamp for user
@@ -398,7 +398,7 @@ module API
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_places_for_place_id_array_batch(place_id_array.uniq)
+        self.find_places_for_place_id_array(place_id_array.uniq)
       end
 
       # update last fetched checkins only works for the current user
@@ -478,7 +478,7 @@ module API
       # Serialize Places
       # Serialize unique list of place_ids
       if !place_id_array.empty?
-        self.find_places_for_place_id_array_batch(place_id_array.uniq)
+        self.find_places_for_place_id_array(place_id_array.uniq)
       end
       
       # Temporarily return place_id_array for API to query the DB with
