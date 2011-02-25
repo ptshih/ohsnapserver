@@ -356,6 +356,7 @@ module API
       params_hash['access_token'] = self.access_token
       params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
       params_hash['ids'] = facebook_id_array.join(',')
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
@@ -547,6 +548,7 @@ module API
 
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       
       place_id_array.each do |place_id|
         r = Typhoeus::Request.new("#{@@fb_host}/#{place_id}", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
@@ -587,6 +589,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['ids'] = place_id_array.join(',')
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
 
       response = Typhoeus::Request.get("#{@@fb_host}/", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
