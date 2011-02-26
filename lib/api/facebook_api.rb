@@ -55,6 +55,10 @@ module API
 
       # Serialize Tagged Users
       if checkin.has_key?('tags')
+        
+        # Serialize Tagged User - for author
+        self.serialize_tagged_user(checkin['from'], checkin['id'])
+        
         checkin['tags']['data'].each do |t|
           self.serialize_tagged_user(t, checkin['id'])
         end
