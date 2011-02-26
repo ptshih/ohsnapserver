@@ -42,6 +42,8 @@ class PlaceController < ApplicationController
     response_hash = {
       :place_id => place['place_id'],
       :name => place['name'],
+      :lng => place['lng'],
+      :lat => place['lat'],
       :street => place['street'],
       :city => place['city'],
       :state => place['state'],
