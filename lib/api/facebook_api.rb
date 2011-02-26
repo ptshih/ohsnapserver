@@ -200,6 +200,7 @@ module API
 
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    # API::FacebookApi.new.find_checkins_for_facebook_id(548430564)
     def find_checkins_for_facebook_id(facebook_id = nil, since = nil)
       if facebook_id.nil? then facebook_id = @@peter_id end
 
@@ -540,6 +541,34 @@ module API
       
       return facebook_place
 
+    end
+    
+    def find_place_post_for_place_id(place_id = nil)
+        if place_id.nil? then place_id = 57167660895 end # cafe zoe
+        
+        headers_hash = Hash.new
+        headers_hash['Accept'] = 'application/json'
+
+        # Get Place Posts
+        # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
+        # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
+        # probably don't need to pass token; get publicly accessible information for feeds
+        params_hash = Hash.new
+        params_hash['limit']=10
+        response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        parsed_response = self.parse_json(response.body)
+
+        if parsed_response.nil?
+          #"no response for facebook place's feed"
+        else
+          parsed_response['data'].map do |feed|
+            # Serialize Place posts
+            facebook_place_posts = self.serialize_place_post(feed, place_id)
+            #puts feed["id"]
+          end
+
+        end    
+            
     end
     
     def find_places_for_place_id_array_batch(place_id_array = nil)
