@@ -13,6 +13,34 @@ class PlaceController < ApplicationController
   def index
   end
   
+  # Returns a time sorted stream of posts made to that place
+  def feed
+    Rails.logger.info request.query_parameters.inspect
+    
+    if params[:limit].nil?
+      limit_return = 20
+    else
+      limit_return = params[:limit]
+    end
+    
+    response_array = []
+    
+    PlacePost.find(:all, :conditions=>"place_id=#{params[:place_id]} and post_type='status'", :order => "post_created_time desc", :limit => limit_return).each do |feed|
+      response_hash = {
+        :from_id=> feed['from_id'],
+        :from => feed['from_name'],
+        :message => feed['message']
+      }
+      response_array << response_hash
+    end
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+  
+  end
+  
   # Returns sorted timeline of friend's activity at this location
   def activity
     Rails.logger.info request.query_parameters.inspect
@@ -21,14 +49,14 @@ class PlaceController < ApplicationController
     # params[:place_id]
     
     if params[:limit].nil?
-      limit_return = 10
+      limit_return = 20
     else
       limit_return = params[:limit]
     end
     
     facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
     people_list = facebook_id_array.join(",")
-    query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
+    query = "checkins.place_id=#{params[:place_id]} AND (checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list}))"
     
     response_array = []
     

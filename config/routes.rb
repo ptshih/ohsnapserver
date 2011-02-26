@@ -25,7 +25,7 @@ Moogle::Application.routes.draw do
   # match ':version/place/friends/:user_id', :controller => 'place', :action => 'friends', :via => :get # Places friends of user_id have been to
   match ':version/places/:place_id', :controller => 'place', :action => 'show', :via => :get # get a single place's default info
   match ':version/places/:place_id/activity', :controller => 'place', :action => 'activity', :via => :get # get single place's friend's activity
-  # get a single place's reviews
+  match ':version/places/:place_id/feed', :controller => 'place', :action => 'feed', :via => :get # place's posts
   
   # Mobile Server Examples  
   # map.connect ':version/messages/count', :controller => 'messages', :action => 'count', :conditions => { :method => :get }
