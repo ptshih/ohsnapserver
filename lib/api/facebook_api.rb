@@ -100,19 +100,19 @@ module API
     end
     
     def serialize_place_post(place_post, place_id)
-      puts "serializing comments for place :#{place_id}"
-      puts "place_post id is this: #{place_post['data']['id']}"
-      pp = PlacePost.find_or_initialize_by_place_post_id(place_post['data']['id'])
+      #puts "serializing comments for place :#{place_id}"
+      #puts "place_post id is this: #{place_post['id']}"
+      pp = PlacePost.find_or_initialize_by_place_post_id(place_post['id'])
       pp.place_id = place_id
-      #pp.post_type = place_post['data']['type']
-      #pp.from_id = place_post['data']['from']['name']
-      #pp.from_name = place_post['data']['from']['id']
-      #pp.message = place_post['data']['message']
-      #pp.picture = place_post['data']['picture']
-      #pp.link = place_post['data']['link']
-      #pp.name = place_post['data']['name']
-      #pp.post_created_time = Time.parse(checkin['data']['created_time'].to_s)
-      #pp.post_updated_time = Time.parse(checkin['data']['updated_time'].to_s)
+      pp.post_type = place_post['type']
+      pp.from_id = place_post['from']['id']
+      pp.from_name = place_post['from']['name']
+      pp.message = place_post['message']
+      pp.picture = place_post['picture']
+      pp.link = place_post['link']
+      pp.name = place_post['name']
+      pp.post_created_time = Time.parse(place_post['created_time'].to_s)
+      pp.post_updated_time = Time.parse(place_post['updated_time'].to_s)
       pp.save
     end
 
@@ -514,24 +514,30 @@ module API
       parsed_response = self.parse_json(response.body)
 
       # Serialize Place
-      facebook_place = self.serialize_place(parsed_response)
-      
-      params_hash['limit']=1
-      
+      if !parsed_response.nil?
+        facebook_place = self.serialize_place(parsed_response)
+      end
+
       # Get Place Posts
-      response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-      parsed_response = self.parse_json(response.body)
-      
-      puts parsed_response
-      #puts "THis is the place_post id: #{parsed_response['data']['id']}"
-      
-      # Serialize Place posts TODO
-      # facebook_place_posts = self.serialize_place_post(parsed_response, place_id)
-      
       # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
       # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
       # probably don't need to pass token; get publicly accessible information for feeds
+      params_hash = Hash.new
+      params_hash['limit']=10
+      response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      parsed_response = self.parse_json(response.body)
+      
+      if parsed_response.nil?
+        #"no response for facebook place's feed"
+      else
+        parsed_response['data'].map do |feed|
+          # Serialize Place posts
+          facebook_place_posts = self.serialize_place_post(feed, place_id)
+          #puts feed["id"]
+        end
 
+      end
+      
       return facebook_place
 
     end
