@@ -30,10 +30,14 @@ class PlaceController < ApplicationController
     people_list = facebook_id_array.join(",")
     query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
     
-    Checkin.find(:all, :select=>"tagged_users.name, checkins.created_time", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", order_by => 'checkins.created_time DESC', limit => limit_return).each do |taggeduser|
+    response_array = []
+    
+    Checkin.find(:all, :select=>"tagged_users.name, tagged_users.facebook_id, checkins.created_time, checkins.checkin_id, checkins.message", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order => 'checkins.created_time DESC', :limit => limit_return).each do |taggeduser|
       response_hash = {
+        :facebook_id => taggeduser['facebook_id'],
+        :message => taggeduser['message'],
         :name => taggeduser['name'],
-        :time => taggeduser['created_time'] 
+        :timestamp => taggeduser['created_time'].to_i
       }
       response_array << response_hash
     end
