@@ -187,7 +187,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "kupos", :force => true do |t|
-    t.integer  "referrer_id", :limit => 8, :default => 0
+    t.integer  "facebook_id", :limit => 8, :default => 0
     t.integer  "referee_id", :limit => 8, :default => 0
     t.integer  "place_id", :limit => 8, :default => 0
     t.integer  "checkin_id",   :limit => 8, :default => 0
