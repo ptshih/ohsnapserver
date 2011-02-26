@@ -148,4 +148,13 @@ class CheckinController < ApplicationController
     end
   end
   
+  def trends
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    
+    
+    
+  end
+  
 end

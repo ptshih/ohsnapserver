@@ -15,14 +15,11 @@ Moogle::Application.routes.draw do
   # Checkin Routes
   match ':version/checkins', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins, with filters
   match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
-  
-  # Find nearby facebook places
   match ':version/checkins/nearby', :controller => 'checkin', :action => 'nearby', :via => :post # get nearby facebook places
+  match ':version/checkins/trends', :controller => 'checkin', :action => 'trends', :via => :get # Get popular places visited by friends
   
   # Place routes
   # match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places
-  # match ':version/place/me/:user_id', :controller => 'place', :action => 'me', :via => :get # Places that user_id have been to
-  # match ':version/place/friends/:user_id', :controller => 'place', :action => 'friends', :via => :get # Places friends of user_id have been to
   match ':version/places/:place_id', :controller => 'place', :action => 'show', :via => :get # get a single place's default info
   match ':version/places/:place_id/activity', :controller => 'place', :action => 'activity', :via => :get # get single place's friend's activity
   match ':version/places/:place_id/feed', :controller => 'place', :action => 'feed', :via => :get # place's posts

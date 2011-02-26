@@ -23,6 +23,9 @@ class PlaceController < ApplicationController
       limit_return = params[:limit]
     end
     
+    # Serializing the posts for that place
+    API::FacebookApi.new.find_place_post_for_place_id(params[:place_id])
+    
     response_array = []
     
     PlacePost.find(:all, :conditions=>"place_id=#{params[:place_id]} and post_type='status'", :order => "post_created_time desc", :limit => limit_return).each do |feed|
