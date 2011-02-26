@@ -28,6 +28,7 @@ class PlaceController < ApplicationController
     
     facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
     people_list = facebook_id_array.join(",")
+    query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
     
     Checkin.find(:all, :select=>"tagged_users.name, checkins.created_time", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", order_by => 'checkins.created_time DESC', limit => limit_return).each do |taggeduser|
       response_hash = {
