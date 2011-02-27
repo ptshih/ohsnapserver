@@ -158,8 +158,33 @@ module API
           :degree => degree
         )
       end
-
       return f
+    end
+    
+    def serialize_friend_bulk(friendresponse, facebook_id, degree)
+      create_new_user = []
+      create_new_friend = []
+      friendresponse.each do |friend|
+        # New, faster way of bulk inserting in database
+        # Create new user
+        facebook_id = friend['id']
+        third_party_id = friend['third_party_id']
+        full_name = friend.has_key?('name') ? friend['name'] : nil
+        first_name = friend.has_key?('first_name') ? friend['first_name'] : nil
+        last_name = friend.has_key?('last_name') ? friend['last_name'] : nil
+        gender = friend.has_key?('gender') ? friend['gender'] : nil
+        locale = friend.has_key?('locale') ? friend['locale'] : nil
+        verified = friend.has_key?('verified') ? friend['verified'] : nil
+        
+        create_new_user << [facebook_id, third_party_id, full_name, first_name, last_name, gender, locale, verified]
+        create_new_friend << [facebook_id, friend['id'], 1]
+      end
+      
+      user_columns = [:facebook_id, :third_party_id, :full_name, :first_name, :last_name, :gender, :locale, :verified]
+      friend_columns = [:facebook_id, :friend_id, :degree]
+      
+      User.import user_columns, create_new_user, :on_duplicate_key_update => [:full_name]
+      Friend.import friend_columns, create_new_friend, :on_duplicate_key_update => [:degree]
     end
 
     def update_last_fetched_checkins(facebook_id)
@@ -656,6 +681,7 @@ module API
 
     # Finds friends for a single facebook id
     # https://graph.facebook.com/me/friends?fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    # API::FacebookApi.new.find_friends_for_facebook_id()
     def find_friends_for_facebook_id(facebook_id = nil, since = nil)
 
       if facebook_id.nil? then facebook_id = @@peter_id end
@@ -673,18 +699,20 @@ module API
         params_hash['since'] = since.to_i
       end
 
-
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/friends", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
 
       friend_id_array = Array.new
 
-      # Parse friends
-      parsed_response['data'].each do |friend|
-        friend_id_array << friend['id']
-        self.serialize_user(friend)
-        self.serialize_friend(friend, facebook_id, 1)
-      end
+      # Serialize friends
+      # parsed_response['data'].each do |friend|
+      #         friend_id_array << friend['id']
+      #         self.serialize_user(friend)
+      #         self.serialize_friend(friend, facebook_id, 1)
+      #       end
+      
+      # Bulk serialize friends
+      self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
 
       # Update last_fetched_friends timestamp for user
       self.update_last_fetched_friends(facebook_id)
@@ -725,11 +753,29 @@ module API
       parsed_keys = parsed_response.keys
       parsed_keys.each do |key|
         friend_id_array << key # add friend to array
+        
         parsed_response[key]['data'].each do |friend|
-          self.serialize_user(friend)
-          self.serialize_friend(friend, key.to_i, 1)
-        end
+          # Serialize friends
+          # self.serialize_user(friend)
+          # self.serialize_friend(friend, key.to_i, 1)
+
+          # Bulk serialize friends
+          self.serialize_friend_bulk(parsed_response[key]['data'],key.to_i,1)
+
+        end        
+        
       end
+      
+      # Serialize friends
+      # parsed_response['data'].each do |friend|
+      #         friend_id_array << friend['id']
+      #         self.serialize_user(friend)
+      #         self.serialize_friend(friend, facebook_id, 1)
+      #       end
+      
+      # Bulk serialize friends
+      self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
+      
 
       return friend_id_array
 
