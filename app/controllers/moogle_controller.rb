@@ -199,7 +199,7 @@ class MoogleController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while mysqlresult = mysqlresults.fetch_hash do
-      if mysqlresult['facebook_id']==mysqlresult['your_facebook_id'] && mysqlresult['your_last_checkin_time']==mysqlresult['checkin_time'])
+      if mysqlresult['facebook_id']==mysqlresult['your_facebook_id'] && mysqlresult['your_last_checkin_time']==mysqlresult['checkin_time']
         #Ignore entries where your most recent checkin IS that actual checkin
       else
         refer_hash = {
