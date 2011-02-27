@@ -71,8 +71,14 @@ module API
 
     # Returns a list of place_ids
     def serialize_checkin_bulk(checkins)
+      # Serialize App
+      if checkin.has_key?('application') && !checkin['application'].nil? then
+        self.serialize_app(checkin['application'])
+      end
+      
       create_new_checkin = []
       create_new_tagged_user = []
+      create_new_app = []
       place_id_array=[]
       checkins.each do |checkin|
         # Create new checkin
@@ -85,7 +91,8 @@ module API
         
         place_id_array << place_id
         create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
-        
+        create_new_app << [checkin['application']['id'], checkin['application']['name']]
+
         #Tagged User - for author
         create_new_tagged_user << [checkin['id'], checkin['from']['id'], checkin['from']['name']]
         
@@ -99,9 +106,11 @@ module API
       
       checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
       tagged_user_columns = [:checkin_id, :facebook_id, :name]
+      app_columns = [:app_id, :name]
       
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
       TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
+      App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
       
       return place_id_array
     end
