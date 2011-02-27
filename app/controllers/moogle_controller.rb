@@ -118,13 +118,13 @@ class MoogleController < ApplicationController
     query = "select case when referMap.refer_direction='YouRF' then refer.checkin_id else referred.checkin_id end as sortColumn,
                         refer.checkin_id as you_checkin_id,
                         refer.created_time as you_created_time,
-                        refer.facebook_id as you_facebook_id,
+                        #{@current_user.facebook_id} as you_facebook_id,
                         'You' as you_name,
                         place.name as place_name,
                         place.place_id as place_id,
                         referred.checkin_id as checkin_id,
                         referred.created_time as created_time,
-                        referred.facebook_id as facebook_id,
+                        t.facebook_id as facebook_id,
                         t.name as name,
                         referMap.refer_direction
         from
