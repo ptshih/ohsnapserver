@@ -1,9 +1,9 @@
 source 'http://rubygems.org'
 source 'http://gemcutter.org'
 
-gem 'rails', '3.0.3'
+gem 'rails', '3.0.4'
 
-gem 'mysql'
+gem 'mysql2'
 
 gem 'unicorn'
 

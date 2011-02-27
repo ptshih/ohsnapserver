@@ -1,3 +1,7 @@
+== Heroku Quirks ==
+In order to use the mysql2 gem with RDS, needed to manually type this into the console:
+# heroku config:add DATABASE_URL=mysql2://friendmash:Lik3aG6@friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com/moogle?encoding=utf8
+
 == Facebook API Errors
 {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
  - Throttled LOL
