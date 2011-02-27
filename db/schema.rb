@@ -61,6 +61,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "degree",                   :default => 0
   end
 
+  add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_fbid_and_friendid", :unique => true
+
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
     t.integer  "place_id",       :limit => 8,                                 :default => 0
