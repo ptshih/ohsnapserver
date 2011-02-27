@@ -91,8 +91,10 @@ module API
         
         place_id_array << place_id
         create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
-        create_new_app << [checkin['application']['id'], checkin['application']['name']]
-
+        if checkin.has_key?('application') && !checkin['application'].nil? then
+          create_new_app << [checkin['application']['id'], checkin['application']['name']]
+        end
+        
         #Tagged User - for author
         create_new_tagged_user << [checkin['id'], checkin['from']['id'], checkin['from']['name']]
         
@@ -110,7 +112,10 @@ module API
       
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
       TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
-      App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
+      
+      if !create_new_app.nil?
+        App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
+      end
       
       return place_id_array
     end
