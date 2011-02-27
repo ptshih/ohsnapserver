@@ -69,9 +69,11 @@ module API
       # self.find_place_for_place_id(checkin['place']['id'])
     end
 
+    # Returns a list of place_ids
     def serialize_checkin_bulk(checkins)
       create_new_checkin = []
       create_new_tagged_user = []
+      place_id_array=[]
       checkins.each do |checkin|
         # Create new checkin
         checkin_id = checkin['id']
@@ -81,6 +83,7 @@ module API
         message = checkin.has_key?('message') ? checkin['message'] : nil
         created_time = Time.parse(checkin['created_time'].to_s)
         
+        place_id_array << place_id
         create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
         
         #Tagged User - for author
@@ -99,6 +102,8 @@ module API
       
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
       TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
+      
+      return place_id_array
     end
 
     # Create or update tagged friend
@@ -109,6 +114,37 @@ module API
       t.checkin_id = checkin_id
       t.name = tagged_user['name']
       t.save
+    end
+
+    def serialize_place_bulk(places)
+      create_new_place = []
+      parsed_keys = places.keys
+      parsed_keys.each do |place|
+        puts places[place]
+        # Create new place
+        place_id = places[place]['id']
+        name = places[place]['name']
+        lat = places[place]['location']['latitude']
+        lng = places[place]['location']['longitude']
+        street = places[place]['location']['street']
+        city = places[place]['location']['city']
+        state = places[place]['location']['state']
+        country = places[place]['location']['country']
+        zip = places[place]['location']['zip']
+        phone = places[place]['phone']
+        checkins_count = places[place]['checkins']
+        like_count = places[place]['likes']
+        attire = places[place]['attire']
+        website = places[place]['website']
+        price_range = places[place]['price_range']
+        raw_hash = places[place]
+        expires_at = Time.now + 1.days
+        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, website, price_range, raw_hash, expires_at]
+      end
+      place_columns = [:place_id, :name, :lat, :lng, :street, :city, :state, :country, :zip, :phone,
+         :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
+      
+      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
     end
 
     # Create or update place in model/database
@@ -297,7 +333,7 @@ module API
       # end
       
       # Batch parse checkins
-      self.serialize_checkin_bulk(parsed_response['data'])
+      place_id_array = self.serialize_checkin_bulk(parsed_response['data'])
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
@@ -701,12 +737,15 @@ module API
       # puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
 
       # Parse places keys
-      parsed_keys = parsed_response.keys
-
-      parsed_keys.each do |key|
-        # puts "#{key}"
-        facebook_place = self.serialize_place(parsed_response[key])
-      end
+      # parsed_keys = parsed_response.keys
+      #       parsed_keys.each do |key|
+      #         # puts "#{key}"
+      #         facebook_place = self.serialize_place(parsed_response[key])
+      #       end
+      
+      # Batch places
+      puts "Bulk inserting places"
+      self.serialize_place_bulk(parsed_response)
 
       # Update update_expires_at_place_id timestamp
       place_id_array.each do |place_id|
