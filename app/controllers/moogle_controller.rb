@@ -110,4 +110,78 @@ class MoogleController < ApplicationController
     end
   end
   
+  def kupos
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    # Query for condition where referrer=you, person being referred=your friend
+    query = "select case when referMap.refer_direction='YouRF' then refer.checkin_id else referred.checkin_id end as sortColumn,
+                        refer.checkin_id as you_checkin_id,
+                        refer.created_time as you_created_time,
+                        refer.facebook_id as you_facebook_id,
+                        'You' as you_name,
+                        place.name,
+                        referred.checkin_id as checkin_id,
+                        referred.created_time as created_time,
+                        referred.facebook_id as facebook_id,
+                        t.name as name,
+                        referMap.refer_direction
+
+        from
+        (select ref1.checkin_id as refer_checkin_id, min(fr1.checkin_id) as checkin_id,
+                case when ref1.created_time<fr1.created_time then 'YouRF'
+                else 'FRYou' end as refer_direction
+        from checkins ref1
+        join tagged_users ref2 on ref1.checkin_id = ref2.checkin_id
+        join checkins fr1 on fr1.place_id  = ref1.place_id and ref1.created_time!=fr1.created_time
+        join tagged_users fr2 on fr1.checkin_id = fr2.checkin_id
+        where (ref2.facebook_id = #{@current_user.facebook_id})
+        and fr2.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+        group by 1 order by 1 desc) referMap
+        join checkins refer on refer.checkin_id = referMap.checkin_id
+        join places place on place.place_id = refer.place_id
+        join checkins referred on referMap.checkin_id = referred.checkin_id
+        join tagged_users t on referred.checkin_id = t.checkin_id
+        where t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+    order by 1 desc
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    while mysqlresult = mysqlresults.fetch_hash do
+      if mysqlresult['refer_direction']=="YouRF"
+        refer_hash = {
+          :refer_checkin_id => mysqlresult['you_checkin_id'],
+          :refer_created_time => mysqlresult['you_created_time'],
+          :refer_facebook_id => mysqlresult['you_facebook_id'],
+          :refer_name => mysqlresult['you_name'],
+          :place => mysqlresult['place'],
+          :checkin_id => mysqlresult['checkin_id']
+          :created_time => mysqlresult['created_time'],
+          :facebook_id => mysqlresult['facebook_id'],
+          :name => mysqlresult['name']
+        }
+      else
+        refer_hash = {
+          :refer_checkin_id => mysqlresult['checkin_id'],
+          :refer_created_time => mysqlresult['created_time'],
+          :refer_facebook_id => mysqlresult['facebook_id'],
+          :refer_name => mysqlresult['name'],
+          :place => mysqlresult['place'],
+          :checkin_id => mysqlresult['you_checkin_id']
+          :created_time => mysqlresult['you_created_time'],
+          :facebook_id => mysqlresult['you_facebook_id'],
+          :name => mysqlresult['you_name']
+        }        
+      end
+      response_array << refer_hash
+    end
+    mysqlresults.free
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+  
+  end
+  
 end
