@@ -196,6 +196,7 @@ module API
     def serialize_friend_bulk(friends, facebook_id, degree)
       create_new_user = []
       create_new_friend = []
+      friend_id_array = []
       friends.each do |friend|
         # New, faster way of bulk inserting in database
         # Create new user
@@ -210,6 +211,7 @@ module API
         
         create_new_user << [facebook_id, third_party_id, full_name, first_name, last_name, gender, locale, verified]
         create_new_friend << [facebook_id, friend['id'], 1]
+        friend_id_array << friend['id']
       end
       
       user_columns = [:facebook_id, :third_party_id, :full_name, :first_name, :last_name, :gender, :locale, :verified]
@@ -217,6 +219,9 @@ module API
       
       User.import user_columns, create_new_user, :on_duplicate_key_update => [:full_name]
       Friend.import friend_columns, create_new_friend, :on_duplicate_key_update => [:degree]
+      
+      return friend_id_array
+      
     end
 
     def update_last_fetched_checkins(facebook_id)
@@ -744,7 +749,7 @@ module API
       #       end
       
       # Bulk serialize friends
-      self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
+      friend_id_array = self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
 
       # Update last_fetched_friends timestamp for user
       self.update_last_fetched_friends(facebook_id)

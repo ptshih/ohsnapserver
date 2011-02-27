@@ -127,7 +127,6 @@ class MoogleController < ApplicationController
                         referred.facebook_id as facebook_id,
                         t.name as name,
                         referMap.refer_direction
-
         from
         (select ref1.checkin_id as refer_checkin_id, min(fr1.checkin_id) as checkin_id,
                 case when ref1.created_time<fr1.created_time then 'YouRF'
