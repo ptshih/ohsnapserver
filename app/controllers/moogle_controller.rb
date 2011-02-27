@@ -151,24 +151,24 @@ class MoogleController < ApplicationController
       if mysqlresult['refer_direction']=="YouRF"
         refer_hash = {
           :refer_checkin_id => mysqlresult['you_checkin_id'],
-          :refer_created_time => mysqlresult['you_created_time'],
+          :refer_created_time => Time.parse(mysqlresult['you_created_time'].to_s).to_i,
           :refer_facebook_id => mysqlresult['you_facebook_id'],
           :refer_name => mysqlresult['you_name'],
           :place => mysqlresult['place'],
           :checkin_id => mysqlresult['checkin_id'],
-          :created_time => mysqlresult['created_time'],
+          :created_time => Time.parse(mysqlresult['created_time'].to_s).to_i,
           :facebook_id => mysqlresult['facebook_id'],
           :name => mysqlresult['name']
         }
       else
         refer_hash = {
           :refer_checkin_id => mysqlresult['checkin_id'],
-          :refer_created_time => mysqlresult['created_time'],
+          :refer_created_time => Time.parse(mysqlresult['created_time'].to_s).to_i,
           :refer_facebook_id => mysqlresult['facebook_id'],
           :refer_name => mysqlresult['name'],
           :place => mysqlresult['place'],
           :checkin_id => mysqlresult['you_checkin_id'],
-          :created_time => mysqlresult['you_created_time'],
+          :created_time => Time.parse(mysqlresult['you_created_time'].to_s).to_i,
           :facebook_id => mysqlresult['you_facebook_id'],
           :name => mysqlresult['you_name']
         }        
