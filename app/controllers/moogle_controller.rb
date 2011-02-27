@@ -199,16 +199,20 @@ class MoogleController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while mysqlresult = mysqlresults.fetch_hash do
-      refer_hash = {
-        :checkin_time => Time.parse(mysqlresult['checkin_time'].to_s).to_i,
-        :place_id => mysqlresult['place_id'],
-        :place_name => mysqlresult['place_name'],
-        :user_facebook_id => mysqlresult['facebook_id'],
-        :user_name => mysqlresult['name'],
-        :your_last_checkin_time => Time.parse(mysqlresult['your_last_checkin_time'].to_s).to_i,
-        :your_facebook_id => mysqlresult['your_facebook_id']
-      }
-      response_array << refer_hash
+      if mysqlresult['facebook_id']==mysqlresult['your_facebook_id'] && mysqlresult['your_last_checkin_time']==mysqlresult['checkin_time'])
+        #Ignore entries where your most recent checkin IS that actual checkin
+      else
+        refer_hash = {
+          :checkin_time => Time.parse(mysqlresult['checkin_time'].to_s).to_i,
+          :place_id => mysqlresult['place_id'],
+          :place_name => mysqlresult['place_name'],
+          :user_facebook_id => mysqlresult['facebook_id'],
+          :user_name => mysqlresult['name'],
+          :your_last_checkin_time => Time.parse(mysqlresult['your_last_checkin_time'].to_s).to_i,
+          :your_facebook_id => mysqlresult['your_facebook_id']
+        }
+        response_array << refer_hash
+      end
     end
     mysqlresults.free
     
