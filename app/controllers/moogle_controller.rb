@@ -137,7 +137,7 @@ class MoogleController < ApplicationController
         join tagged_users fr2 on fr1.checkin_id = fr2.checkin_id
         where fr2.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
         group by 1 order by 1 desc) referMap
-        join checkins refer on refer.checkin_id = referMap.checkin_id
+        join checkins refer on referMap.refer_checkin_id = refer.checkin_id
         join places place on place.place_id = refer.place_id
         join checkins referred on referMap.checkin_id = referred.checkin_id
         join tagged_users t on referred.checkin_id = t.checkin_id
