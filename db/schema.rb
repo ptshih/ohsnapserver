@@ -122,7 +122,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
-  add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
+  add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
 
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
