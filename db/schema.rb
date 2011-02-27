@@ -74,6 +74,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
+  create_table "kupos", :force => true do |t|
+    t.integer  "facebook_id",  :limit => 8, :default => 0
+    t.integer  "referee_id",   :limit => 8, :default => 0
+    t.integer  "place_id",     :limit => 8, :default => 0
+    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.boolean  "is_referral",               :default => false
+    t.datetime "referred_at"
+    t.datetime "completed_at"
+  end
+
   create_table "place_posts", :force => true do |t|
     t.integer  "place_id",          :limit => 8, :default => 0
     t.string   "place_post_id"
@@ -112,6 +122,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
+  add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
+
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
     t.integer "facebook_id", :limit => 8, :default => 0
@@ -130,7 +142,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "last_name"
     t.string   "gender"
     t.string   "locale"
-    t.boolean  "verified", :default => false
+    t.boolean  "verified",                                                         :default => false
     t.decimal  "fetch_progress",                     :precision => 3, :scale => 2
     t.datetime "last_fetched_checkins"
     t.datetime "last_fetched_friends"
@@ -184,16 +196,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "kupos", :force => true do |t|
-    t.integer  "facebook_id", :limit => 8, :default => 0
-    t.integer  "referee_id", :limit => 8, :default => 0
-    t.integer  "place_id", :limit => 8, :default => 0
-    t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.boolean  "is_referral", :default => false
-    t.datetime "referred_at"
-    t.datetime "completed_at"
   end
 
 end
