@@ -40,22 +40,20 @@ class CheckinController < ApplicationController
     end
     
     if filter_people == "me"
-      query = "checkins.facebook_id IN (#{@current_user.facebook_id}) OR tagged_users.facebook_id IN (#{@current_user.facebook_id})"
+      query = "tagged_users.facebook_id IN (#{@current_user.facebook_id})"
     elsif filter_people == "friends"
       # Get an array of friend_ids
       facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
-      
       people_list = facebook_id_array.join(",")
-      query = "checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list})"
+      query = "tagged_users.facebook_id IN (#{people_list})"
     else
       # String param which may contain mulitple people's ids
-      query = "checkins.facebook_id IN (#{filter_people}) OR tagged_users.facebook_id IN (#{filter_people})"
+      query = "tagged_users.facebook_id IN (#{filter_people})"
     end
     
     # Distance filter
     # params[:lat], params[:lng], params[:distance]
-    
-    
+        
     # Category filter
 
     response_array = []
@@ -67,7 +65,7 @@ class CheckinController < ApplicationController
     #Checkin.where(query).each do |checkin|
     # Checkin.find(:all, :conditions=> "checkins.facebook_id IN (645750651) OR tagged_users.facebook_id IN (645750651)", :include=>:tagged_users, :joins=>:tagged_users, :order=>'created_time desc')
     
-    Checkin.find(:all, :select=>"DISTINCT checkins.*", :conditions=> query, :include=>:tagged_users, :joins=>"left join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|  
+    Checkin.find(:all, :select=>"DISTINCT checkins.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|  
       if checkin['app_id'].nil?
         checkin_app_id = nil
         checkin_app_name = nil
@@ -75,10 +73,14 @@ class CheckinController < ApplicationController
         checkin_app_id = checkin['app_id']
         checkin_app_name = checkin.app['name']
       end
+      
+      tagged_count = TaggedUser.count(:conditions=>"checkin_id = checkin['checkin_id']")
+      
       response_hash = {
         :checkin_id => checkin['checkin_id'],
         :facebook_id => checkin['facebook_id'],
         :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
+        :tagged_count => tagged_count-1,
         :message => checkin['message'],
         :place_id => checkin['place_id'],
         :place_name => checkin.place['name'],
@@ -118,6 +120,7 @@ class CheckinController < ApplicationController
       distance = 3956.0 * c;
       
       facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+      facebook_id_array << @current_user.facebook_id
       people_list = facebook_id_array.join(",")
       query = "place_id = #{place['place_id']} and tagged_users.facebook_id in (#{people_list})"
       friend_checkins = Checkin.find(:all, :select=>"tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id").count
