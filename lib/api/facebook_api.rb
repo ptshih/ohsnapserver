@@ -478,7 +478,7 @@ module API
       # progress indicator
       num_friends = facebook_id_array.count
 
-      self.update_fetch_progress(facebook_id, 0.25) # set the progress to 25%
+      self.update_fetch_progress(facebook_id, 0.50) # set the progress to 33%
 
 
       response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
@@ -522,6 +522,8 @@ module API
       end
       place_id_array = self.serialize_checkin_bulk(checkins_array)
 
+      self.update_fetch_progress(facebook_id, 0.80) # set the progress to 33%
+      
       # Serialize unique list of place_ids
       if !place_id_array.empty?
         self.find_places_for_place_id_array(place_id_array.uniq)
