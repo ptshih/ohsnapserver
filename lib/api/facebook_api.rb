@@ -71,10 +71,6 @@ module API
 
     # Returns a list of place_ids
     def serialize_checkin_bulk(checkins)
-      # Serialize App
-      if checkin.has_key?('application') && !checkin['application'].nil? then
-        self.serialize_app(checkin['application'])
-      end
       
       create_new_checkin = []
       create_new_tagged_user = []
