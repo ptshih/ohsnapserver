@@ -155,7 +155,7 @@ class MoogleController < ApplicationController
           :refer_facebook_id => mysqlresult['you_facebook_id'],
           :refer_name => mysqlresult['you_name'],
           :place => mysqlresult['place'],
-          :checkin_id => mysqlresult['checkin_id']
+          :checkin_id => mysqlresult['checkin_id'],
           :created_time => mysqlresult['created_time'],
           :facebook_id => mysqlresult['facebook_id'],
           :name => mysqlresult['name']
@@ -167,7 +167,7 @@ class MoogleController < ApplicationController
           :refer_facebook_id => mysqlresult['facebook_id'],
           :refer_name => mysqlresult['name'],
           :place => mysqlresult['place'],
-          :checkin_id => mysqlresult['you_checkin_id']
+          :checkin_id => mysqlresult['you_checkin_id'],
           :created_time => mysqlresult['you_created_time'],
           :facebook_id => mysqlresult['you_facebook_id'],
           :name => mysqlresult['you_name']
