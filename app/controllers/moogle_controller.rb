@@ -129,7 +129,7 @@ class MoogleController < ApplicationController
                         referMap.refer_direction
         from
         (select ref1.checkin_id as refer_checkin_id,
-                case when ref1.created_time<fr1.created_time then min(fr1.checkin_id) else max(fr1.checkin_id) as checkin_id,
+                case when ref1.created_time<fr1.created_time then min(fr1.checkin_id) else max(fr1.checkin_id) end as checkin_id,
                 case when ref1.created_time<fr1.created_time then 'YouRF' else 'FRYou' end as refer_direction
         from checkins ref1
         join tagged_users ref2 on ref1.checkin_id = ref2.checkin_id and ref2.facebook_id = #{@current_user.facebook_id}

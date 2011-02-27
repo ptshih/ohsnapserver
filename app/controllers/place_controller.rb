@@ -53,7 +53,7 @@ class PlaceController < ApplicationController
     # params[:place_id]
     
     if params[:limit].nil?
-      limit_return = 20
+      limit_return = 50
     else
       limit_return = params[:limit]
     end
