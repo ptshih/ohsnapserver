@@ -438,6 +438,7 @@ module API
 
     # Finds all checkins for an array of user ids
     # https://graph.facebook.com/checkins?ids=4804606,548430564,645750651&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    # API::FacebookApi.new.find_checkins_for_facebook_id_array()
     def find_checkins_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = nil)
       if facebook_id_array.nil? then
         facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
@@ -492,13 +493,24 @@ module API
       # Parse checkins for each user
       parsed_keys = parsed_response.keys
 
+      # Serialize checkins individually
+      # parsed_keys.each_with_index do |key,i|
+      #         parsed_response[key]['data'].each do |checkin|
+      #           self.serialize_checkin(checkin)
+      #           place_id_array << checkin['place']['id']
+      #         end
+      #         self.update_fetch_progress(facebook_id, ((i.to_f / num_friends.to_f) / 2) + 0.25) # update fetch progress percentage
+      #       end
+      #
+      
+      # Serialize checkins in bulk
+      checkins_array = []       
       parsed_keys.each_with_index do |key,i|
         parsed_response[key]['data'].each do |checkin|
-          self.serialize_checkin(checkin)
-          place_id_array << checkin['place']['id']
+          checkins_array << checkin
         end
-        self.update_fetch_progress(facebook_id, ((i.to_f / num_friends.to_f) / 2) + 0.25) # update fetch progress percentage
       end
+      place_id_array = self.serialize_checkin_bulk(checkins_array)
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
@@ -746,12 +758,6 @@ module API
       # Batch places
       puts "Bulk inserting places"
       self.serialize_place_bulk(parsed_response)
-
-      # Update update_expires_at_place_id timestamp
-      place_id_array.each do |place_id|
-        self.update_expires_at_place_id(place_id)
-      end
-
 
     end
 
