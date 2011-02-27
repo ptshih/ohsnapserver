@@ -21,9 +21,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "apps", ["app_id"], :name => "idx_app_id", :unique => true
 
-  create_table "checkins", :id => false, :force => true do |t|
-    t.integer  "id",                                       :null => false
-    t.integer  "checkin_id",   :limit => 8, :default => 0, :null => false
+  create_table "checkins", :force => true do |t|
+    t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
     t.integer  "app_id",       :limit => 8, :default => 0
@@ -75,16 +74,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
-  create_table "kupos", :force => true do |t|
-    t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.integer  "referee_id",   :limit => 8, :default => 0
-    t.integer  "place_id",     :limit => 8, :default => 0
-    t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.boolean  "is_referral",               :default => false
-    t.datetime "referred_at"
-    t.datetime "completed_at"
-  end
-
   create_table "place_posts", :force => true do |t|
     t.integer  "place_id",          :limit => 8, :default => 0
     t.string   "place_post_id"
@@ -99,9 +88,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "post_updated_time"
   end
 
-  create_table "places", :id => false, :force => true do |t|
-    t.integer  "id",                                                                         :null => false
-    t.integer  "place_id",       :limit => 8,                                                :null => false
+  create_table "places", :force => true do |t|
+    t.integer  "place_id",       :limit => 8,                                 :default => 0
     t.integer  "yelp_id",        :limit => 8,                                 :default => 0
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
     t.string   "name"
@@ -133,9 +121,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "tagged_users", ["checkin_id"], :name => "idx_checkin_id"
   add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
 
-  create_table "users", :id => false, :force => true do |t|
-    t.integer  "id",                                                                                  :null => false
-    t.integer  "facebook_id",           :limit => 8,                                                  :null => false
+  create_table "users", :force => true do |t|
+    t.integer  "facebook_id",           :limit => 8,                               :default => 0
     t.string   "third_party_id"
     t.string   "access_token"
     t.string   "full_name"
@@ -143,7 +130,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "last_name"
     t.string   "gender"
     t.string   "locale"
-    t.boolean  "verified",                                                         :default => false
+    t.boolean  "verified", :default => false
     t.decimal  "fetch_progress",                     :precision => 3, :scale => 2
     t.datetime "last_fetched_checkins"
     t.datetime "last_fetched_friends"
@@ -197,6 +184,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "kupos", :force => true do |t|
+    t.integer  "facebook_id", :limit => 8, :default => 0
+    t.integer  "referee_id", :limit => 8, :default => 0
+    t.integer  "place_id", :limit => 8, :default => 0
+    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.boolean  "is_referral", :default => false
+    t.datetime "referred_at"
+    t.datetime "completed_at"
   end
 
 end
