@@ -59,8 +59,9 @@ class PlaceController < ApplicationController
     end
     
     facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+    facebook_id_array << @current_user.facebook_id
     people_list = facebook_id_array.join(",")
-    query = "checkins.place_id=#{params[:place_id]} AND (checkins.facebook_id IN (#{people_list}) OR tagged_users.facebook_id IN (#{people_list}))"
+    query = "checkins.place_id=#{params[:place_id]} AND (tagged_users.facebook_id IN (#{people_list}))"
     
     response_array = []
     
