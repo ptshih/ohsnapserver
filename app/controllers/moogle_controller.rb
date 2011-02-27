@@ -128,15 +128,14 @@ class MoogleController < ApplicationController
                         t.name as name,
                         referMap.refer_direction
         from
-        (select ref1.checkin_id as refer_checkin_id, min(fr1.checkin_id) as checkin_id,
-                case when ref1.created_time<fr1.created_time then 'YouRF'
-                else 'FRYou' end as refer_direction
+        (select ref1.checkin_id as refer_checkin_id,
+                case when ref1.created_time<fr1.created_time then min(fr1.checkin_id) else max(fr1.checkin_id) as checkin_id,
+                case when ref1.created_time<fr1.created_time then 'YouRF' else 'FRYou' end as refer_direction
         from checkins ref1
-        join tagged_users ref2 on ref1.checkin_id = ref2.checkin_id
+        join tagged_users ref2 on ref1.checkin_id = ref2.checkin_id and ref2.facebook_id = #{@current_user.facebook_id}
         join checkins fr1 on fr1.place_id  = ref1.place_id and ref1.created_time!=fr1.created_time
         join tagged_users fr2 on fr1.checkin_id = fr2.checkin_id
-        where (ref2.facebook_id = #{@current_user.facebook_id})
-        and fr2.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+        where fr2.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
         group by 1 order by 1 desc) referMap
         join checkins refer on refer.checkin_id = referMap.checkin_id
         join places place on place.place_id = refer.place_id
