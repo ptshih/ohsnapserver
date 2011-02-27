@@ -69,6 +69,38 @@ module API
       # self.find_place_for_place_id(checkin['place']['id'])
     end
 
+    def serialize_checkin_bulk(checkins)
+      create_new_checkin = []
+      create_new_tagged_user = []
+      checkins.each do |checkin|
+        # Create new checkin
+        checkin_id = checkin['id']
+        facebook_id = checkin['from']['id']
+        place_id = checkin['place']['id']
+        app_id = checkin.has_key?('application') ? (checkin['application'].nil? ? nil : checkin['application']['id']) : nil
+        message = checkin.has_key?('message') ? checkin['message'] : nil
+        created_time = Time.parse(checkin['created_time'].to_s)
+        
+        create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
+        
+        #Tagged User - for author
+        create_new_tagged_user << [checkin['id'], checkin['from']['id'], checkin['from']['name']]
+        
+        # Create Tagged Users - all other
+        if checkin.has_key?('tags')
+          checkin['tags']['data'].each do |t|
+            create_new_tagged_user << [checkin['id'], t['id'], t['name']]
+          end
+        end
+      end
+      
+      checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
+      tagged_user_columns = [:checkin_id, :facebook_id, :name]
+      
+      Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
+      TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
+    end
+
     # Create or update tagged friend
     def serialize_tagged_user(tagged_user, checkin_id)
       puts "serializing tagged user #{tagged_user} for checkin: #{checkin_id}"
@@ -161,10 +193,10 @@ module API
       return f
     end
     
-    def serialize_friend_bulk(friendresponse, facebook_id, degree)
+    def serialize_friend_bulk(friends, facebook_id, degree)
       create_new_user = []
       create_new_friend = []
-      friendresponse.each do |friend|
+      friends.each do |friend|
         # New, faster way of bulk inserting in database
         # Create new user
         facebook_id = friend['id']
@@ -245,22 +277,22 @@ module API
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
-
-
+      
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
-      puts "Response from facebook: #{response.body}"
-      puts "Response status code: #{response.code}"
+      #puts "Response from facebook: #{response.body}"
+      #puts "Response status code: #{response.code}"
       place_id_array = Array.new
       #puts "Showing parsed response: #{parsed_response}"
 
       # Parse checkins
-      parsed_response['data'].each do |checkin|
-        self.serialize_checkin(checkin)
-        place_id_array << checkin['place']['id']
-      end
-
-      # puts "#{place_id_array}"
+      # parsed_response['data'].each do |checkin|
+      #   self.serialize_checkin(checkin)
+      #   place_id_array << checkin['place']['id']
+      # end
+      
+      # Batch parse checkins
+      self.serialize_checkin_bulk(parsed_response['data'])
 
       # Serialize unique list of place_ids
       if !place_id_array.empty?
