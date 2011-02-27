@@ -124,7 +124,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "updated_at"
   end
 
-  add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
+  add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
 
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
@@ -132,8 +132,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string  "name"
   end
 
-  add_index "tagged_users", ["checkin_id"], :name => "idx_checkin_id"
-  add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkinid_and_fbid", :unique => true
 
   create_table "users", :force => true do |t|
     t.integer  "facebook_id",           :limit => 8,                               :default => 0
