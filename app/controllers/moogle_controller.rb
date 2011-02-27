@@ -115,7 +115,7 @@ class MoogleController < ApplicationController
     puts "params: #{params}"
     
     # Query for condition where referrer=you, person being referred=your friend
-    query = "select case when referMap.refer_direction='YouRF' then refer.checkin_id else referred.checkin_id end as sortColumn,
+    query = "select case when referMap.refer_direction='YouRF' then refer.created_time else referred.created_time end as sortColumn,
                         refer.checkin_id as you_checkin_id,
                         refer.created_time as you_created_time,
                         #{@current_user.facebook_id} as you_facebook_id,
