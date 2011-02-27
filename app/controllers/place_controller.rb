@@ -30,6 +30,7 @@ class PlaceController < ApplicationController
     
     PlacePost.find(:all, :conditions=>"place_id=#{params[:place_id]} and post_type='status'", :order => "post_created_time desc", :limit => limit_return).each do |feed|
       response_hash = {
+        :post_created_time => feed['post_created_time'],
         :from_id=> feed['from_id'],
         :from => feed['from_name'],
         :message => feed['message']
