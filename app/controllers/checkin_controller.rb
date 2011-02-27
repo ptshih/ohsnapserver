@@ -74,7 +74,7 @@ class CheckinController < ApplicationController
         checkin_app_name = checkin.app['name']
       end
       
-      tagged_count = TaggedUser.count(:conditions=>"checkin_id = checkin['checkin_id']")
+      tagged_count = TaggedUser.count(:conditions=>"checkin_id = #{checkin['checkin_id']}")
       
       response_hash = {
         :checkin_id => checkin['checkin_id'],
