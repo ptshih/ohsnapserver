@@ -148,11 +148,23 @@ class CheckinController < ApplicationController
     end
   end
   
+  # Show checkin trends
+  # Question: Sort by friend checkins per place? Or unique checkin_id count? or...
+  # UI tile shows this:
+  # Row1: "Casa DE Shih check-in by friends, 25"
+  # Row2: "     5 checkins and 2 likes"
   def trends
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
     
     
+    
+    
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
     
     
   end
