@@ -120,7 +120,7 @@ class MoogleController < ApplicationController
                         refer.created_time as you_created_time,
                         refer.facebook_id as you_facebook_id,
                         'You' as you_name,
-                        place.name,
+                        place.name as place,
                         referred.checkin_id as checkin_id,
                         referred.created_time as created_time,
                         referred.facebook_id as facebook_id,
