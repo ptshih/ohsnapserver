@@ -200,7 +200,7 @@ module API
       friends.each do |friend|
         # New, faster way of bulk inserting in database
         # Create new user
-        facebook_id = friend['id']
+        user_facebook_id = friend['id']
         third_party_id = friend['third_party_id']
         full_name = friend.has_key?('name') ? friend['name'] : nil
         first_name = friend.has_key?('first_name') ? friend['first_name'] : nil
@@ -209,7 +209,7 @@ module API
         locale = friend.has_key?('locale') ? friend['locale'] : nil
         verified = friend.has_key?('verified') ? friend['verified'] : nil
         
-        create_new_user << [facebook_id, third_party_id, full_name, first_name, last_name, gender, locale, verified]
+        create_new_user << [user_facebook_id, third_party_id, full_name, first_name, last_name, gender, locale, verified]
         create_new_friend << [facebook_id, friend['id'], 1]
         friend_id_array << friend['id']
       end
