@@ -21,7 +21,9 @@ class MoogleController < ApplicationController
     sliced_friend_id_array = friend_id_array.each_slice(500).to_a
     
     # Get first slice now
-    @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
+    first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
+    first_slice_checkins.delay.get_friends_checkins_async
+    # @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
     
     # Fire off a background job to get all friend checkins
     sliced_friend_id_array.each_with_index do |slice, index|
