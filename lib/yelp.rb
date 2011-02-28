@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'httpclient'
 require 'pp'
 require 'json'
-require 'CGI'
+# require 'CGI'
 
 # USAGE : puts YelpScape.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
 # returns the closest match
