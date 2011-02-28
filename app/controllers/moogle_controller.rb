@@ -15,21 +15,26 @@ class MoogleController < ApplicationController
     # 600 calls per 600 seconds
     
     # first we get the initial slice of IDs
-    first_slice = friend_id_array.slice!(0..299)
+    first_batch = friend_id_array.slice!(0..499)
+    
+    sliced_first_batch = first_batch.each_slice(100).to_a
+    
+    sliced_first_batch.each do |first_slice|
+      first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
+      first_slice_checkins.delay.get_friends_checkins_async
+    end
     
     # now we slice up the remaining IDs into chunks of 500
-    sliced_friend_id_array = friend_id_array.each_slice(300).to_a
+    sliced_friend_id_array = friend_id_array.each_slice(100).to_a
     
-    # Get first slice now
-    first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
-    first_slice_checkins.delay.get_friends_checkins_async
     # @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
+    # [DEPRECATION] `object.send_at(time, :method)` is deprecated. Use `object.delay(:run_at => time).method
     
     # Fire off a background job to get all friend checkins
     sliced_friend_id_array.each_with_index do |slice, index|
       queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, slice, last_fetched_checkins)
       delayed_time = (index+1) * 1
-      queued_checkins.send_at(delayed_time.minutes.from_now, :get_friends_checkins_async)
+      queued_checkins.delay(:run_at => delayed_time.minutes.from_now).get_friends_checkins_async
     end
   end
   
