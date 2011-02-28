@@ -155,6 +155,9 @@ module API
          :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
       
       Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
+      
+      puts "Serialized #{create_new_place.length} places in bulk."
+      
     end
 
     # Create or update place in model/database
@@ -735,42 +738,56 @@ module API
     
     # Find all places for an array of place_ids
     # https://graph.facebook.com/?ids=116154718413160,121328401214612,57167660895
-    # API::FacebookApi.new.find_place_for_place_id_array([116154718413160,121328401214612,57167660895])
+    # API::FacebookApi.new.find_places_for_place_id_array([116154718413160,121328401214612,57167660895])
     def find_places_for_place_id_array(place_id_array = nil)
 
       if place_id_array.nil? then
         place_id_array = [121328401214612,57167660895] # cafe zoe
       end
 
-      puts "find places for place_id_array: #{place_id_array}"
-
-      headers_hash = Hash.new
-      headers_hash['Accept'] = 'application/json'
-
-      params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
-      params_hash['ids'] = place_id_array.join(',')
-      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
-
-      response = Typhoeus::Request.get("#{@@fb_host}/", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-      parsed_response = self.parse_json(response.body)
-
-      # WE NEED TO HANDLE ERRORS
-      # {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
-
-      # puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
-
-      # Parse places keys
-      # parsed_keys = parsed_response.keys
-      #       parsed_keys.each do |key|
-      #         # puts "#{key}"
-      #         facebook_place = self.serialize_place(parsed_response[key])
-      #       end
+      place_id_exist_array = []
+      # puts "find places for place_id_array: #{place_id_array}"
+      Place.find(:all, :select=>"place_id", :conditions =>"place_id in (121328401214612,57167660895)").each do |db_place|
+        place_id_exist_array << db_place['place_id']
+      end
       
-      # Batch places
-      puts "Bulk inserting places"
-      self.serialize_place_bulk(parsed_response)
+      puts "Attempt to add #{place_id_array.length} to DB, #{place_id_exist_array.length} already exist."
+      place_id_array = place_id_array - place_id_exist_array
+      puts "Inserting #{place_id_array.length} additional places."
+      
+      # Only make calls if there are places to pull from Facebook
+      if place_id_array.length>0
+        
+        headers_hash = Hash.new
+        headers_hash['Accept'] = 'application/json'
+        params_hash = Hash.new
+        params_hash['access_token'] = self.access_token
+        params_hash['ids'] = place_id_array.join(',')
+        params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
 
+        response = Typhoeus::Request.get("#{@@fb_host}/", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        parsed_response = self.parse_json(response.body)
+
+        # WE NEED TO HANDLE ERRORS
+        # {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
+
+        # puts "\n\n\n\n\nPARSED: #{parsed_response}\n\n\n\n\n"
+
+        # Parse places keys
+        # parsed_keys = parsed_response.keys
+        #       parsed_keys.each do |key|
+        #         # puts "#{key}"
+        #         facebook_place = self.serialize_place(parsed_response[key])
+        #       end
+      
+        # Batch places
+        if parsed_response.nil?
+          "No response from Facebook when trying to get places!"
+        else
+          "Bulk serializing places."
+          self.serialize_place_bulk(parsed_response)
+        end
+      end
     end
 
     # Finds friends for a single facebook id
