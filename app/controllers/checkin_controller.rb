@@ -108,9 +108,11 @@ class CheckinController < ApplicationController
     place_list = place_id_array.join(',')
     
     query = "place_id IN (#{place_list})"
+    # Returns the result by order of distance, ascending
+    order_statement = "3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )"
     
     response_array = []
-    Place.find(:all, :conditions => query).each do |place|
+    Place.find(:all, :conditions => query, :order=> order_statement).each do |place|
       # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
       d2r = Math::PI/180.0
       dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
