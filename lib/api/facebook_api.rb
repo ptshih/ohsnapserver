@@ -746,18 +746,16 @@ module API
       end
 
       place_id_exist_array = []
+      puts "Attempt to add #{place_id_array.length} to DB"
       # puts "find places for place_id_array: #{place_id_array}"
-      Place.find(:all, :select=>"place_id", :conditions =>"place_id in (121328401214612,57167660895)").each do |db_place|
-        place_id_exist_array << db_place['place_id']
+      place_id_exist_array = Place.find(:all, :select=>"place_id", :conditions =>"place_id in (#{place_id_array.join(',')})").each do |db_place|
+        place_id_array.delete(db_place['place_id'].to_i)
       end
-      
-      puts "Attempt to add #{place_id_array.length} to DB, #{place_id_exist_array.length} already exist."
-      place_id_array = place_id_array - place_id_exist_array
-      puts "Inserting #{place_id_array.length} additional places."
+      puts "Actually add #{place_id_array.length} to DB"
       
       # Only make calls if there are places to pull from Facebook
       if place_id_array.length>0
-        
+        puts puts "Inserting #{place_id_array.length} additional places."
         headers_hash = Hash.new
         headers_hash['Accept'] = 'application/json'
         params_hash = Hash.new
