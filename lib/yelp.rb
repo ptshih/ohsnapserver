@@ -2,12 +2,14 @@ require 'nokogiri'
 require 'httpclient'
 require 'pp'
 require 'json'
+# require 'CGI'
 
-# USAGE : puts Yelp.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry Hoouse'})
+# USAGE : puts YelpScape.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
 # returns the closest match
+# YelpScape.new.webcacheForQuery('site:yelp.com cupertino curry house')
 
 
-class Yelp
+class YelpScape
   
   def initalize
       
@@ -46,7 +48,7 @@ class Yelp
                     end
             }
             rescue
-                Rails.logger.info "no images, or no slideshow :("
+                # Rails.logger.info "no images, or no slideshow :(" if Rails
             end
           {
               :name => biz.css('#bizInfoHeader h1').first.content,
@@ -66,6 +68,12 @@ class Yelp
       }.first
   end
   
+  def webcacheForQuery(query)
+    html = get('http://www.google.com/search?sclient=psy&hl=en&site=&source=hp&q='+CGI.escape(query)+'&btnG=Google+Search')
+    cachedurl = Nokogiri::HTML(html).css('span.gl a').first.attribute('href').content
+    cached = get(cachedurl)
+  end
+  
   def yelpBiz(path)
     parseDoc("http://www.yelp.com/#{path}")
   end
@@ -78,6 +86,7 @@ class Yelp
   
   def yelp(path,params)
       pp path,params
+      pp "http://www.yelp.com/#{path}?#{params.map{|k,v| k.to_s+'='+v.to_s}.join('&')}"
       getJSON("http://www.yelp.com/#{path}",params)
   end
   
@@ -94,11 +103,16 @@ class Yelp
   end
 
   def parseDoc(url)
-      Nokogiri::HTML(HTTPClient.new.get_content(url))
+      Nokogiri::HTML(get(url))
   end
 
   def get(url,params={})
-      HTTPClient.new.get_content(url,params)
+      o = {'User-Agent'=>'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
+      # url = "http://184.106.211.251/index.php?url=#{CGI.escape(url)}"
+      url = url+'?'+params.map{|k,v| k.to_s+'='+v.to_s}.join('&')
+      url = "http://72.2.118.126/index.php?url=#{CGI.escape(url)}"
+      puts url
+      HTTPClient.new.get_content(url,params,o)
   end
   
   def getJSON(url,params)
