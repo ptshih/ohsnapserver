@@ -153,18 +153,35 @@ class CheckinController < ApplicationController
     end
   end
   
-  # Show checkin trends
-  # Question: Sort by friend checkins per place? Or unique checkin_id count? or...
-  # UI tile shows this:
-  # Row1: "Casa DE Shih check-in by friends, 25"
-  # Row2: "     5 checkins and 2 likes"
+  # Show checkin trends; sort descending popularity, count by number of friend's checkins to that place
+  # Cell left: picture of the place
+  # Cell first row: Verde Tea Cafe  friend checkins:7
+  # Cell second row: 13 total checkins and 3 likes
   def trends
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
     
-    
-    
-    
+    query = "select p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
+        from tagged_users a
+        join checkins b on a.checkin_id = b.checkin_id
+        join places p on p.place_id = b.place_id
+        where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+        group by 1,2,3,4
+        order by 5 desc
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    while mysqlresult = mysqlresults.fetch_hash do
+      refer_hash = {
+        :place_id => mysqlresult['place_id'],
+        :place_name => mysqlresult['place_name'],
+        :checkins_count => mysqlresult['checkins_count'],
+        :like_count => mysqlresult['like_count'],
+        :friend_checkins => mysqlresult['friend_checkins']
+      }
+      response_array << refer_hash
+    end
+    mysqlresults.free
     
     respond_to do |format|
       format.xml  { render :xml => response_array }
