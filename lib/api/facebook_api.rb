@@ -749,7 +749,7 @@ module API
       puts "Attempt to add #{place_id_array.length} to DB"
       # puts "find places for place_id_array: #{place_id_array}"
       place_id_exist_array = Place.find(:all, :select=>"place_id", :conditions =>"place_id in (#{place_id_array.join(',')})").each do |db_place|
-        place_id_array.delete(db_place['place_id'].to_i)
+        place_id_array.delete(db_place['place_id'].to_s)
       end
       puts "Actually add #{place_id_array.length} to DB"
       
