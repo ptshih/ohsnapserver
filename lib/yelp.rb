@@ -108,7 +108,9 @@ class YelpScape
 
   def get(url,params={})
       o = {'User-Agent'=>'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
-      url = "http://184.106.211.251/index.php?url=#{CGI.escape(url)}"
+      # url = "http://184.106.211.251/index.php?url=#{CGI.escape(url)}"
+      url = url+'?'+params.map{|k,v| k.to_s+'='+v.to_s}.join('&')
+      url = "http://72.2.118.126/index.php?url=#{CGI.escape(url)}"
       puts url
       HTTPClient.new.get_content(url,params,o)
   end
