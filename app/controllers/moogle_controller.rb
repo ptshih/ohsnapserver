@@ -42,9 +42,6 @@ class MoogleController < ApplicationController
   # Receives a POST with access_token from the user
   # This will start the API flow to grab user and friends checkins
   def register
-    # reset fetch_progress
-    @facebook_api.update_fetch_progress(@current_user.facebook_id, 0.1) # force progress to 0
-    
     last_fetched_friends = @current_user.last_fetched_friends
     last_fetched_checkins = @current_user.last_fetched_checkins
     
@@ -137,6 +134,7 @@ class MoogleController < ApplicationController
   end
   
   def progress
+    # DEPRECATED
     # This is a ghetto-temporary API used to poll the progress of the server when an FULL FETCH occurs
     # Eventually we should really use a persistent connection here between client and server
     
