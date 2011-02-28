@@ -313,6 +313,45 @@ module API
     # API CALLS
     #
 
+    # Finds recent checkins for one user and his/her friends
+    # This API is used on the absolute first launch (register) so the user can immediately start playing around with the app
+    # While we fetch the historical data in the background
+    # https://graph.facebook.com/search?type=checkin&fields=id,from,tags,message,place,application,created_time&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    def find_recent_checkins_for_facebook_id(facebook_id = nil)
+      if facebook_id.nil? then facebook_id = @@peter_id end
+        
+      puts "find recent checkins for facebook_id: #{facebook_id}"
+      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+
+      params_hash = Hash.new
+      params_hash['access_token'] = self.access_token
+      params_hash['type'] = 'checkin'
+      params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['limit'] = 1000 # set this to a really high limit to get all results in one call
+      # if !since.nil? then
+      #   params_hash['since'] = since.to_i
+      # end
+      
+      response = Typhoeus::Request.get("#{@@fb_host}/search", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      parsed_response = self.parse_json(response.body)
+      #puts "Response from facebook: #{response.body}"
+      #puts "Response status code: #{response.code}"
+      place_id_array = Array.new
+
+      # Batch parse checkins
+      place_id_array = self.serialize_checkin_bulk(parsed_response['data'])
+      
+      # Serialize unique list of place_ids
+      if !place_id_array.empty?
+        self.find_places_for_place_id_array(place_id_array.uniq)
+      end
+
+      # Update last_fetched_checkins timestamp for user
+      self.update_last_fetched_checkins(facebook_id)
+    end
+    
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
     # API::FacebookApi.new.find_checkins_for_facebook_id(548430564)

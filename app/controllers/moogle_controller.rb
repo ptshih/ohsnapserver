@@ -52,16 +52,21 @@ class MoogleController < ApplicationController
     puts "Last fetched checkins before: #{last_fetched_checkins}"
     
     # Get all friends from facebook for the current user again
-    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+    @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+
+    # Get all recent checkins for current user and his/her friends
+    # This API is hit to provide a fast set of data for the user to start using the app
+    @facebook_api.find_recent_checkins_for_facebook_id(@current_user.facebook_id)
     
     # Get all checkins for current user
     @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, last_fetched_checkins)
     
-    # Get all checkins for friends of the current user
-    get_friends_checkins(friend_id_array, last_fetched_checkins)
-    
     # We want to send the entire friendslist hash of id, name to the client
     friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
+    friend_id_array = friend_array.map  do |f| f[:friend_id] end
+      
+    # Get all checkins for friends of the current user
+    get_friends_checkins(friend_id_array, last_fetched_checkins)
     
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
@@ -101,12 +106,19 @@ class MoogleController < ApplicationController
       puts "Last fetched friends before: #{last_fetched_friends}"
       puts "Last fetched checkins before: #{last_fetched_checkins}"
       
-      # Get all friends from facebook for the current user again
-      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+      # Get all friends from facebook for the current user again with since timestamp
+      @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+      
+      # Get all recent checkins for current user and his/her friends
+      # This API is hit to provide a fast set of data for the user to start using the app
+      @facebook_api.find_recent_checkins_for_facebook_id(@current_user.facebook_id)
       
       # Get all checkins for current user
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, last_fetched_checkins)
       
+      friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
+      friend_id_array = friend_array.map  do |f| f[:friend_id] end
+        
       # Get all checkins for friends of the current user
       get_friends_checkins(friend_id_array, last_fetched_checkins)
       
