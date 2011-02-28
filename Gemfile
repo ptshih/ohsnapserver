@@ -1,6 +1,9 @@
 source 'http://rubygems.org'
 source 'http://gemcutter.org'
 
+gem 'httpclient'
+gem 'nokogiri'
+
 gem 'rails', '3.0.5'
 
 gem 'mysql'
