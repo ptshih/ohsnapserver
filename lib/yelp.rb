@@ -2,6 +2,11 @@ require 'nokogiri'
 require 'httpclient'
 require 'pp'
 require 'json'
+
+# USAGE : puts Yelp.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry Hoouse'})
+# returns the closest match
+
+
 class Yelp
   
   def initalize
@@ -31,14 +36,18 @@ class Yelp
           start:0
       })
       res['events']['search.map.overlays'].map{|e|
-          biz = yelpBiz(e['url'])
-          images = []
-          biz.css('script').each{|script|
-            if script.content.include? 'yelp.init.bizDetails.page'
-                json = JSON.parse(script.content.gsub('yelp.init.wrapper("yelp.init.bizDetails.page", ','').gsub(');',''))
-                json['slides'].each{|img| images << img['image_url'] }
+            biz = yelpBiz(e['url'])
+            images = []
+            begin
+                biz.css('script').each{|script|
+                    if script.content.include? 'yelp.init.bizDetails.page'
+                        json = JSON.parse(script.content.gsub('yelp.init.wrapper("yelp.init.bizDetails.page", ','').gsub(');',''))
+                        json['slides'].each{|img| images << img['image_url'] }
+                    end
+            }
+            rescue
+                Rails.logger.info "no images, or no slideshow :("
             end
-          }
           {
               :name => biz.css('#bizInfoHeader h1').first.content,
               :rating => biz.css('#bizRating .rating img').first.attribute('title').content,
@@ -98,5 +107,5 @@ class Yelp
   
 end
 
-#puts Yelp.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'curry'})
+
 
