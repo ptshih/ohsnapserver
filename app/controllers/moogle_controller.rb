@@ -95,7 +95,7 @@ class MoogleController < ApplicationController
       puts "Last fetched checkins before: #{last_fetched_checkins}"
       
       # Get all friends from facebook for the current user again
-      fb_friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+      friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
       
       # Get all checkins for current user
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, last_fetched_checkins)
