@@ -15,10 +15,10 @@ class MoogleController < ApplicationController
     # 600 calls per 600 seconds
     
     # first we get the initial slice of IDs
-    first_slice = friend_id_array.slice!(0..499)
+    first_slice = friend_id_array.slice!(0..299)
     
     # now we slice up the remaining IDs into chunks of 500
-    sliced_friend_id_array = friend_id_array.each_slice(500).to_a
+    sliced_friend_id_array = friend_id_array.each_slice(300).to_a
     
     # Get first slice now
     first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
