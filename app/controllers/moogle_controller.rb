@@ -10,6 +10,27 @@ class MoogleController < ApplicationController
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
+  def get_friends_checkins(friend_id_array = nil, last_fetched_checkins = nil)
+    # We need to split up the fb_friend_id_array here so that we don't hit the FB API throttle
+    # 600 calls per 600 seconds
+    
+    # first we get the initial slice of IDs
+    first_slice = friend_id_array.slice!(0..499)
+    
+    # now we slice up the remaining IDs into chunks of 500
+    sliced_friend_id_array = friend_id_array.each_slice(500).to_a
+    
+    # Get first slice now
+    @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
+    
+    # Fire off a background job to get all friend checkins
+    sliced_friend_id_array.each_with_index do |slice, index|
+      queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, slice, last_fetched_checkins)
+      delayed_time = (index+1) * 1
+      queued_checkins.send_at(delayed_time.minutes.from_now, :get_friends_checkins_async)
+    end
+  end
+  
   # This API registers a new first time User from a client
   # Receives a POST with access_token from the user
   # This will start the API flow to grab user and friends checkins
@@ -24,13 +45,13 @@ class MoogleController < ApplicationController
     puts "Last fetched checkins before: #{last_fetched_checkins}"
     
     # Get all friends from facebook for the current user again
-    fb_friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
+    friend_id_array = @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
     
     # Get all checkins for current user
     @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, last_fetched_checkins)
     
-    # Fire off a background job to get all friend checkins
-    Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, fb_friend_id_array, last_fetched_checkins)
+    # Get all checkins for friends of the current user
+    get_friends_checkins(friend_id_array, last_fetched_checkins)
     
     # We want to send the entire friendslist hash of id, name to the client
     friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
@@ -79,10 +100,9 @@ class MoogleController < ApplicationController
       # Get all checkins for current user
       @facebook_api.find_checkins_for_facebook_id(@current_user.facebook_id, last_fetched_checkins)
       
-      # Fire off a background job to get all friend checkins
-      Delayed::Job.enqueue FriendsCheckins.new(@current_user.access_token, @current_user.facebook_id, fb_friend_id_array, last_fetched_checkins)
+      # Get all checkins for friends of the current user
+      get_friends_checkins(friend_id_array, last_fetched_checkins)
       
-      # Later we want to send the entire friendslist back to the client to cache
     end
     
     # The response should include the current user ID and name for the client to cache
