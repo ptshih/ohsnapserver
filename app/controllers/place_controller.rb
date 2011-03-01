@@ -134,7 +134,7 @@ class PlaceController < ApplicationController
       
     facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
     people_list = facebook_id_array.join(",")
-    query = "place_id = #{params[:place_id]} and tagged_users.facebook_id in (#{people_list})"
+    query = "checkins.place_id = #{params[:place_id]} and tagged_users.facebook_id in (#{people_list})"
     friend_checkins = Checkin.find(:all, :select=>"tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id").count
 
   # Checkin.find(:all, :select=>"tagged_users.*", :conditions=> "place_id = 115681115118628 AND tagged_users.facebook_id like '100%'", :include=>:tagged_users, :joins=>"left join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').count

@@ -9,7 +9,7 @@ require 'json'
 # YelpScape.new.webcacheForQuery('site:yelp.com cupertino curry house')
 
 
-class YelpScape
+class YelpScaper
   
   def initalize
       

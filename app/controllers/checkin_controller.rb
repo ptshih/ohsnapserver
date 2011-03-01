@@ -171,7 +171,7 @@ class CheckinController < ApplicationController
       left join tagged_users b on a.place_id = b.place_id
         and (b.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
             or b.facebook_id=#{@current_user.facebook_id})
-      where place_id IN (#{place_list})
+      where a.place_id IN (#{place_list})
       group by 1
       order by " + order_statement + limit_count
     
@@ -180,9 +180,9 @@ class CheckinController < ApplicationController
     while place = mysqlresults.fetch_hash do
       # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
       d2r = Math::PI/180.0
-      dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
-      dlat = (place.lat.to_f - params[:lat].to_f) * d2r;
-      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      dlong = (place['lng'].to_f - params[:lng].to_f) * d2r;
+      dlat = (place['lat'].to_f - params[:lat].to_f) * d2r;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
             

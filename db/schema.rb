@@ -174,7 +174,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "name"
     t.string   "rating"
     t.integer  "review_count"
-    t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"

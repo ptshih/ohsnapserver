@@ -1,17 +1,18 @@
 require 'pp'
-require 'yelpscrape'
+require 'yelp_scraper'
 class Place < ActiveRecord::Base
-  has_one :yelp, :foreign_key => 'yelp_pid', :primary_key => 'yelp_pid', :inverse_of => :place
+  has_one :yelp, :foreign_key => 'place_id', :primary_key => 'place_id', :inverse_of => :place
   has_one :gowalla, :foreign_key => 'gowalla_id', :primary_key => 'gowalla_id', :inverse_of => :place
   
-  def scrapeYelp
-    result = YelpScape.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
+  def scrape_yelp
+    result = YelpScaper.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
     pp result
     
     if !result.nil?
       serialize_yelp(result)
     else
       puts "Failed to correlate with Yelp"
+      # We should set an invalid flag on the place so we don't try and re-scrape yelp again
     end
     
     # result['reviews'].each do |review|
@@ -46,6 +47,8 @@ class Place < ActiveRecord::Base
     
     serialize_yelp_images(yelp_pid ,result[:images])
     serialize_yelp_reviews(yelp_pid, result[:reviews])
+    
+    self.update_attribute('yelp_pid', yelp_pid)
   end
   
   def serialize_yelp_reviews(yelp_pid, reviews)
