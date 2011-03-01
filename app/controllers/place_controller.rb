@@ -6,6 +6,11 @@ class PlaceController < ApplicationController
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
 
+  # feed: the posts/comments feed of a particular place
+  # show: the information about a place - address, lat/lng, likes, checkins etc.
+  # activity: activity stream of checkins by your friends
+  # top_visiting_friends: top list of friends who have visited this place
+  
   def load_facebook_api
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end
@@ -80,6 +85,43 @@ class PlaceController < ApplicationController
       format.json  { render :json => response_array }
     end
     
+  end
+  
+  # Top visiting friends of this particular location
+  # top_visiting_friends(place_id)
+  def top_visiting_friends
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    query = "select a.facebook_id as friend_facebook_id, a.name as friend_name, count(*) as checkins
+            from tagged_users a
+            join checkins b on a.checkin_id = b.checkin_id and b.place_id = #{params[:place_id]}
+            join places p on p.place_id = b.place_id
+            where a.facebook_id = #{@current_user.facebook_id}
+              or a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+            group by 1,2
+            order by 3 desc, 2"
+    
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    rank = 0
+    while mysqlresult = mysqlresults.fetch_hash do
+      rank += 1
+      refer_hash = {
+        :rank => rank,
+        :friend_facebook_id => mysqlresult['friend_facebook_id'],
+        :friend_name => mysqlresult['friend_name'],
+        :checkins_count => mysqlresult['checkins_count']
+      }
+      response_array << refer_hash
+    end
+    mysqlresults.free
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+
   end
   
   # Returns general information of this place
