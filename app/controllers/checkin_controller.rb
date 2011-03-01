@@ -33,19 +33,19 @@ class CheckinController < ApplicationController
     
     # Handle filters
     # People filter
-    if params[:who].nil?
+    if params[:who]=="me" || params[:who]==nil?
       filter_people = "me"
-      query = "tagged_users.facebook_id IN (#{@current_user.facebook_id})"
+      facebook_bounds = "tagged_users.facebook_id IN (#{@current_user.facebook_id})"
     else
       filter_people = params[:who]
       if filter_people == "friends"
         # Get an array of friend_ids
         facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
         people_list = facebook_id_array.join(",")
-        query = "tagged_users.facebook_id IN (#{people_list})"
+        facebook_bounds = "tagged_users.facebook_id IN (#{people_list})"
       else
         # String param which may contain mulitple people's ids
-        query = "tagged_users.facebook_id IN (#{filter_people})"
+        facebook_bounds = "tagged_users.facebook_id IN (#{filter_people})"
       end
     end
     
@@ -73,13 +73,13 @@ class CheckinController < ApplicationController
     
     limit_count = 100
     if !params[:count].nil?
-      limit_count = params[:count]
+      limit_count = params[:count].to_i
     end
     
     # Store the checkin results in the hash by checkin_id, checkin_result_hash (key,value)
     recent_checkins = Hash.new
     
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => time_bounds, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => time_bounds+" "+facebook_bounds, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
