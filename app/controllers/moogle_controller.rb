@@ -161,6 +161,8 @@ class MoogleController < ApplicationController
     # Sorted list of top places you and your friends visited
     # Sorted list of top people who tagged you (list total times you got tagged at top)
     # Sorted list of top people you tagged (list total times you tagged others at top)    
+    
+    # General state of YOU
     total_checkins = 0
     total_authored = 0
     total_you_tagged = 0
@@ -168,10 +170,20 @@ class MoogleController < ApplicationController
     total_unique_places = 0
     friend_tagged_you_count_array  = []
     you_tagged_friend_array = []
-    top_places_array = []
+    
+    # Top places for you
+    you_top_places_array = []
     you_last_checkin_time = 0
     you_last_checkin_place_id = 0
     you_last_checkin_place_name = ""
+    
+    # Top places for you and friends
+    you_friends_top_places_array = []
+    you_friend_last_checkin_facebook_id = 0
+    you_friend_last_checkin_full_name = ""
+    you_friend_last_checkin_time = 0
+    you_friend_last_checkin_place_name = ""
+    you_friend_last_checkin_place_id = 0
     
     list_limit = 10
     if params[:count].nil?
@@ -258,6 +270,8 @@ class MoogleController < ApplicationController
       mysqlresults = ActiveRecord::Base.connection.execute(place_query)
       list_limit_counter = 0
       
+      last_checkin_facebook_id = 0
+      last_checkin_full_name = ""
       last_checkin_time = 0
       last_checkin_place_name = ""
       last_checkin_place_id = ""
@@ -270,6 +284,7 @@ class MoogleController < ApplicationController
           last_checkin_time = last_checkin_time_for_place
           last_checkin_place_name = mysqlresult['place_name']
           last_checkin_place_id = mysqlresult['place_id']
+          
         end
       
         # Storing table list of top places
@@ -297,11 +312,10 @@ class MoogleController < ApplicationController
         you_friends_top_places_array = top_places_array
         # you_friend_last_checkin_facebook_id
         # you_friend_last_checkin_full_name
-        # you_friend_last_checkin_time
-        # you_friend_last_checkin_place_name
-        # you_friend_last_checkin_place_id
+        you_friend_last_checkin_time = last_checkin_time
+        you_friend_last_checkin_place_name = last_checkin_place_name
+        you_friend_last_checkin_place_id = last_checkin_place_id
       end
-      
       
     end
     
