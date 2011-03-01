@@ -155,7 +155,8 @@ class MoogleController < ApplicationController
     # Total checkins
     # Unique place checkins
     # Last checkin
-    # List of top 10 places sorted by number of times you visited
+    # Sorted list of top places sorted by number of times you visited
+    # Sorted list of top places you and your friends visited (TODO)
     # Sorted list of top people who tagged you (list total times you got tagged at top)
     # Sorted list of top people you tagged (list total times you tagged others at top)    
     total_checkins = 0
