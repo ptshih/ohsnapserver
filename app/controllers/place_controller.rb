@@ -195,8 +195,8 @@ class PlaceController < ApplicationController
       :distance => distance,
       :checkins_friend_count => friend_checkins,
       :like_count => place['like_count'],
-      :review_count => place.yelp.nil? ? nil : place.yelp.review_count,
-      :rating => place.yelp.nil? ? nil : place.yelp.rating,
+      :review_count => place.yelp.nil? ? 0 : place.yelp.review_count,
+      :rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
       :attire => place['attire'],
       :website => place['website'],
       :price => place['price_range'] 
