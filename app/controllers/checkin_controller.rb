@@ -216,6 +216,7 @@ class CheckinController < ApplicationController
       params[:sort] = "friend_checkins"
     end
     
+    distance_filter = ""
     if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
       distance_filter = " and (3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )) > #{params[:distance]}"
     end
