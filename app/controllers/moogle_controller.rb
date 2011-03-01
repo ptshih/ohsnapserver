@@ -216,6 +216,20 @@ class MoogleController < ApplicationController
     #     end
     #     mysqlresults.free
     
+    # Paging parameter require time bounds and limit
+    time_bounds = ""
+    if params[:since]!=nil && params[:until]==nil
+      time_bounds = " and c.created_time>from_unixtime(#{params[:since].to_i})"
+    # pass until, then get everything < until
+    elsif params[:since]==nil && params[:until]!=nil
+      time_bounds = " and c.created_time<from_unixtime(#{params[:until].to_i})"
+    else
+    end
+    limit_count = " limit 100"
+    if !params[:count].nil?
+      limit_count = " limit #{params[:count]}"
+    end
+    
     # Following places that you've checked-in to in the last month
     query = "select  p.place_id, p.name as place_name,
             you_t.facebook_id as your_facebook_id,
@@ -225,14 +239,15 @@ class MoogleController < ApplicationController
             max(you_c.created_time) as your_last_checkin_time
       from checkins you_c
       join tagged_users you_t on you_c.checkin_id = you_t.checkin_id and you_t.facebook_id = #{@current_user.facebook_id}
-      join checkins c on you_c.place_id = c.place_id
+      join checkins c on you_c.place_id = c.place_id " + time_bounds + "
       join tagged_users t on c.checkin_id = t.checkin_id
           and (t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) or t.facebook_id = #{@current_user.facebook_id})
       join places p on p.place_id = c.place_id
       where you_c.created_time>=date_add(now(), interval - 1 month)
     group by 1,2,3,4,5,6
     order by 4 desc
-    "
+    " + limit_count
+    
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while mysqlresult = mysqlresults.fetch_hash do
