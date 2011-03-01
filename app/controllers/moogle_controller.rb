@@ -266,10 +266,11 @@ class MoogleController < ApplicationController
             where t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
             group by 1,2
             order by 4 desc"
-    place_queries.each do |index, place_query| 
+    place_queries.each_with_index do |place_query, index|
       mysqlresults = ActiveRecord::Base.connection.execute(place_query)
       list_limit_counter = 0
       
+      top_places_array = []
       last_checkin_facebook_id = 0
       last_checkin_full_name = ""
       last_checkin_time = 0
@@ -321,9 +322,9 @@ class MoogleController < ApplicationController
     
     response_hash ={
       :facebook_id => @current_user.facebook_id,
-      :you_last_checkin_time => last_checkin_time,
-      :you_last_checkin_place_name => last_checkin_place_name,
-      :you_last_checkin_place_id => last_checkin_place_id,
+      :you_last_checkin_time => you_last_checkin_time,
+      :you_last_checkin_place_name => you_last_checkin_place_name,
+      :you_last_checkin_place_id => you_last_checkin_place_id,
       :total_checkins => total_checkins,
       :total_authored => total_authored,
       :total_you_tagged => total_you_tagged,
