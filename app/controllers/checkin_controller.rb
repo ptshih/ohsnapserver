@@ -55,8 +55,6 @@ class CheckinController < ApplicationController
     # params[:lat], params[:lng], params[:distance]
         
     # Category filter
-
-    response_array = []
     
     # Checkin.find(:all, :select=> 'app_id, checkin_id, facebook_id, message, place_id',:conditions=> "facebook_id=4804606",:group=>'app_id, checkin_id, facebook_id, message, place_id', :include=>:tagged_users, :limit=>10)
 
@@ -65,35 +63,53 @@ class CheckinController < ApplicationController
     #Checkin.where(query).each do |checkin|
     # Checkin.find(:all, :conditions=> "checkins.facebook_id IN (645750651) OR tagged_users.facebook_id IN (645750651)", :include=>:tagged_users, :joins=>:tagged_users, :order=>'created_time desc')
     
-    Checkin.find(:all, :select=>"DISTINCT checkins.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|  
-      if checkin['app_id'].nil?
-        checkin_app_id = nil
-        checkin_app_name = nil
-      else
-        checkin_app_id = checkin['app_id']
-        checkin_app_name = checkin.app['name']
-      end
-      tagged_count=0
-      tagged_users=[]
-      TaggedUser.find(:conditions=>"checkin_id = #{checkin['checkin_id']} and facebook_id!= #{checkin['facebook_id']}").each do |tagged|
-        tagged_count += 1
-        tagged_users << tagged['name']
-      end
+    recent_checkins = Hash.new
+    
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|
       
-      response_hash = {
-        :checkin_id => checkin['checkin_id'],
-        :facebook_id => checkin['facebook_id'],
-        :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
-        :tagged_count => tagged_count,
-        :tagged_user_array => tagged_users,
-        :message => checkin['message'],
-        :place_id => checkin['place_id'],
-        :place_name => checkin.place['name'],
-        :app_id => checkin_app_id,
-        :app_name => checkin_app_name,
-        :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
-      }
-      response_array << response_hash
+      if recent_checkins.has_key?(checkin['checkin_id'])
+        # Store the name if it's not the author
+        if checkin['facebook_id']!=checkin['tagged_user.facebook_id']
+          recent_checkins(checkin['checkin_id'])[:tagged_user_array] << checkin['tagged_user.name']
+          recent_checkins(checkin['checkin_id'])[:tagged_count] += 1
+        end
+      else
+        checkin = Hash.new
+        if checkin['app_id'].nil?
+          checkin_app_id = nil
+          checkin_app_name = nil
+        else
+          checkin_app_id = checkin['app_id']
+          checkin_app_name = checkin.app['name']
+        end
+        tagged_user_array = []
+        tagged_count=0
+        # Store the name if it's not the author
+        if checkin['facebook_id']!=checkin['tagged_user.facebook_id']
+          tagged_user_array << checkin['tagged_user.name']
+          tagged_count +=1
+        end
+        checkin = {
+          :checkin_id => checkin['checkin_id'],
+          :facebook_id => checkin['facebook_id'],
+          :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
+          :tagged_count => tagged_count,
+          :tagged_user_array => tagged_user_array,
+          :message => checkin['message'],
+          :place_id => checkin['place_id'],
+          :place_name => checkin.place['name'],
+          :app_id => checkin_app_id,
+          :app_name => checkin_app_name,
+          :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
+        }
+        recent_checkins[checkin['checkin_id']] = checkin
+      end
+
+    end #End loop through returned checkins+tagged user results
+
+    response_array = []
+    recent_checkin.each do |checkin_id, hash_response|
+      response_array << hash_response
     end
 
     respond_to do |format|
