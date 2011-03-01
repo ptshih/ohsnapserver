@@ -61,10 +61,12 @@ class CheckinController < ApplicationController
     #Checkin.where(query).each do |checkin|
     # Checkin.find(:all, :conditions=> "checkins.facebook_id IN (645750651) OR tagged_users.facebook_id IN (645750651)", :include=>:tagged_users, :joins=>:tagged_users, :order=>'created_time desc')
 
-    if params[:until]!=nil && params[:since]!=nil
-      time_bounds = "from_unixtime(#{params[:until]}) > checkins.created_time and checkins.created_time >= from_unixtime(#{params[:since]}) "
-    elsif params[:until]==nil && params[:since]!=nil
-      time_bounds = "checkins.created_time >= from_unixtime(#{params[:since]})"
+    # pass since, then get everything > since
+    if params[:since]!=nil && params[:until]==nil
+      time_bounds = "checkins.created_time>from_unixtime(#{params[:since].to_i})"
+    # pass until, then get everything < until
+    elsif params[:since]==nil && params[:until]!=nil
+      time_bounds = "checkins.created_time<from_unixtime(#{params[:until].to_i})"
     else
       time_bounds = ""
     end
