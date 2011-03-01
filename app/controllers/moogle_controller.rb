@@ -147,6 +147,148 @@ class MoogleController < ApplicationController
     end
   end
   
+  # Shows the ME profile
+  def me
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    # Total checkins
+    # Unique place checkins
+    # Last checkin
+    # List of top 10 places sorted by number of times you visited
+    # Sorted list of top people who tagged you (list total times you got tagged at top)
+    # Sorted list of top people you tagged (list total times you tagged others at top)    
+    total_checkins = 0
+    total_authored = 0
+    total_you_tagged = 0
+    total_tagged_you = 0
+    total_unique_places = 0
+    friend_tagged_you_count_array  = []
+    you_tagged_friend_array = []
+    top_places_array = []
+    last_checkin_time = 0
+    last_checkin_place_id = 0
+    last_checkin_place_name = ""
+    
+    list_limit = 10
+    if params[:count].nil?
+      list_limit = params[:count].to_i
+    end
+    
+    # Returns enough information for
+    # Total checkins
+    # Total times you checked-in (authored)
+    # Top list of people who tagged you, and total times you were tagged
+    query = "select u.facebook_id, u.full_name, count(*) as checkins
+            from checkins c
+            join tagged_users t on c.checkin_id = t.checkin_id
+            join users u on u.facebook_id = c.facebook_id
+            where t.facebook_id = #{@current_user.facebook_id}
+            group by 1,2
+            order by 3 desc"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    list_limit_counter = 0
+    while mysqlresult = mysqlresults.fetch_hash do
+      total_checkins += mysqlresult['checkins']
+      
+      if mysqlresult['facebook_id'].to_i == @current_user.facebook_id.to_i
+        total_authored += mysqlresult['checkins']
+      else
+        total_tagged_you += mysqlresult['checkins']
+        if list_limit_counter < list_limit
+          friend_tagged_you_count_hash = {
+            :facebook_id => mysqlresult['facebook_id'],
+            :full_name => mysqlresult['full_name'],
+            :checkins => mysqlresult['checkins']
+          }
+          friend_tagged_you_count_array << friend_tagged_you_count_hash
+          list_limit_counter += 1
+        end
+      end
+           
+    end
+    mysqlresults.free
+    
+    # Top list of people you tagged, and total people you tagged
+    query = "select t.facebook_id, t.name, count(*) as checkins
+            from checkins c
+            join tagged_users t on c.checkin_id = t.checkin_id
+            where c.facebook_id = #{@current_user.facebook_id} and t.facebook_id != #{@current_user.facebook_id}
+            group by 1 order by 3 desc"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    list_limit_counter = 0
+    while mysqlresult = mysqlresults.fetch_hash do
+      total_you_tagged += mysqlresult['checkins']
+      
+      if list_limit_counter < list_limit
+        you_tagged_friend_count_hash = {
+          :facebook_id => mysqlresult['facebook_id'],
+          :full_name => mysqlresult['name'],
+          :checkins => mysqlresult['checkins']
+        }
+        you_tagged_friend_array << you_tagged_friend_count_hash
+        list_limit_counter += 1
+      end
+    end
+    mysqlresults.free
+    
+    # Unique places checked-in
+    # Last checked-in time and place, checkin_count
+    query = "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
+            from checkins c
+            join tagged_users t on c.checkin_id = t.checkin_id
+            join places p on p.place_id = c.place_id
+            where t.facebook_id = #{@current_user.facebook_id}
+            group by 1,2
+            order by 4 desc"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    list_limit_counter = 0
+    while mysqlresult = mysqlresults.fetch_hash do
+      last_checkin_time_for_place = Time.parse(mysqlresult['last_checkin_time'].to_s).to_i
+      
+      if last_checkin_time_for_place > last_checkin_time
+        last_checkin_time = last_checkin_time_for_place
+        last_checkin_place_name = mysqlresult['place_name']
+        last_checkin_place_id = mysqlresult['place_id']
+      end
+      
+      total_unique_places += 1
+      if list_limit_counter < list_limit      
+        top_place_hash = {
+          :place_id => mysqlresult['place_id'],
+          :place_name => mysqlresult['place_name'],
+          :checkins => mysqlresult['checkins'],
+          :last_checkin_time => last_checkin_time_for_place
+        }
+        top_places_array << top_place_hash
+        list_limit_counter += 1
+      end
+    end
+    mysqlresults.free
+    
+    response_hash ={
+      :facebook_id => @current_user.facebook_id,
+      :last_checkin_time => last_checkin_time,
+      :last_checkin_place_name => last_checkin_place_name,
+      :last_checkin_place_id => last_checkin_place_id,
+      :total_checkins => total_checkins,
+      :total_authored => total_authored,
+      :total_you_tagged => total_you_tagged,
+      :total_tagged_you => total_tagged_you,
+      :total_unique_places => total_unique_places,
+      :friend_tagged_you_count_array => friend_tagged_you_count_array,
+      :you_tagged_friend_array => you_tagged_friend_array,
+      :top_places_array => top_places_array
+    }
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
+    end
+    
+  end
+  
+  # Shows the ME timeline
   def kupos
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"

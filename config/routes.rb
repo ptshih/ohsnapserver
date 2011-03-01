@@ -8,6 +8,7 @@ Moogle::Application.routes.draw do
   match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user
   match ':version/moogle/progress', :controller => 'moogle', :action => 'progress', :via => :get # Polling API
   match ':version/moogle/kupos', :controller => 'moogle', :action => 'kupos', :via => :get # Kupos API; referral activity stream
+  match ':version/moogle/me', :controller => 'moogle', :action => 'me', :via => :get # ME profile
   
   # User Routes
   match ':version/users', :controller => 'user', :action => 'index', :via => :get # List of Users
