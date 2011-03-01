@@ -173,12 +173,14 @@ class MoogleController < ApplicationController
     
     # Top places for you
     you_top_places_array = []
+    you_total_unique_places = 0
     you_last_checkin_time = 0
     you_last_checkin_place_id = 0
     you_last_checkin_place_name = ""
     
     # Top places for you and friends
     you_friends_top_places_array = []
+    you_friend_total_unique_places = 0
     you_friend_last_checkin_facebook_id = 0
     you_friend_last_checkin_full_name = ""
     you_friend_last_checkin_time = 0
@@ -186,7 +188,7 @@ class MoogleController < ApplicationController
     you_friend_last_checkin_place_id = 0
     
     list_limit = 10
-    if params[:count].nil?
+    if !params[:count].nil?
       list_limit = params[:count].to_i
     end
     
@@ -270,6 +272,7 @@ class MoogleController < ApplicationController
       mysqlresults = ActiveRecord::Base.connection.execute(place_query)
       list_limit_counter = 0
       
+      total_unique_places=0
       last_checkin_facebook_id = 0
       last_checkin_full_name = ""
       last_checkin_time = 0
@@ -284,7 +287,6 @@ class MoogleController < ApplicationController
           last_checkin_time = last_checkin_time_for_place
           last_checkin_place_name = mysqlresult['place_name']
           last_checkin_place_id = mysqlresult['place_id']
-          
         end
       
         # Storing table list of top places
@@ -308,13 +310,15 @@ class MoogleController < ApplicationController
         you_last_checkin_time = last_checkin_time
         you_last_checkin_place_name = last_checkin_place_name
         you_last_checkin_place_id = last_checkin_place_id
+        you_total_unique_places = total_unique_places
       else
         you_friends_top_places_array = top_places_array
-        # you_friend_last_checkin_facebook_id
-        # you_friend_last_checkin_full_name
+        # you_friend_last_checkin_facebook_id (can't get using existing query)
+        # you_friend_last_checkin_full_name (can't get using existing query)
         you_friend_last_checkin_time = last_checkin_time
         you_friend_last_checkin_place_name = last_checkin_place_name
         you_friend_last_checkin_place_id = last_checkin_place_id
+        you_friend_total_unique_places = total_unique_places
       end
       
     end
@@ -328,7 +332,8 @@ class MoogleController < ApplicationController
       :total_authored => total_authored,
       :total_you_tagged => total_you_tagged,
       :total_tagged_you => total_tagged_you,
-      :total_unique_places => total_unique_places,
+      :you_total_unique_places => you_total_unique_places,
+      :you_friend_total_unique_places => you_friend_total_unique_places,
       :friend_tagged_you_count_array => friend_tagged_you_count_array,
       :you_tagged_friend_array => you_tagged_friend_array,
       :you_top_places_array => you_top_places_array,
