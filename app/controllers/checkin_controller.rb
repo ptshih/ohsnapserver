@@ -157,7 +157,7 @@ class CheckinController < ApplicationController
     
     # LIMIT 
     limit_count = " limit 100"
-    if params[:count].nil?
+    if !params[:count].nil?
       limit_count = " limit #{params[:count]}"
     end
     
