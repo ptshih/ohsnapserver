@@ -12,15 +12,11 @@ class Place < ActiveRecord::Base
       serialize_yelp(result)
     else
       puts "Failed to correlate with Yelp"
+      
       # We should set an invalid flag on the place so we don't try and re-scrape yelp again
+      self.update_attribute('yelp_pid', 'omgwtfbbq')  
     end
-    
-    # result['reviews'].each do |review|
-    #     myyelp.reviews.create({
-    #         
-    #     })
-    # end
-    
+
    #  {:name=>"Wedding Photography by IQphoto",
    #   :rating=>"5 star rating",
    #   :url=>"/biz/wedding-photography-by-iqphoto-san-francisco-5",
