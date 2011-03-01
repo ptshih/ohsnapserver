@@ -70,8 +70,8 @@ class CheckinController < ApplicationController
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
         if checkin['facebook_id']!=checkin['tagged_user.facebook_id']
-          recent_checkins(checkin['checkin_id'])[:tagged_user_array] << checkin['tagged_user.name']
-          recent_checkins(checkin['checkin_id'])[:tagged_count] += 1
+          recent_checkins[checkin['checkin_id']][:tagged_user_array] << checkin['tagged_user.name']
+          recent_checkins[checkin['checkin_id']][:tagged_count] += 1
         end
       else
         if checkin['app_id'].nil?
@@ -88,7 +88,6 @@ class CheckinController < ApplicationController
           tagged_user_array << checkin['tagged_user.name']
           tagged_count +=1
         end
-        checkin_hash = Hash.new
         checkin_hash = {
           :checkin_id => checkin['checkin_id'],
           :facebook_id => checkin['facebook_id'],
@@ -108,7 +107,7 @@ class CheckinController < ApplicationController
     end #End loop through returned checkins+tagged user results
 
     response_array = []
-    recent_checkin.each do |checkin_id, hash_response|
+    recent_checkins.each do |checkin_id, hash_response|
       response_array << hash_response
     end
 
