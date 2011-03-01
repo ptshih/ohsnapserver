@@ -74,7 +74,7 @@ class PlaceController < ApplicationController
       response_hash = {
         :facebook_id => taggeduser['facebook_id'],
         :message => taggeduser['message'],
-        :name => taggeduser['name'],
+        :place_name => taggeduser['name'],
         :timestamp => Time.parse(taggeduser['created_time'].to_s).to_i
       }
       response_array << response_hash
@@ -153,7 +153,7 @@ class PlaceController < ApplicationController
     # /place/place_id
     response_hash = {
       :place_id => place['place_id'],
-      :name => place['name'],
+      :place_name => place['name'],
       :lng => place['lng'],
       :lat => place['lat'],
       :street => place['street'],

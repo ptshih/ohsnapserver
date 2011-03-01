@@ -149,7 +149,7 @@ class CheckinController < ApplicationController
       
       response_hash = {
         :place_id => place['place_id'],
-        :name => place['name'],
+        :place_name => place['name'],
         :street => place['street'],
         :city => place['city'],
         :state => place['state'],
@@ -192,12 +192,19 @@ class CheckinController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while mysqlresult = mysqlresults.fetch_hash do
+      d2r = Math::PI/180.0
+      dlong = (mysqlresult['lng'].to_f - params[:lng].to_f) * d2r;
+      dlat = (mysqlresult['lat'].to_f - params[:lat].to_f) * d2r;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
+      distance = 3956.0 * c;
+      
       refer_hash = {
         :place_id => mysqlresult['place_id'],
         :place_name => mysqlresult['place_name'],
         :checkins_count => mysqlresult['checkins_count'],
         :like_count => mysqlresult['like_count'],
-        :friend_checkins => mysqlresult['friend_checkins']
+        :checkins_friend_count => mysqlresult['friend_checkins']
       }
       response_array << refer_hash
     end
