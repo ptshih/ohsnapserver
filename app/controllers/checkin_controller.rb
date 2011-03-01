@@ -14,7 +14,6 @@ class CheckinController < ApplicationController
   # Use by Moogle Checkins (ie Checkin Feed) tabs - distance or who
   # params[:who] = deciding who to filter on; used by the "who" tab
   # params[:lat] and params[:lng] and params[:distance]= deciding distance to filter; used by "distance" tab
-  # params[:distance]
   # params[:since] = a unixtime that's the start time to use in filter
   # params[:until] = a unixtime that's end time to use in filter
   # params[:count]
@@ -151,12 +150,18 @@ class CheckinController < ApplicationController
     place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
     place_list = place_id_array.join(',')
     
+    limit_count = 100
+    if params[:count].nil?
+      limit_count = params[:count]
+    end
+    
     query = "place_id IN (#{place_list})"
+    
     # Returns the result by order of distance, ascending
     order_statement = "3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )"
     
     response_array = []
-    Place.find(:all, :conditions => query, :order=> order_statement).each do |place|
+    Place.find(:all, :conditions => query, :order=> order_statement, :limit=> limit_count).each do |place|
       # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
       d2r = Math::PI/180.0
       dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
@@ -199,6 +204,7 @@ class CheckinController < ApplicationController
   
   # Show checkin trends; sort descending popularity
   # Popularity can be sorted by params[:sort] = "like_count", "checkins_count", "friend_checkins"
+  # Also can be filtered by distance
   def trends
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
@@ -206,12 +212,17 @@ class CheckinController < ApplicationController
     if params[:sort].nil?
       params[:sort] = "friend_checkins"
     end
-
+    
+    if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
+      distance_filter = " and (3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )) > #{params[:distance]}"
+    end
+    
     query = "select p.lat, p.lng, p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
         from tagged_users a
         join checkins b on a.checkin_id = b.checkin_id
         join places p on p.place_id = b.place_id
-        where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+        where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
+        " + distance_filter + "
         group by 1,2,3,4
         order by #{params[:sort]} desc
     "
