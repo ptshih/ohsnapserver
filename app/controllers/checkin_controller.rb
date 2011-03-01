@@ -74,7 +74,6 @@ class CheckinController < ApplicationController
           recent_checkins(checkin['checkin_id'])[:tagged_count] += 1
         end
       else
-        checkin = Hash.new
         if checkin['app_id'].nil?
           checkin_app_id = nil
           checkin_app_name = nil
@@ -89,6 +88,7 @@ class CheckinController < ApplicationController
           tagged_user_array << checkin['tagged_user.name']
           tagged_count +=1
         end
+        checkin_hash = Hash.new
         checkin_hash = {
           :checkin_id => checkin['checkin_id'],
           :facebook_id => checkin['facebook_id'],
