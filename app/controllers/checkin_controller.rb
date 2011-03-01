@@ -89,7 +89,7 @@ class CheckinController < ApplicationController
           tagged_user_array << checkin['tagged_user.name']
           tagged_count +=1
         end
-        checkin = {
+        checkin_hash = {
           :checkin_id => checkin['checkin_id'],
           :facebook_id => checkin['facebook_id'],
           :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
@@ -102,7 +102,7 @@ class CheckinController < ApplicationController
           :app_name => checkin_app_name,
           :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
         }
-        recent_checkins[checkin['checkin_id']] = checkin
+        recent_checkins[checkin['checkin_id']] = checkin_hash
       end
 
     end #End loop through returned checkins+tagged user results
