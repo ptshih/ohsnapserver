@@ -8,7 +8,11 @@ class Place < ActiveRecord::Base
     result = YelpScape.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
     pp result
     
-    serialize_yelp(result)
+    if !result.nil?
+      serialize_yelp(result)
+    else
+      puts "Failed to correlate with Yelp"
+    end
     
     # result['reviews'].each do |review|
     #     myyelp.reviews.create({

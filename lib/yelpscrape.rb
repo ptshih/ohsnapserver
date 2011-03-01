@@ -37,7 +37,16 @@ class YelpScape
           sortby:'best_match',
           start:0
       })
-      res['events']['search.map.overlays'].map{|e|
+      
+      # No results found on Yelp for this place
+      if res['events']['search.map.overlays'].empty?
+        return nil
+      end
+      
+      result_array = res['events']['search.map.overlays'].map{|e|
+        if e['url'].nil?
+          next
+        end
             biz = yelpBiz(e['url'])
             images = []
             begin
@@ -65,7 +74,10 @@ class YelpScape
                   }
               }
           }
-      }.first
+      }
+      # Sometimes the last element of the array is nil
+      result_array.compact!
+      return result_array.last # The last element is always the most relevant
   end
   
   def webcacheForQuery(query)
