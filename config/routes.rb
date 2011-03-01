@@ -15,7 +15,7 @@ Moogle::Application.routes.draw do
   
   # Checkin Routes
   match ':version/checkins', :controller => 'checkin', :action => 'index', :via => :get # List of Checkins, with filters
-  match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
+  # match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # Single Checkin with ID
   match ':version/checkins/nearby', :controller => 'checkin', :action => 'nearby', :via => :post # get nearby facebook places
   match ':version/checkins/trends', :controller => 'checkin', :action => 'trends', :via => :get # Get popular places visited by friends
   
