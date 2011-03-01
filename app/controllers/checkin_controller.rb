@@ -73,14 +73,19 @@ class CheckinController < ApplicationController
         checkin_app_id = checkin['app_id']
         checkin_app_name = checkin.app['name']
       end
-      
-      tagged_count = TaggedUser.count(:conditions=>"checkin_id = #{checkin['checkin_id']}")
+      tagged_count=0
+      tagged_users=[]
+      TaggedUser.find(:conditions=>"checkin_id = #{checkin['checkin_id']} and facebook_id!= #{checkin['facebook_id']}").each do |tagged|
+        tagged_count += 1
+        tagged_users << tagged['name']
+      end
       
       response_hash = {
         :checkin_id => checkin['checkin_id'],
         :facebook_id => checkin['facebook_id'],
         :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
-        :tagged_count => tagged_count-1,
+        :tagged_count => tagged_count,
+        :tagged_user_array => tagged_users,
         :message => checkin['message'],
         :place_id => checkin['place_id'],
         :place_name => checkin.place['name'],
