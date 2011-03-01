@@ -146,6 +146,7 @@ class CheckinController < ApplicationController
   # Show nearby places
   # params[:lat]
   # params[:lng]
+  # facebook API returns a filtered by distance list; so i don't have to filter in SQL DB
   def nearby
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
