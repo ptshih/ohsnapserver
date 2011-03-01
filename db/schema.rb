@@ -158,7 +158,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "yelp_reviews", :force => true do |t|
     t.string  "yelp_pid"
     t.string  "rating"
-    t.string  "text"
+    t.text  "text"
   end
   
   create_table "yelp_images", :force => true do |t|

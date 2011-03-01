@@ -18,6 +18,35 @@ class PlaceController < ApplicationController
   def index
   end
   
+  def reviews
+    
+    response_array = []
+    
+    place = Place.find_by_place_id(params[:place_id])
+    
+    if place.yelp.nil?
+      place.scrape_yelp
+    end
+    
+    reviews_array = place.yelp.yelp_reviews
+    
+    if !reviews_array.nil?
+      reviews_array.each do |r|
+        review_hash = {
+          :yelp_pid => r.yelp_pid,
+          :rating => r.rating,
+          :text => r.text
+        }
+        response_array << review_hash
+      end
+    end
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+  end
+  
   # Returns a time sorted stream of posts made to that place
   def feed
     Rails.logger.info request.query_parameters.inspect
@@ -166,6 +195,8 @@ class PlaceController < ApplicationController
       :distance => distance,
       :checkins_friend_count => friend_checkins,
       :like_count => place['like_count'],
+      :review_count => place.yelp.nil? ? nil : place.yelp.review_count,
+      :rating => place.yelp.nil? ? nil : place.yelp.rating,
       :attire => place['attire'],
       :website => place['website'],
       :price => place['price_range'] 

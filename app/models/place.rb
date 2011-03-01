@@ -10,6 +10,7 @@ class Place < ActiveRecord::Base
     
     if !result.nil?
       serialize_yelp(result)
+      self.reload
     else
       puts "Failed to correlate with Yelp"
       
