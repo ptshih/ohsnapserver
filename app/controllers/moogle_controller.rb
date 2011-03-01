@@ -148,6 +148,8 @@ class MoogleController < ApplicationController
   end
   
   # Shows the ME profile
+  # TODO: Think of storing this information elsewhere and only doing stats via updates
+  # so that we don't have to traverse the entire table
   def me
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
@@ -156,7 +158,7 @@ class MoogleController < ApplicationController
     # Unique place checkins
     # Last checkin
     # Sorted list of top places sorted by number of times you visited
-    # Sorted list of top places you and your friends visited (TODO)
+    # Sorted list of top places you and your friends visited
     # Sorted list of top people who tagged you (list total times you got tagged at top)
     # Sorted list of top people you tagged (list total times you tagged others at top)    
     total_checkins = 0
@@ -167,9 +169,9 @@ class MoogleController < ApplicationController
     friend_tagged_you_count_array  = []
     you_tagged_friend_array = []
     top_places_array = []
-    last_checkin_time = 0
-    last_checkin_place_id = 0
-    last_checkin_place_name = ""
+    you_last_checkin_time = 0
+    you_last_checkin_place_id = 0
+    you_last_checkin_place_name = ""
     
     list_limit = 10
     if params[:count].nil?
@@ -233,45 +235,81 @@ class MoogleController < ApplicationController
     end
     mysqlresults.free
     
-    # Unique places checked-in
-    # Last checked-in time and place, checkin_count
-    query = "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
+    
+    # Unique places checked-in, last checked-in time and place, checkin_count
+    place_queries = []
+    # YOUR: Unique places checked-in, last checked-in time and place, checkin_count
+    place_queries << "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
             from checkins c
             join tagged_users t on c.checkin_id = t.checkin_id
             join places p on p.place_id = c.place_id
             where t.facebook_id = #{@current_user.facebook_id}
             group by 1,2
             order by 4 desc"
-    mysqlresults = ActiveRecord::Base.connection.execute(query)
-    list_limit_counter = 0
-    while mysqlresult = mysqlresults.fetch_hash do
-      last_checkin_time_for_place = Time.parse(mysqlresult['last_checkin_time'].to_s).to_i
+    # YOU AND FRIENDS: Unique places checked-in, last checked-in time and place, checkin_count
+    place_queries << "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
+            from checkins c
+            join tagged_users t on c.checkin_id = t.checkin_id
+            join places p on p.place_id = c.place_id
+            where t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+            group by 1,2
+            order by 4 desc"
+    place_queries.each do |index, place_query| 
+      mysqlresults = ActiveRecord::Base.connection.execute(place_query)
+      list_limit_counter = 0
       
-      if last_checkin_time_for_place > last_checkin_time
-        last_checkin_time = last_checkin_time_for_place
-        last_checkin_place_name = mysqlresult['place_name']
-        last_checkin_place_id = mysqlresult['place_id']
+      last_checkin_time = 0
+      last_checkin_place_name = ""
+      last_checkin_place_id = ""
+      
+      while mysqlresult = mysqlresults.fetch_hash do
+        last_checkin_time_for_place = Time.parse(mysqlresult['last_checkin_time'].to_s).to_i
+      
+        # Finding last checkin
+        if last_checkin_time_for_place > last_checkin_time
+          last_checkin_time = last_checkin_time_for_place
+          last_checkin_place_name = mysqlresult['place_name']
+          last_checkin_place_id = mysqlresult['place_id']
+        end
+      
+        # Storing table list of top places
+        total_unique_places += 1
+        if list_limit_counter < list_limit      
+          top_place_hash = {
+            :place_id => mysqlresult['place_id'],
+            :place_name => mysqlresult['place_name'],
+            :checkins => mysqlresult['checkins'],
+            :last_checkin_time => last_checkin_time_for_place
+          }
+          top_places_array << top_place_hash
+          list_limit_counter += 1
+        end
+      end
+      mysqlresults.free
+      
+      # index=0 is yours; index=1 is you and friends top places
+      if index==0
+        you_top_places_array = top_places_array
+        you_last_checkin_time = last_checkin_time
+        you_last_checkin_place_name = last_checkin_place_name
+        you_last_checkin_place_id = last_checkin_place_id
+      else
+        you_friends_top_places_array = top_places_array
+        # you_friend_last_checkin_facebook_id
+        # you_friend_last_checkin_full_name
+        # you_friend_last_checkin_time
+        # you_friend_last_checkin_place_name
+        # you_friend_last_checkin_place_id
       end
       
-      total_unique_places += 1
-      if list_limit_counter < list_limit      
-        top_place_hash = {
-          :place_id => mysqlresult['place_id'],
-          :place_name => mysqlresult['place_name'],
-          :checkins => mysqlresult['checkins'],
-          :last_checkin_time => last_checkin_time_for_place
-        }
-        top_places_array << top_place_hash
-        list_limit_counter += 1
-      end
+      
     end
-    mysqlresults.free
     
     response_hash ={
       :facebook_id => @current_user.facebook_id,
-      :last_checkin_time => last_checkin_time,
-      :last_checkin_place_name => last_checkin_place_name,
-      :last_checkin_place_id => last_checkin_place_id,
+      :you_last_checkin_time => last_checkin_time,
+      :you_last_checkin_place_name => last_checkin_place_name,
+      :you_last_checkin_place_id => last_checkin_place_id,
       :total_checkins => total_checkins,
       :total_authored => total_authored,
       :total_you_tagged => total_you_tagged,
@@ -279,7 +317,8 @@ class MoogleController < ApplicationController
       :total_unique_places => total_unique_places,
       :friend_tagged_you_count_array => friend_tagged_you_count_array,
       :you_tagged_friend_array => you_tagged_friend_array,
-      :top_places_array => top_places_array
+      :you_top_places_array => you_top_places_array,
+      :you_friends_top_places_array => you_friends_top_places_array
     }
     
     respond_to do |format|
