@@ -10,8 +10,10 @@ class CheckinController < ApplicationController
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
-  # This API gets a list of checkins for your you or your friends based on the who param
-  # params[:who]
+  # This API gets a list of checkins for you or your friends based on the who param
+  # Use by Moogle Checkins (ie Checkin Feed) tabs - distance or who
+  # params[:who] = deciding who to filter on; used by the "who" tab
+  # params[:lat] and params[:lng] and params[:distance]= deciding distance to filter; used by "distance" tab
   # params[:distance]
   # params[:since] = a unixtime that's the start time to use in filter
   # params[:until] = a unixtime that's end time to use in filter
@@ -31,46 +33,51 @@ class CheckinController < ApplicationController
 
     Rails.logger.info request.query_parameters.inspect
     
-    # Handle filters
-    # People filter
+    query_filters = ""
+    
+    # WHO filter
     if params[:who]=="me" || params[:who]==nil?
       filter_people = "me"
-      facebook_bounds = "tagged_users.facebook_id IN (#{@current_user.facebook_id})"
+      facebook_bounds = " and tagged_users.facebook_id IN (#{@current_user.facebook_id})"
     else
       filter_people = params[:who]
       if filter_people == "friends"
         # Get an array of friend_ids
         facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
         people_list = facebook_id_array.join(",")
-        facebook_bounds = "tagged_users.facebook_id IN (#{people_list})"
+        facebook_bounds = " and tagged_users.facebook_id IN (#{people_list})"
       else
         # String param which may contain mulitple people's ids
-        facebook_bounds = "tagged_users.facebook_id IN (#{filter_people})"
+        facebook_bounds = " and tagged_users.facebook_id IN (#{filter_people})"
       end
     end
+    query_filters += facebook_bounds
     
-    # Distance filter
+    # DISTANCE filter
     # params[:lat], params[:lng], params[:distance]
-        
-    # Category filter
-    
-    # Checkin.find(:all, :select=> 'app_id, checkin_id, facebook_id, message, place_id',:conditions=> "facebook_id=4804606",:group=>'app_id, checkin_id, facebook_id, message, place_id', :include=>:tagged_users, :limit=>10)
+    if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
+      distance_bounds = " and (3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )) > #{params[:distance]}"
+    end
+    query_filters += distance_bounds
 
-    # Checkin.find(:all, :conditions=> query, :include=>:tagged_users, :order=>'created_time desc')
-
-    #Checkin.where(query).each do |checkin|
-    # Checkin.find(:all, :conditions=> "checkins.facebook_id IN (645750651) OR tagged_users.facebook_id IN (645750651)", :include=>:tagged_users, :joins=>:tagged_users, :order=>'created_time desc')
-
+    # TIME filter
     # pass since, then get everything > since
     if params[:since]!=nil && params[:until]==nil
-      time_bounds = "checkins.created_time>from_unixtime(#{params[:since].to_i})"
+      time_bounds = " and checkins.created_time>from_unixtime(#{params[:since].to_i})"
     # pass until, then get everything < until
     elsif params[:since]==nil && params[:until]!=nil
-      time_bounds = "checkins.created_time<from_unixtime(#{params[:until].to_i})"
+      time_bounds = " and checkins.created_time<from_unixtime(#{params[:until].to_i})"
     else
       time_bounds = ""
     end
+    query_filters += time_bounds
     
+    # Removes the first " and" in the conditions
+    if query_filters[0,4]==" and"
+      query_filters = query_filters[4,query_filters.size]
+    end
+    
+    # LIMIT filter
     limit_count = 100
     if !params[:count].nil?
       limit_count = params[:count].to_i
@@ -79,7 +86,7 @@ class CheckinController < ApplicationController
     # Store the checkin results in the hash by checkin_id, checkin_result_hash (key,value)
     recent_checkins = Hash.new
     
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => time_bounds+" and "+facebook_bounds, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => query_filters, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
