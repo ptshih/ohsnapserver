@@ -33,6 +33,9 @@ class CheckinController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     
     query_filters = ""
+    facebook_bounds = ""
+    distance_bounds = ""
+    time_bounds = ""
     
     # WHO filter
     if params[:who]=="me" || params[:who]==nil?
