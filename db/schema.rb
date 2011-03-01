@@ -154,31 +154,24 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
 
   create_table "yelp_reviews", :force => true do |t|
-    t.string   "yelp_review_pid"
-    t.integer  "yelp_id",         :limit => 8, :default => 0
-    t.string   "excerpt"
-    t.integer  "rating",                       :default => 0
-    t.datetime "time_created"
-    t.string   "user_name"
-    t.string   "user_id"
-    t.string   "raw_hash"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string  "yelp_pid"
+    t.string  "rating"
+    t.string  "text"
+  end
+  
+  create_table "yelp_images", :force => true do |t|
+    t.string  "yelp_pid"
+    t.string  "url"
   end
 
   create_table "yelps", :force => true do |t|
     t.string   "yelp_pid"
     t.integer  "place_id",     :limit => 8,                                 :default => 0
-    t.string   "name"
-    t.string   "phone"
-    t.integer  "review_count"
-    t.string   "street"
-    t.string   "city"
-    t.string   "state"
-    t.string   "country"
-    t.string   "zip"
     t.decimal  "lat",                       :precision => 20, :scale => 16
     t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.string   "name"
+    t.string   "rating"
+    t.integer  "review_count"
     t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"

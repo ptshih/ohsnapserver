@@ -8,14 +8,7 @@ class Place < ActiveRecord::Base
     result = YelpScape.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
     pp result
     
-    y = Yelp.find_or_initialize_by_yelp_pid(result[:url].split('.').last)
-    y.yelp_pid = result[:url].split('.').last
-    y.name = result[:name]
-    y.lat = result[:lat]
-    y.lng = result[:lng]
-    y.review_count = result[:reviews].size
-    y.place_id = self.place_id
-    y.save
+    serialize_yelp(result)
     
     # result['reviews'].each do |review|
     #     myyelp.reviews.create({
@@ -33,5 +26,47 @@ class Place < ActiveRecord::Base
    #   :reviews=>[]
    # }
     
+  end
+  
+  def serialize_yelp(result)
+    yelp_pid = result[:url].split('/').last
+    y = Yelp.find_or_initialize_by_yelp_pid(yelp_pid)
+    y.place_id = self.place_id
+    y.yelp_pid = yelp_pid
+    y.name = result[:name]
+    y.rating = result[:rating]
+    y.lat = result[:lat]
+    y.lng = result[:lng]
+    y.review_count = result[:reviews].size
+    y.save
+    
+    serialize_yelp_images(yelp_pid ,result[:images])
+    serialize_yelp_reviews(yelp_pid, result[:reviews])
+  end
+  
+  def serialize_yelp_reviews(yelp_pid, reviews)
+    old_reviews = YelpReview.find_all_by_yelp_pid(yelp_pid)
+    if not old_reviews.nil?
+      old_reviews.each do |old_review|
+        old_review.delete
+      end
+    end
+    
+    reviews.each do |review|
+      r = YelpReview.create(
+        :yelp_pid => yelp_pid,
+        :rating => review[:rating],
+        :text => review[:text]
+      )
+    end
+  end
+  
+  def serialize_yelp_images(yelp_pid, images)
+    images.each do |image_url|
+      i = YelpImage.find_or_initialize_by_url(image_url)
+      i.yelp_pid = yelp_pid
+      i.url = image_url
+      i.save
+    end
   end
 end
