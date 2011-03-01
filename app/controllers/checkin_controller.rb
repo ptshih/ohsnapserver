@@ -88,7 +88,6 @@ class CheckinController < ApplicationController
           tagged_user_array << checkin['tagged_name']
           tagged_count +=1
         end
-        checkin_hash = Hash.new
         checkin_hash = {
           :checkin_id => checkin['checkin_id'],
           :facebook_id => checkin['facebook_id'],
@@ -108,7 +107,7 @@ class CheckinController < ApplicationController
     end #End loop through returned checkins+tagged user results
 
     response_array = []
-    recent_checkin.each do |checkin_id, hash_response|
+    recent_checkins.each do |checkin_id, hash_response|
       response_array << hash_response
     end
 
