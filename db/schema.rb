@@ -102,7 +102,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "places", :force => true do |t|
     t.integer  "place_id",       :limit => 8,                                 :default => 0
-    t.string  "yelp_pid"
+    t.integer  "yelp_id",        :limit => 8,                                 :default => 0
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
     t.string   "name"
     t.decimal  "lat",                         :precision => 20, :scale => 16
@@ -128,11 +128,13 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
+    t.integer "place_id",    :limit => 8
     t.integer "facebook_id", :limit => 8, :default => 0
     t.string  "name"
   end
 
   add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkinid_and_fbid", :unique => true
+  add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
     t.integer  "facebook_id",           :limit => 8,                               :default => 0
@@ -152,6 +154,20 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
+
+  create_table "yelp", :force => true do |t|
+    t.string   "yelp_id"
+    t.integer  "place_id",     :limit => 8,                                 :default => 0
+    t.string   "name"
+    t.string   "phone"
+    t.integer  "review_count"
+    t.decimal  "lat",                       :precision => 20, :scale => 16
+    t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.string   "raw_hash"
+    t.datetime "expires_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "yelp_reviews", :force => true do |t|
     t.string   "yelp_review_pid"
