@@ -178,8 +178,12 @@ class CheckinController < ApplicationController
   def trends
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
+    
+    if params[:sort].nil?
+      params[:sort] = "friend_checkins"
+    end
 
-    query = "select p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
+    query = "select p.lat, p.lng, p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
         from tagged_users a
         join checkins b on a.checkin_id = b.checkin_id
         join places p on p.place_id = b.place_id
@@ -193,7 +197,7 @@ class CheckinController < ApplicationController
       d2r = Math::PI/180.0
       dlong = (mysqlresult['lng'].to_f - params[:lng].to_f) * d2r;
       dlat = (mysqlresult['lat'].to_f - params[:lat].to_f) * d2r;
-      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(mysqlresult['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
       
@@ -202,7 +206,8 @@ class CheckinController < ApplicationController
         :place_name => mysqlresult['place_name'],
         :checkins_count => mysqlresult['checkins_count'],
         :like_count => mysqlresult['like_count'],
-        :checkins_friend_count => mysqlresult['friend_checkins']
+        :checkins_friend_count => mysqlresult['friend_checkins'],
+        :distance => distance
       }
       response_array << refer_hash
     end
