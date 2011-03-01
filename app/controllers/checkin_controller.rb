@@ -151,21 +151,33 @@ class CheckinController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
     
+    # PLACE filter
     place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
     place_list = place_id_array.join(',')
     
-    limit_count = 100
+    # LIMIT 
+    limit_count = " limit 100"
     if params[:count].nil?
-      limit_count = params[:count]
+      limit_count = " limit #{params[:count]}"
     end
     
-    query = "place_id IN (#{place_list})"
-    
+    # ORDER
     # Returns the result by order of distance, ascending
     order_statement = "3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )"
     
+    query = "
+      select a.*, sum(case when b.facebook_id is not null then 1 else 0 end) as friend_checkins
+      from places a
+      left join tagged_users b on a.place_id = b.place_id
+        and (b.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+            or b.facebook_id=#{@current_user.facebook_id})
+      where place_id IN (#{place_list})
+      group by 1
+      order by " + order_statement + limit_count
+    
     response_array = []
-    Place.find(:all, :conditions => query, :order=> order_statement, :limit=> limit_count).each do |place|
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    while place = mysqlresults.fetch_hash do
       # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
       d2r = Math::PI/180.0
       dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
@@ -173,13 +185,7 @@ class CheckinController < ApplicationController
       a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
-      
-      facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
-      facebook_id_array << @current_user.facebook_id
-      people_list = facebook_id_array.join(",")
-      query = "place_id = #{place['place_id']} and tagged_users.facebook_id in (#{people_list})"
-      friend_checkins = Checkin.find(:all, :select=>"tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id").count
-      
+            
       response_hash = {
         :place_id => place['place_id'],
         :place_name => place['name'],
@@ -191,7 +197,7 @@ class CheckinController < ApplicationController
         :phone => place['phone'],
         :checkins_count => place['checkins_count'],
         :distance => distance,
-        :checkins_friend_count => friend_checkins,
+        :checkins_friend_count => place['friend_checkins'],
         :like_count => place['like_count'],
         :attire => place['attire'],
         :website => place['website'],
@@ -199,6 +205,7 @@ class CheckinController < ApplicationController
       }
       response_array << response_hash
     end
+    mysqlresults.free
      
     respond_to do |format|
       format.xml  { render :xml => response_array }
