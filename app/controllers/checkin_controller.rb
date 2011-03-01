@@ -65,13 +65,13 @@ class CheckinController < ApplicationController
     
     recent_checkins = Hash.new
     
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.*", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc').each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
-        if checkin['facebook_id']!=checkin['tagged_user.facebook_id']
-          recent_checkins(checkin['checkin_id'])[:tagged_user_array] << checkin['tagged_user.name']
-          recent_checkins(checkin['checkin_id'])[:tagged_count] += 1
+        if checkin['facebook_id']!=checkin['tagged_facebook_id'].to_i
+          recent_checkins[checkin['checkin_id']][:tagged_user_array] << checkin['tagged_name']
+          recent_checkins[checkin['checkin_id']][:tagged_count] += 1
         end
       else
         if checkin['app_id'].nil?
@@ -84,8 +84,8 @@ class CheckinController < ApplicationController
         tagged_user_array = []
         tagged_count=0
         # Store the name if it's not the author
-        if checkin['facebook_id']!=checkin['tagged_user.facebook_id']
-          tagged_user_array << checkin['tagged_user.name']
+        if checkin['facebook_id']!=checkin['tagged_facebook_id'].to_i
+          tagged_user_array << checkin['tagged_name']
           tagged_count +=1
         end
         checkin_hash = Hash.new
