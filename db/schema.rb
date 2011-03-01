@@ -128,11 +128,13 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
+    t.integer "place_id",    :limit => 8
     t.integer "facebook_id", :limit => 8, :default => 0
     t.string  "name"
   end
 
   add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkinid_and_fbid", :unique => true
+  add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
     t.integer  "facebook_id",           :limit => 8,                               :default => 0

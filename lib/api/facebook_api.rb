@@ -57,10 +57,10 @@ module API
       if checkin.has_key?('tags')
         
         # Serialize Tagged User - for author
-        self.serialize_tagged_user(checkin['from'], checkin['id'])
+        self.serialize_tagged_user(checkin['from'], checkin['id'], checkin['place']['id'])
         
         checkin['tags']['data'].each do |t|
-          self.serialize_tagged_user(t, checkin['id'])
+          self.serialize_tagged_user(t, checkin['id'], checkin['place']['id'])
         end
       end
 
@@ -92,18 +92,18 @@ module API
         end
         
         #Tagged User - for author
-        create_new_tagged_user << [checkin['id'], checkin['from']['id'], checkin['from']['name']]
+        create_new_tagged_user << [checkin['id'], checkin['place']['id'], checkin['from']['id'], checkin['from']['name']]
         
         # Create Tagged Users - all other
         if checkin.has_key?('tags')
           checkin['tags']['data'].each do |t|
-            create_new_tagged_user << [checkin['id'], t['id'], t['name']]
+            create_new_tagged_user << [checkin['id'], checkin['place']['id'], t['id'], t['name']]
           end
         end
       end
       
       checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
-      tagged_user_columns = [:checkin_id, :facebook_id, :name]
+      tagged_user_columns = [:checkin_id, :place_id, :facebook_id, :name]
       app_columns = [:app_id, :name]
       
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
@@ -117,10 +117,11 @@ module API
     end
 
     # Create or update tagged friend
-    def serialize_tagged_user(tagged_user, checkin_id)
+    def serialize_tagged_user(tagged_user, checkin_id, place_id)
       puts "serializing tagged user #{tagged_user} for checkin: #{checkin_id}"
       t = TaggedUser.find_or_initialize_by_checkin_id(tagged_user['id'])
       t.facebook_id = tagged_user['id']
+      t.place_id = place_id
       t.checkin_id = checkin_id
       t.name = tagged_user['name']
       t.save
