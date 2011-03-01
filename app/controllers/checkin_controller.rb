@@ -79,7 +79,7 @@ class CheckinController < ApplicationController
     # Store the checkin results in the hash by checkin_id, checkin_result_hash (key,value)
     recent_checkins = Hash.new
     
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => time_bounds+" "+facebook_bounds, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => time_bounds+" and "+facebook_bounds, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
