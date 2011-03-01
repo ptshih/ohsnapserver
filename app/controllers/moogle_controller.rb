@@ -204,12 +204,12 @@ class MoogleController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     list_limit_counter = 0
     while mysqlresult = mysqlresults.fetch_hash do
-      total_checkins += mysqlresult['checkins']
+      total_checkins += mysqlresult['checkins'].to_i
       
       if mysqlresult['facebook_id'].to_i == @current_user.facebook_id.to_i
-        total_authored += mysqlresult['checkins']
+        total_authored += mysqlresult['checkins'].to_i
       else
-        total_tagged_you += mysqlresult['checkins']
+        total_tagged_you += mysqlresult['checkins'].to_i
         if list_limit_counter < list_limit
           friend_tagged_you_count_hash = {
             :facebook_id => mysqlresult['facebook_id'],
@@ -233,7 +233,7 @@ class MoogleController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     list_limit_counter = 0
     while mysqlresult = mysqlresults.fetch_hash do
-      total_you_tagged += mysqlresult['checkins']
+      total_you_tagged += mysqlresult['checkins'].to_i
       
       if list_limit_counter < list_limit
         you_tagged_friend_count_hash = {
