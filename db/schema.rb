@@ -86,6 +86,43 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "completed_at"
   end
 
+  create_table "logs", :force => true do |t|
+    t.timestamp "event_timestamp",                                                 :null => false
+    t.timestamp "session_starttime",                                               :null => false
+    t.string    "udid",              :limit => 55
+    t.string    "device_model",      :limit => 50
+    t.string    "system_name",       :limit => 10
+    t.string    "system_version",    :limit => 10
+    t.string    "app_version",       :limit => 10
+    t.integer   "facebook_id",       :limit => 8
+    t.integer   "connection_type"
+    t.string    "language",          :limit => 15
+    t.string    "locale",            :limit => 15
+    t.decimal   "lat",                             :precision => 20, :scale => 16
+    t.decimal   "lng",                             :precision => 20, :scale => 16
+    t.string    "action_type",       :limit => 30
+    t.string    "var1",              :limit => 50
+    t.string    "var2",              :limit => 50
+    t.string    "var3",              :limit => 50
+    t.string    "var4",              :limit => 50
+  end
+
+  create_table "pages", :id => false, :force => true do |t|
+    t.integer "id",               :limit => 8,                  :null => false
+    t.integer "facebook_id",      :limit => 8
+    t.string  "name",             :limit => 50,                 :null => false
+    t.string  "url_alias",        :limit => 50
+    t.string  "picture_url",      :limit => 100
+    t.string  "link",             :limit => 100
+    t.string  "category",         :limit => 100
+    t.string  "website_url",      :limit => 100
+    t.string  "username",         :limit => 100
+    t.string  "company_overview"
+    t.string  "products"
+    t.string  "raw_hash"
+    t.integer "likes",                           :default => 0, :null => false
+  end
+
   create_table "place_posts", :force => true do |t|
     t.integer  "place_id",          :limit => 8, :default => 0
     t.string   "place_post_id"
@@ -101,21 +138,22 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "places", :force => true do |t|
-    t.integer  "place_id",       :limit => 8,                                 :default => 0
-    t.string  "yelp_pid"
-    t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
+    t.integer  "place_id",       :limit => 8,                                  :default => 0
+    t.string   "yelp_pid"
+    t.integer  "gowalla_id",     :limit => 8,                                  :default => 0
     t.string   "name"
-    t.decimal  "lat",                         :precision => 20, :scale => 16
-    t.decimal  "lng",                         :precision => 20, :scale => 16
+    t.decimal  "lat",                          :precision => 20, :scale => 16
+    t.decimal  "lng",                          :precision => 20, :scale => 16
     t.string   "street"
     t.string   "city"
     t.string   "state"
     t.string   "country"
     t.string   "zip"
     t.string   "phone"
-    t.integer  "checkins_count", :limit => 8,                                 :default => 0
-    t.integer  "like_count",     :limit => 8,                                 :default => 0
+    t.integer  "checkins_count", :limit => 8,                                  :default => 0
+    t.integer  "like_count",     :limit => 8,                                  :default => 0
     t.string   "attire"
+    t.string   "picture_url",    :limit => 80
     t.string   "website"
     t.string   "price_range"
     t.string   "raw_hash"
@@ -155,15 +193,29 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
 
-  create_table "yelp_reviews", :force => true do |t|
-    t.string  "yelp_pid"
-    t.string  "rating"
-    t.text  "text"
+  create_table "yelp", :force => true do |t|
+    t.string   "yelp_id"
+    t.integer  "place_id",     :limit => 8,                                 :default => 0
+    t.string   "name"
+    t.string   "phone"
+    t.integer  "review_count"
+    t.decimal  "lat",                       :precision => 20, :scale => 16
+    t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.string   "raw_hash"
+    t.datetime "expires_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
-  
+
   create_table "yelp_images", :force => true do |t|
-    t.string  "yelp_pid"
-    t.string  "url"
+    t.string "yelp_pid"
+    t.string "url"
+  end
+
+  create_table "yelp_reviews", :force => true do |t|
+    t.string "yelp_pid"
+    t.string "rating"
+    t.text   "text"
   end
 
   create_table "yelps", :force => true do |t|
