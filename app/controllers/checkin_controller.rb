@@ -189,6 +189,7 @@ class CheckinController < ApplicationController
       response_hash = {
         :place_id => place['place_id'],
         :place_name => place['name'],
+        :place_url => place['picture_url'],
         :street => place['street'],
         :city => place['city'],
         :state => place['state'],
