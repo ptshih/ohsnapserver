@@ -132,6 +132,15 @@ module API
       parsed_keys = places.keys
       parsed_keys.each do |place|
         puts places[place]
+        # Pull parent page alias
+        # Example: Get "24-Hour-Fitness" from "http://www.facebook.com/pages/24-Hour-Fitness"
+        page_parent_alias = ""
+        if !places[place]['link'].nil?
+          scan_result = places[place]['link'].scan(/pages\/([^\/]*)/).first
+          if !scan_result.nil?
+            page_parent_alias = scan_result.first
+          end
+        end
         # Create new place
         place_id = places[place]['id']
         name = places[place]['name']
@@ -146,24 +155,50 @@ module API
         checkins_count = places[place]['checkins']
         like_count = places[place]['likes']
         attire = places[place]['attire']
+        category = places[place]['category']
+        picture_url = places[place]['picture']
+        link = places[place]['link']
         website = places[place]['website']
         price_range = places[place]['price_range']
         raw_hash = places[place]
         expires_at = Time.now + 1.days
-        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, website, price_range, raw_hash, expires_at]
+        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, category, picture_url, link, page_parent_alias, website, price_range, raw_hash, expires_at]
       end
       place_columns = [:place_id, :name, :lat, :lng, :street, :city, :state, :country, :zip, :phone,
-         :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
+         :checkins_count, :like_count, :attire, :category, :picture_url, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
       
-      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :website, :price_range, :raw_hash, :expires_at]
+      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :category, :picture_url, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
       
       puts "Serialized #{create_new_place.length} places in bulk."
+      
+    end
+
+    def serialize_page_bulk(page_array=nil)
+      
+      create_new_pages = []
+      page_array.each do |page|
+        create_new_pages << [page['id'], page['name'], page['page_alias'], page['picture_sq_url'], page['picture'], page['link'], page['category'], page['website'], page['username'], page['company_overview'], page['products'], page, page['likes']]
+      end
+      page_columns = [:facebook_id, :name, :page_alias, :picture_sq_url, :picture_url, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
+      
+      Page.import page_columns, create_new_pages, :on_duplicate_key_update => [:facebook_id, :name, :page_alias, :picture_sq_url, :picture_url, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
       
     end
 
     # Create or update place in model/database
     def serialize_place(place)
       puts "serializing place with id: #{place['id']}"
+      
+      # Pull parent page alias
+      # Example: Get "24-Hour-Fitness" from "http://www.facebook.com/pages/24-Hour-Fitness"
+      page_parent_alias = ""
+      if !place['link'].nil?
+        scan_result = place['link'].scan(/pages\/([^\/]*)/).first
+        if !scan_result.nil?
+          page_parent_alias = scan_result.first
+        end
+      end
+      
       p = Place.find_or_initialize_by_place_id(place['id'])
       p.place_id = place['id']
       p.name = place['name']
@@ -178,6 +213,10 @@ module API
       p.checkins_count = place['checkins']
       p.like_count = place['likes']
       p.attire = place['attire']
+      p.category = place['category']
+      p.picture_url = place['picture']
+      p.link = place['link']
+      p.page_parent_alias = page_parent_alias
       p.website = place['website']
       p.price_range = place['price_range']
       p.raw_hash = place
@@ -318,6 +357,7 @@ module API
     # This API is used on the absolute first launch (register) so the user can immediately start playing around with the app
     # While we fetch the historical data in the background
     # https://graph.facebook.com/search?type=checkin&fields=id,from,tags,message,place,application,created_time&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    # API::FacebookApi.new.find_recent_checkins_for_facebook_id()
     def find_recent_checkins_for_facebook_id(facebook_id = nil)
       if facebook_id.nil? then facebook_id = @@peter_id end
         
@@ -913,6 +953,39 @@ module API
 
       return friend_id_array
 
+    end
+
+    # Find the main page for the given alias
+    # Example:
+    # The place http://graph.facebook.com/120557291328032 is a place
+    # has http://www.facebook.com/pages/Starbucks/120557291328032
+    # which has a "page_alias" that is "Starbucks"
+    # API::FacebookApi.new.find_page_for_page_alias
+    def find_page_for_page_alias(page_alias = nil)
+      if page_alias.nil? then page_alias = "Starbucks" end
+      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+      # params_hash = Hash.new
+      # params_hash['access_token'] = self.access_token
+        
+      response = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}", :headers => headers_hash, :disable_ssl_peer_verification => true)  
+      parsed_response = self.parse_json(response.body)
+      parsed_response['page_alias'] = page_alias
+      
+      # Only look for image if the place page exists
+      if !parsed_response.has_key?("error")
+        # Ex: get("graph.facebook.com/120557291328032/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
+        response_image = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
+        scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
+        if !scan_for_imageurl.nil?
+          parsed_response['picture_sq_url'] = scan_for_imageurl.first
+        end
+      end
+      pages_array = []
+      pages_array << parsed_response
+      self.serialize_page_bulk(pages_array)
+      
     end
 
     def find_user_for_facebook_id(facebook_id = nil)
