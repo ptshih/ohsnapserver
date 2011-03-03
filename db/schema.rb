@@ -110,10 +110,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "pages", :id => false, :force => true do |t|
     t.integer "id",               :limit => 8,                  :null => false
     t.integer "facebook_id",      :limit => 8
-    t.string  "name",             :limit => 50,                 :null => false
-    t.string  "url_alias",        :limit => 50
+    t.string  "name",             :limit => 50
+    t.string  "page_alias",       :limit => 50,                 :null => false
     t.string  "picture_sq_url",   :limit => 100
-    t.string  "picture_url",      :limit => 100
+    t.string  "picture_url",      :limit => 200
     t.string  "link",             :limit => 100
     t.string  "category",         :limit => 100
     t.string  "website_url",      :limit => 100
@@ -123,6 +123,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string  "raw_hash"
     t.integer "likes",                           :default => 0, :null => false
   end
+
+  add_index "pages", ["page_alias"], :name => "page_alias_UNIQUE", :unique => true
 
   create_table "place_posts", :force => true do |t|
     t.integer  "place_id",          :limit => 8, :default => 0
@@ -139,28 +141,31 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "places", :force => true do |t|
-    t.integer  "place_id",       :limit => 8,                                  :default => 0
+    t.integer  "place_id",          :limit => 8,                                   :default => 0
     t.string   "yelp_pid"
-    t.integer  "gowalla_id",     :limit => 8,                                  :default => 0
+    t.integer  "gowalla_id",        :limit => 8,                                   :default => 0
     t.string   "name"
-    t.decimal  "lat",                          :precision => 20, :scale => 16
-    t.decimal  "lng",                          :precision => 20, :scale => 16
+    t.decimal  "lat",                              :precision => 20, :scale => 16
+    t.decimal  "lng",                              :precision => 20, :scale => 16
     t.string   "street"
     t.string   "city"
     t.string   "state"
     t.string   "country"
     t.string   "zip"
     t.string   "phone"
-    t.integer  "checkins_count", :limit => 8,                                  :default => 0
-    t.integer  "like_count",     :limit => 8,                                  :default => 0
+    t.integer  "checkins_count",    :limit => 8,                                   :default => 0
+    t.integer  "like_count",        :limit => 8,                                   :default => 0
     t.string   "attire"
-    t.string   "picture_url",    :limit => 80
+    t.string   "category",          :limit => 100
+    t.string   "picture_url",       :limit => 200
+    t.string   "link",              :limit => 100
     t.string   "website"
     t.string   "price_range"
     t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "page_parent_alias", :limit => 45
   end
 
   add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
