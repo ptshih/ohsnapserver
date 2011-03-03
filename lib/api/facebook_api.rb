@@ -661,7 +661,7 @@ module API
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      #params_hash['access_token'] = self.access_token
       # params_hash['fields'] = 'feed,photos,notes,checkins'
 
       # Get Place
