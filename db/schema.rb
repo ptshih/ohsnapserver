@@ -87,33 +87,32 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "logs", :force => true do |t|
-    t.timestamp "event_timestamp",                                                 :null => false
-    t.timestamp "session_starttime",                                               :null => false
-    t.string    "udid",              :limit => 55
-    t.string    "device_model",      :limit => 50
-    t.string    "system_name",       :limit => 10
-    t.string    "system_version",    :limit => 10
-    t.string    "app_version",       :limit => 10
-    t.integer   "facebook_id",       :limit => 8
-    t.integer   "connection_type"
-    t.string    "language",          :limit => 15
-    t.string    "locale",            :limit => 15
-    t.decimal   "lat",                             :precision => 20, :scale => 16
-    t.decimal   "lng",                             :precision => 20, :scale => 16
-    t.string    "action_type",       :limit => 30
-    t.string    "var1",              :limit => 50
-    t.string    "var2",              :limit => 50
-    t.string    "var3",              :limit => 50
-    t.string    "var4",              :limit => 50
+    t.datetime "event_timestamp",                                                 :null => false
+    t.datetime "session_starttime",                                               :null => false
+    t.string   "udid",              :limit => 55
+    t.string   "device_model",      :limit => 50
+    t.string   "system_name",       :limit => 10
+    t.string   "system_version",    :limit => 10
+    t.string   "app_version",       :limit => 10
+    t.integer  "facebook_id",       :limit => 8
+    t.integer  "connection_type"
+    t.string   "language",          :limit => 15
+    t.string   "locale",            :limit => 15
+    t.decimal  "lat",                             :precision => 20, :scale => 16
+    t.decimal  "lng",                             :precision => 20, :scale => 16
+    t.string   "action_type",       :limit => 30
+    t.string   "var1",              :limit => 50
+    t.string   "var2",              :limit => 50
+    t.string   "var3",              :limit => 50
+    t.string   "var4",              :limit => 50
   end
 
-  create_table "pages", :id => false, :force => true do |t|
-    t.integer "id",               :limit => 8,                  :null => false
+  create_table "pages", :force => true do |t|
+    t.string  "page_alias",       :limit => 100,                :null => false
     t.integer "facebook_id",      :limit => 8
     t.string  "name",             :limit => 50
-    t.string  "page_alias",       :limit => 50,                 :null => false
     t.string  "picture_sq_url",   :limit => 100
-    t.string  "picture_url",      :limit => 200
+    t.string  "picture",          :limit => 200
     t.string  "link",             :limit => 100
     t.string  "category",         :limit => 100
     t.string  "website_url",      :limit => 100
@@ -121,9 +120,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string  "company_overview"
     t.string  "products"
     t.string  "raw_hash"
-    t.integer "likes",                           :default => 0, :null => false
+    t.integer "likes",                           :default => 0
   end
 
+  add_index "pages", ["id"], :name => "id_UNIQUE", :unique => true
   add_index "pages", ["page_alias"], :name => "page_alias_UNIQUE", :unique => true
 
   create_table "place_posts", :force => true do |t|
@@ -157,6 +157,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "like_count",        :limit => 8,                                   :default => 0
     t.string   "attire"
     t.string   "category",          :limit => 100
+    t.string   "picture",           :limit => 200
     t.string   "picture_url",       :limit => 200
     t.string   "link",              :limit => 100
     t.string   "website"
