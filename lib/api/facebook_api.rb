@@ -156,18 +156,19 @@ module API
         like_count = places[place]['likes']
         attire = places[place]['attire']
         category = places[place]['category']
-        picture_url = places[place]['picture']
+        picture = places[place]['picture']
         link = places[place]['link']
         website = places[place]['website']
         price_range = places[place]['price_range']
         raw_hash = places[place]
         expires_at = Time.now + 1.days
-        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, category, picture_url, link, page_parent_alias, website, price_range, raw_hash, expires_at]
+        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, category, picture, link, page_parent_alias, website, price_range, raw_hash, expires_at]
       end
       place_columns = [:place_id, :name, :lat, :lng, :street, :city, :state, :country, :zip, :phone,
-         :checkins_count, :like_count, :attire, :category, :picture_url, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
+         :checkins_count, :like_count, :attire, :category, :picture, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
       
-      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :category, :picture_url, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
+      # Notice we are NOT overriding the or inserting into the column picture_url
+      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :category, :picture, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
       
       puts "Serialized #{create_new_place.length} places in bulk."
       
@@ -179,9 +180,9 @@ module API
       page_array.each do |page|
         create_new_pages << [page['id'], page['name'], page['page_alias'], page['picture_sq_url'], page['picture'], page['link'], page['category'], page['website'], page['username'], page['company_overview'], page['products'], page, page['likes']]
       end
-      page_columns = [:facebook_id, :name, :page_alias, :picture_sq_url, :picture_url, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
+      page_columns = [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
       
-      Page.import page_columns, create_new_pages, :on_duplicate_key_update => [:facebook_id, :name, :page_alias, :picture_sq_url, :picture_url, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
+      Page.import page_columns, create_new_pages, :on_duplicate_key_update => [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
       
     end
 
@@ -214,7 +215,7 @@ module API
       p.like_count = place['likes']
       p.attire = place['attire']
       p.category = place['category']
-      p.picture_url = place['picture']
+      p.picture = place['picture']
       p.link = place['link']
       p.page_parent_alias = page_parent_alias
       p.website = place['website']
@@ -955,36 +956,82 @@ module API
 
     end
 
+    # Temporary
+    # API::FacebookApi.new.find_page_for_places_with_none
+    def find_page_for_places_with_none()
+      page_alias_array = []
+      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url!='' ").each do |place|
+        page_alias_array << place.page_parent_alias
+        puts place.page_parent_alias
+      end
+      
+      self.find_page_for_page_alias(page_alias_array)
+    end
+
     # Find the main page for the given alias
     # Example:
     # The place http://graph.facebook.com/120557291328032 is a place
     # has http://www.facebook.com/pages/Starbucks/120557291328032
     # which has a "page_alias" that is "Starbucks"
     # API::FacebookApi.new.find_page_for_page_alias
-    def find_page_for_page_alias(page_alias = nil)
-      if page_alias.nil? then page_alias = "Starbucks" end
+    def find_page_for_page_alias(page_alias_array = nil)
       
+      if page_alias_array.nil? then page_alias_array = ["Starbucks"] end
+      
+      pages_array = []
+      pages_alias_array = []
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
-      # params_hash = Hash.new
-      # params_hash['access_token'] = self.access_token
-        
-      response = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}", :headers => headers_hash, :disable_ssl_peer_verification => true)  
-      parsed_response = self.parse_json(response.body)
-      parsed_response['page_alias'] = page_alias
       
-      # Only look for image if the place page exists
-      if !parsed_response.has_key?("error")
-        # Ex: get("graph.facebook.com/120557291328032/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
-        response_image = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
-        scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
-        if !scan_for_imageurl.nil?
-          parsed_response['picture_sq_url'] = scan_for_imageurl.first
+      page_alias_array.each do |page_alias|
+      
+        puts "this is page alias: #{page_alias}"
+        response = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}", :headers => headers_hash, :disable_ssl_peer_verification => true)  
+        parsed_response = self.parse_json(response.body)
+        puts parsed_response
+        # It's a place if it has "username" (ie username for "Jamba-Juice" is jambajuice)
+        # People do not have user names; just full-name, first, last
+        if parsed_response && parsed_response.has_key?("username")
+          parsed_response['page_alias'] = page_alias
+
+          # Only look for image if the place page exists
+          if !parsed_response.has_key?("error")
+            # Ex: get("graph.facebook.com/120557291328032/picture?type=square",:headers => headers_hash, :disable_ssl_peer_verification => true)
+            response_image = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
+            scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
+            if !scan_for_imageurl.nil?
+              parsed_response['picture_sq_url'] = scan_for_imageurl.first
+            end
+          end
+
+          pages_array << parsed_response
+          pages_alias_array << "'"+page_alias+"'"
+          
         end
+        
       end
-      pages_array = []
-      pages_array << parsed_response
-      self.serialize_page_bulk(pages_array)
+      
+      if !pages_array.empty?
+        self.serialize_page_bulk(pages_array)
+        
+        # After serializing page, check to see if any images need to be updated for places
+        page_alias_array_string = pages_alias_array.join(',')
+        query = "update places p, pages pg
+        set p.picture_url = pg.picture_sq_url
+        where p.page_parent_alias = pg.page_alias
+        and (p.picture = 'http://b.static.ak.fbcdn.net/rsrc.php/v1/y2/r/pASyg-hBcD5.png' or
+          p.picture_url = 'http://b.static.ak.fbcdn.net/rsrc.php/v1/y2/r/pASyg-hBcD5.png')
+        and pg.picture_sq_url is not null
+        and p.page_parent_alias in (#{page_alias_array_string})"
+        ActiveRecord::Base.connection.execute(query)
+        
+        # Update remaining picture to use just as the default image
+        query = "update places
+        set picture_url = picture
+        where page_parent_alias not in (#{page_alias_array_string})"
+        ActiveRecord::Base.connection.execute(query)
+        
+      end
       
     end
 
