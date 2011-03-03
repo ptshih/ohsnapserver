@@ -958,7 +958,7 @@ module API
 
     # Temporary
     # API::FacebookApi.new.find_page_for_places_with_none
-    def find_page_for_places_with_none()
+    def find_page_for_places_with_none
       page_alias_array = []
       Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url!='' ").each do |place|
         page_alias_array << place.page_parent_alias

@@ -155,6 +155,9 @@ class CheckinController < ApplicationController
     place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
     place_list = place_id_array.join(',')
     
+    # Adds pages to all the new places
+    API::FacebookApi.new.find_page_for_page_alias(place_id_array)
+    
     # LIMIT 
     limit_count = " limit 100"
     if !params[:count].nil?

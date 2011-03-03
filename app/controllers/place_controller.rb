@@ -171,7 +171,8 @@ class PlaceController < ApplicationController
     place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first
     #place = Place.find(:all, :conditions=> "place_id = #{place_id}").first
     
-    API::FacebookApi.new.find_page_for_places_with_none(["#{place.page_parent_alias}"])
+    API::FacebookApi.new.find_page_for_page_alias(["#{place.page_parent_alias}"])
+    place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first    
 
     # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
     d2r = Math::PI/180.0
