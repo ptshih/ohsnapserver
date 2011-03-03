@@ -112,6 +112,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "facebook_id",      :limit => 8
     t.string  "name",             :limit => 50,                 :null => false
     t.string  "url_alias",        :limit => 50
+    t.string  "picture_sq_url",   :limit => 100
     t.string  "picture_url",      :limit => 100
     t.string  "link",             :limit => 100
     t.string  "category",         :limit => 100
