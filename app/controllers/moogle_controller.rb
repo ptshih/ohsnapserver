@@ -1,13 +1,8 @@
 class MoogleController < ApplicationController
-  before_filter :load_facebook_api
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
-  end
-  
-  def load_facebook_api
-    @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
   def get_friends_checkins(friend_id_array = nil, last_fetched_checkins = nil)
@@ -130,20 +125,6 @@ class MoogleController < ApplicationController
     respond_to do |format|
       format.xml  { render :xml => session_response_hash.to_xml }
       format.json  { render :json => session_response_hash.to_json }
-    end
-  end
-  
-  def progress
-    # DEPRECATED
-    # This is a ghetto-temporary API used to poll the progress of the server when an FULL FETCH occurs
-    # Eventually we should really use a persistent connection here between client and server
-    
-    progress_response_hash = {
-      :progress => @current_user.fetch_progress.to_f
-    }
-    respond_to do |format|
-      format.xml  { render :xml => progress_response_hash.to_xml }
-      format.json  { render :json => progress_response_hash.to_json }
     end
   end
   
