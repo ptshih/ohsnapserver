@@ -237,11 +237,13 @@ class CheckinController < ApplicationController
     # Add checkin to database; calls facebook and gets tagged users etc.
     API::FacebookApi.new.find_checkin_for_checkin_id(params[:checkin_id])
     
-    
+    # Add share information
     # params[:share_message]
     # params[:share_place_id]
     # params[:share_facebook_id_array]
-    if 
+    if !params[:share_facebook_id_array].nil?
+      
+    end
     
     # Add shares info to database
     
