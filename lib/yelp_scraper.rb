@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'httpclient'
 require 'pp'
 require 'json'
-require 'CGI'
+# require 'CGI'
 require 'benchmark'
 
 # USAGE : puts YelpScape.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
@@ -18,8 +18,12 @@ class YelpScraper
   end
   
   def runTests
-    pp yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
-    pp extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
+    # pp yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
+    # pp extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
+    # pp extractTermsForYelpBiz('/biz/curry-house-cupertino-2')
+    pp extractTermsForYelpBiz('/biz/ten-ren-tea-cupertino')
+    
+    
   end
   
   def search(params)
@@ -125,6 +129,7 @@ class YelpScraper
     params = {
       :appid=>'VdTLzn6q',
       :context=>text,
+      :query =>'food',
       :output=>'json'
     }
     JSON.parse(HTTPClient.post_content(url,params))['ResultSet']
@@ -162,6 +167,6 @@ class YelpScraper
   
 end
 
-# YelpScaper.new.runTests
+YelpScaper.new.runTests
 
 
