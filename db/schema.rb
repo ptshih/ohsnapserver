@@ -107,6 +107,17 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "var4",              :limit => 50
   end
 
+  create_table "notifications", :force => true do |t|
+    t.integer  "sender_id",         :limit => 8, :default => 0
+    t.integer  "receiver_id",       :limit => 8, :default => 0
+    t.text     "message"
+    t.datetime "send_timestamp",                                :null => false
+    t.datetime "receive_timestamp"
+  end
+
+  add_index "notifications", ["receiver_id"], :name => "idx_receiver_id"
+  add_index "notifications", ["sender_id"], :name => "idx_sender_id"
+
   create_table "pages", :force => true do |t|
     t.string  "page_alias",       :limit => 100,                :null => false
     t.integer "facebook_id",      :limit => 8
@@ -171,6 +182,18 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
 
+  create_table "shares", :force => true do |t|
+    t.integer  "sharer_facebook_id", :limit => 8,                 :null => false
+    t.integer  "facebook_id",        :limit => 8,  :default => 0
+    t.integer  "share_place_id",     :limit => 8
+    t.string   "share_message",      :limit => 45
+    t.datetime "share_timestamp",                                 :null => false
+    t.datetime "accept_timestamp"
+  end
+
+  add_index "shares", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "shares", ["sharer_facebook_id"], :name => "idx_sharer"
+
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0
     t.integer "place_id",    :limit => 8
@@ -202,16 +225,18 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "yelp", :force => true do |t|
     t.string   "yelp_id"
-    t.integer  "place_id",     :limit => 8,                                 :default => 0
+    t.integer  "place_id",     :limit => 8,                                   :default => 0
     t.string   "name"
     t.string   "phone"
     t.integer  "review_count"
-    t.decimal  "lat",                       :precision => 20, :scale => 16
-    t.decimal  "lng",                       :precision => 20, :scale => 16
+    t.decimal  "lat",                         :precision => 20, :scale => 16
+    t.decimal  "lng",                         :precision => 20, :scale => 16
     t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "category_1",   :limit => 100
+    t.string   "category_2",   :limit => 100
   end
 
   create_table "yelp_images", :force => true do |t|
