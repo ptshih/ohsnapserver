@@ -6,7 +6,9 @@ Moogle::Application.routes.draw do
   # Moogle Routes
   match ':version/moogle/register', :controller => 'moogle', :action => 'register', :via => :post # Register new user
   match ':version/moogle/session', :controller => 'moogle', :action => 'session', :via => :post # Start session for user
-  match ':version/moogle/progress', :controller => 'moogle', :action => 'progress', :via => :get # Polling API
+  match ':version/moogle/checkin', :controller => 'moogle', :action => 'checkin', :via => :post # User checked in to a place
+  match ':version/moogle/share', :controller => 'moogle', :action => 'share', :via => :post # User shared a place
+  
   match ':version/moogle/kupos', :controller => 'moogle', :action => 'kupos', :via => :get # Kupos API; referral activity stream
   match ':version/moogle/me', :controller => 'moogle', :action => 'me', :via => :get # ME profile
   
@@ -21,6 +23,8 @@ Moogle::Application.routes.draw do
   # match ':version/place', :controller => 'place', :action => 'index', :via => :get # List of Places
   match ':version/places/nearby', :controller => 'place', :action => 'nearby', :via => :get # get nearby facebook places
   match ':version/places/popular', :controller => 'place', :action => 'popular', :via => :get # Get popular places visited by friends
+  match ':version/places/shared', :controller => 'place', :action => 'shared', :via => :get # Get places shared by friends
+  match ':version/places/followed', :controller => 'place', :action => 'followed', :via => :get # Get places followed
   match ':version/places/:place_id', :controller => 'place', :action => 'show', :via => :get # get a single place's default info
   match ':version/places/:place_id/activity', :controller => 'place', :action => 'activity', :via => :get # get single place's friend's activity
   match ':version/places/:place_id/feed', :controller => 'place', :action => 'feed', :via => :get # place's posts

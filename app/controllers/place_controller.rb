@@ -155,6 +155,50 @@ class PlaceController < ApplicationController
     end
   end
   
+  def shared
+    Rails.logger.info request.query_parameters.inspect
+    
+    query = "select s.sharer_facebook_id as facebook_id,
+              sharer.full_name as full_name,
+              p.name as place_name,
+              p.place_id as place_id,
+              p.picture_url as place_picture,
+              s.share_timestamp as share_time,
+              case when s.sharer_checkin_id is not null then true else false end as checkedinBoolean
+            from shares s
+            join places p on s.place_id = p.place_id
+            join users sharer on sharer.facebook_id =s.sharer_facebook_id
+            where s.sharer_facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+            order by s.share_timestamp desc
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    while mysqlresult = mysqlresults.fetch_hash do
+      response_hash = {
+        :facebook_id => mysqlresult['facebook_id'],
+        :full_name => mysqlresult['full_name'],
+        :place_name => mysqlresult['place_name'],
+        :place_id => mysqlresult['place_id'],
+        :place_picture => mysqlresult['place_picture'],
+        :share_time => mysqlresult['share_time']
+      }
+    end
+    mysqlresults.free
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+  end
+  
+  def followed
+  end
+  
+  
+  #
+  # SINGLE PLACE APIs
+  #
+  
   # Place Yelp Reviews
   def reviews
     
