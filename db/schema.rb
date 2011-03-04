@@ -108,15 +108,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "notifications", :force => true do |t|
-    t.integer  "sender_id",         :limit => 8, :default => 0
-    t.integer  "receiver_id",       :limit => 8, :default => 0
-    t.integer  "place_id",          :limit => 8
+    t.integer  "sender_id",         :limit => 8,  :default => 0
+    t.integer  "receiver_id",       :limit => 8,  :default => 0
+    t.string   "notify_type",       :limit => 10
+    t.integer  "notify_object_id",  :limit => 8
     t.text     "message"
-    t.datetime "send_timestamp",                                :null => false
+    t.datetime "send_timestamp",                                 :null => false
     t.datetime "receive_timestamp"
   end
 
-  add_index "notifications", ["place_id"], :name => "idx_place_id"
+  add_index "notifications", ["notify_type"], :name => "idx_place_id"
   add_index "notifications", ["receiver_id"], :name => "idx_receiver_id"
   add_index "notifications", ["sender_id"], :name => "idx_sender_id"
 
@@ -184,17 +185,22 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
 
-  create_table "shares", :force => true do |t|
-    t.integer  "sharer_facebook_id", :limit => 8,                 :null => false
-    t.integer  "facebook_id",        :limit => 8,  :default => 0
-    t.integer  "share_place_id",     :limit => 8
-    t.string   "share_message",      :limit => 45
-    t.datetime "share_timestamp",                                 :null => false
-    t.datetime "accept_timestamp"
+  create_table "shares", :id => false, :force => true do |t|
+    t.integer  "id",                 :limit => 8,  :null => false
+    t.integer  "sharer_checkin_id",  :limit => 8,  :null => false
+    t.integer  "sharer_facebook_id", :limit => 8,  :null => false
+    t.integer  "place_id",           :limit => 8
+    t.string   "message",            :limit => 45
+    t.datetime "share_timestamp",                  :null => false
   end
 
-  add_index "shares", ["facebook_id"], :name => "idx_facebook_id"
   add_index "shares", ["sharer_facebook_id"], :name => "idx_sharer"
+
+  create_table "shares_maps", :primary_key => "checkin_id", :force => true do |t|
+    t.integer  "facebook_id",       :limit => 8, :null => false
+    t.integer  "accept_checkin_id", :limit => 8
+    t.datetime "accept_timestamp"
+  end
 
   create_table "tagged_users", :force => true do |t|
     t.integer "checkin_id",  :limit => 8, :default => 0

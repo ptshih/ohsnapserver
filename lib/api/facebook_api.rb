@@ -69,6 +69,42 @@ module API
       # self.find_place_for_place_id(checkin['place']['id'])
     end
 
+    # Serialize the sharing
+    # API::FacebookApi.new.serialize_share(13412412, 4804606, 29302, "hello message")
+    def serialize_share(checkin_id=nil, sharer_facebook_id=nil, share_place_id=nil, share_message=nil)
+
+      c = Share.find_or_initialize_by_checkin_id(checkin_id)
+      c.sharer_facebook_id = sharer_facebook_id
+      c.share_place_id = share_place_id
+      c.share_message = share_message
+      c.share_timestamp = Time.now
+      c.save
+
+      # Temporarily disabling map share for specific user target sharing and notification systems
+      # create_new_share_map = []
+      # share_facebook_id_array.each do |share_facebook_id|
+      #   create_new_share_map << [checkin_id, share_facebook_id]
+      # end
+      # 
+      # share_maps_columns = [:checkin_id, :facebook_id]
+      # SharesMap.import share_maps_columns, create_new_share_map
+      # 
+      # self.serialize_notification(sharer_facebook_id, share_facebook_id_array, checkin_id, "checkin", nil)
+
+    end
+
+    # Serialize the notifications
+    def serialize_notification(sender_id=0, receiver_array_id=nil, notify_type=nil, notify_object_id=nil, message=nil)
+      
+      create_new_notification = []
+      receiver_array_id.each do |receiver_id|
+        create_new_notification << [sender_id, receiver_id, notify_type, notify_object_id, message, Time.now]
+      end
+      notification_columns = [:sender_id, :receiver_id, :notify_type, :notify_object_id, :message, :send_timestamp]
+      Notification.import notification_columns, create_new_notification
+      
+    end
+
     # Returns a list of place_ids
     def serialize_checkin_bulk(checkins)
       
