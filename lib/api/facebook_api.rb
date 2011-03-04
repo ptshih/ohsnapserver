@@ -71,13 +71,13 @@ module API
 
     # Serialize the sharing
     # API::FacebookApi.new.serialize_share(13412412, 4804606, 29302, "hello message")
-    def serialize_share(checkin_id=nil, sharer_facebook_id=nil, share_place_id=nil, share_message=nil)
+    def serialize_share(checkin_id=nil, facebook_id=nil, place_id=nil, message=nil)
 
-      s = Share.find_or_initialize_by_checkin_id(checkin_id)
-      s.sharer_facebook_id = sharer_facebook_id
-      s.share_place_id = share_place_id
-      s.share_message = share_message
-      s.share_timestamp = Time.now
+      s = Share.find_or_initialize_by_place_id(place_id)
+      s.facebook_id = facebook_id
+      s.place_id = place_id
+      s.message = message
+      s.shared_at = Time.now
       s.save
 
       # Temporarily disabling map share for specific user target sharing and notification systems

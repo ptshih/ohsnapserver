@@ -108,13 +108,13 @@ class CheckinController < ApplicationController
           tagged_count +=1
         end
         checkin_hash = {
-          :checkin_id => checkin['checkin_id'],
-          :facebook_id => checkin['facebook_id'],
+          :checkin_id => checkin['checkin_id'].to_s,
+          :facebook_id => checkin['facebook_id'].to_s,
           :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
           :tagged_count => tagged_count,
           :tagged_user_array => tagged_user_array,
           :message => checkin['message'],
-          :place_id => checkin['place_id'],
+          :place_id => checkin['place_id'].to_s,
           :place_name => checkin.place['name'],
           :app_id => checkin_app_id,
           :app_name => checkin_app_name,
@@ -137,6 +137,39 @@ class CheckinController < ApplicationController
   end
   
   def show
+  end
+  
+  # Checkin - 
+  #  (client still does checkin so client can get most up to date information,
+  #  then DB updates so client can have info without having to do the full refresh of recent checkins)
+  # - parameters checkinid
+  # - call facebook for checkin information
+  # - 
+  # - add to database
+  # return true
+  # Get params checkin_id, place_id, share_message
+  def checkin
+    Rails.logger.info request.query_parameters.inspect
+    
+    if !params[:checkin_id].nil?
+      # Add checkin to database; calls facebook and gets tagged users etc.
+      @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
+    
+      # Add share information
+      # serialize_share(sharer, share_place, share_message, share_to_facebook_id)
+      # if !params[:share_facebook_id_array].nil?
+      #   @facebook_api.serialize_share(params[:checkin_id], @current_user.facebook_id, params[:place_id], params[:share_message])
+      # end
+      
+      response = {:success => "true"}
+    else
+      response = {:success => "false"}
+    end
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
   end
   
 end

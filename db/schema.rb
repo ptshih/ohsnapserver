@@ -183,21 +183,20 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "page_parent_alias", :limit => 45
   end
 
-  add_index "places", ["place_id"], :name => "place_id_UNIQUE", :unique => true
+  add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
 
-  create_table "shares", :id => false, :force => true do |t|
-    t.integer  "id",                 :limit => 8,  :null => false
-    t.integer  "sharer_checkin_id",  :limit => 8,  :null => false
-    t.integer  "sharer_facebook_id", :limit => 8,  :null => false
-    t.integer  "place_id",           :limit => 8
+  create_table "shares", :force => true do |t|
+    t.integer  "checkin_id",  :limit => 8, :default => 0
+    t.integer  "facebook_id", :limit => 8, :default => 0
+    t.integer  "place_id",           :limit => 8, :default => 0
     t.string   "message",            :limit => 45
-    t.datetime "share_timestamp",                  :null => false
+    t.datetime "shared_at",                  :null => false
   end
 
-  add_index "shares", ["sharer_facebook_id"], :name => "idx_sharer"
+  add_index "shares", ["facebook_id"], :name => "idx_facebook_id"
 
-  create_table "shares_maps", :primary_key => "checkin_id", :force => true do |t|
-    t.integer  "facebook_id",       :limit => 8, :null => false
+  create_table "shares_maps", :force => true do |t|
+    t.integer  "facebook_id",       :limit => 8, :default => 0
     t.integer  "accept_checkin_id", :limit => 8
     t.datetime "accept_timestamp"
   end

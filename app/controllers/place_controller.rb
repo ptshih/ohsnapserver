@@ -158,32 +158,22 @@ class PlaceController < ApplicationController
   def shared
     Rails.logger.info request.query_parameters.inspect
     
-    query = "select s.sharer_facebook_id as facebook_id,
-              sharer.full_name as full_name,
-              p.name as place_name,
-              p.place_id as place_id,
-              p.picture_url as place_picture,
-              s.share_timestamp as share_time,
-              case when s.sharer_checkin_id is not null then true else false end as checkedinBoolean
-            from shares s
-            join places p on s.place_id = p.place_id
-            join users sharer on sharer.facebook_id =s.sharer_facebook_id
-            where s.sharer_facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
-            order by s.share_timestamp desc
-    "
-    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    facebook_id_array = Friend.select('friend_id').where("facebook_id = #{@current_user.facebook_id}").map {|f| f.friend_id}
+    people_list = facebook_id_array.join(",")
+    query = "facebook_id in (#{people_list})"
+    shares = Share.find(:all, :conditions=> query, :include => [ :user, :place ])
+    
     response_array = []
-    while mysqlresult = mysqlresults.fetch_hash do
+    shares.each do |share|
       response_hash = {
-        :facebook_id => mysqlresult['facebook_id'],
-        :full_name => mysqlresult['full_name'],
-        :place_name => mysqlresult['place_name'],
-        :place_id => mysqlresult['place_id'],
-        :place_picture => mysqlresult['place_picture'],
-        :share_time => mysqlresult['share_time']
+        :facebook_id => share['facebook_id'],
+        :name => share.user['full_name'],
+        :place_name => share.place['name'],
+        :place_id => share['place_id'],
+        :timestamp => Time.parse(share['shared_at'].to_s).to_i
       }
+      response_array << response_hash
     end
-    mysqlresults.free
     
     respond_to do |format|
       format.xml  { render :xml => response_array }
@@ -192,6 +182,20 @@ class PlaceController < ApplicationController
   end
   
   def followed
+  end
+  
+  # POST: Share a single place
+  def share
+    Rails.logger.info request.query_parameters.inspect
+    
+    @facebook_api.serialize_share(params[:checkin_id], @current_user.facebook_id, params[:place_id], params[:message])
+    
+    response = {:success => "true"}
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
   end
   
   
@@ -285,7 +289,7 @@ class PlaceController < ApplicationController
     
     Checkin.find(:all, :select=>"tagged_users.name, tagged_users.facebook_id, checkins.created_time, checkins.checkin_id, checkins.message", :conditions=> query, :include=>:tagged_users, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id", :order => 'checkins.created_time DESC', :limit => limit_return).each do |taggeduser|
       response_hash = {
-        :facebook_id => taggeduser['facebook_id'],
+        :facebook_id => taggeduser['facebook_id'].to_s,
         :message => taggeduser['message'],
         :place_name => taggeduser['name'],
         :timestamp => Time.parse(taggeduser['created_time'].to_s).to_i
@@ -354,8 +358,8 @@ class PlaceController < ApplicationController
     place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first
     #place = Place.find(:all, :conditions=> "place_id = #{place_id}").first
     
-    @facebook_api.find_page_for_page_alias(["#{place.page_parent_alias}"])
-    place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first    
+    # @facebook_api.find_page_for_page_alias(["#{place.page_parent_alias}"])
+    # place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first    
 
     # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
     d2r = Math::PI/180.0
@@ -367,7 +371,7 @@ class PlaceController < ApplicationController
     
     # /place/place_id
     response_hash = {
-      :place_id => place['place_id'],
+      :place_id => place['place_id'].to_s,
       :place_name => place['name'],
       :picture => place['picture_url'],
       :lng => place['lng'],
