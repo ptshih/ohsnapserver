@@ -192,7 +192,7 @@ class CheckinController < ApplicationController
       response_hash = {
         :place_id => place['place_id'],
         :place_name => place['name'],
-        :place_url => place['picture_url'],
+        :picture => place['picture_url'],
         :street => place['street'],
         :city => place['city'],
         :state => place['state'],
@@ -226,6 +226,7 @@ class CheckinController < ApplicationController
   # - 
   # - add to database
   # return true
+  # Get params checkin_id, place_id, share_message
   def checkin
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
@@ -238,18 +239,53 @@ class CheckinController < ApplicationController
     API::FacebookApi.new.find_checkin_for_checkin_id(params[:checkin_id])
     
     # Add share information
-    # params[:share_message]
-    # params[:share_place_id]
-    # params[:share_facebook_id_array]
+    # serialize_share(sharer, share_place, share_message, share_to_facebook_id)
     if !params[:share_facebook_id_array].nil?
-      
+      API::FacebookApi.new.serialize_share(params[:checkin_id], @current_user.facebook_id, params[:place_id], params[:share_message])
     end
-    
-    # Add shares info to database
     
     return true
     
   end
+  
+  def get_shares
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    query = "select s.sharer_facebook_id as facebook_id,
+              sharer.full_name as full_name,
+              p.name as place_name,
+              p.place_id as place_id,
+              p.picture_url as place_picture,
+              s.share_timestamp as share_time,
+              case when s.sharer_checkin_id is not null then true else false end as checkedinBoolean
+            from shares s
+            join places p on s.place_id = p.place_id
+            join users sharer on sharer.facebook_id =s.sharer_facebook_id
+            where s.sharer_facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+            order by s.share_timestamp desc
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    while mysqlresult = mysqlresults.fetch_hash do
+      response_hash = {
+        :facebook_id => mysqlresult['facebook_id'],
+        :full_name => mysqlresult['full_name'],
+        :place_name => mysqlresult['place_name'],
+        :place_id => mysqlresult['place_id'],
+        :place_picture => mysqlresult['place_picture'],
+        :share_time => mysqlresult['share_time']
+      }
+    end
+    mysqlresults.free
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+    
+  end
+
   
   # Show checkin trends; sort descending popularity
   # Popularity can be sorted by params[:sort] = "like_count", "checkins_count", "friend_checkins"
