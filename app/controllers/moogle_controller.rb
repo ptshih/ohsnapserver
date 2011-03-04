@@ -1,13 +1,8 @@
 class MoogleController < ApplicationController
-  before_filter :load_facebook_api
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
-  end
-  
-  def load_facebook_api
-    @facebook_api = API::FacebookApi.new(params[:access_token])
   end
   
   def get_friends_checkins(friend_id_array = nil, last_fetched_checkins = nil)
@@ -133,20 +128,6 @@ class MoogleController < ApplicationController
     end
   end
   
-  def progress
-    # DEPRECATED
-    # This is a ghetto-temporary API used to poll the progress of the server when an FULL FETCH occurs
-    # Eventually we should really use a persistent connection here between client and server
-    
-    progress_response_hash = {
-      :progress => @current_user.fetch_progress.to_f
-    }
-    respond_to do |format|
-      format.xml  { render :xml => progress_response_hash.to_xml }
-      format.json  { render :json => progress_response_hash.to_json }
-    end
-  end
-  
   # Shows the ME profile
   # TODO: Think of storing this information elsewhere and only doing stats via updates
   # so that we don't have to traverse the entire table
@@ -168,7 +149,7 @@ class MoogleController < ApplicationController
     total_you_tagged = 0
     total_tagged_you = 0
     total_unique_places = 0
-    friend_tagged_you_count_array  = []
+    friend_tagged_you_array  = []
     you_tagged_friend_array = []
     
     # Top places for you
@@ -218,7 +199,7 @@ class MoogleController < ApplicationController
             :full_name => mysqlresult['full_name'],
             :checkins => mysqlresult['checkins']
           }
-          friend_tagged_you_count_array << friend_tagged_you_count_hash
+          friend_tagged_you_array << friend_tagged_you_count_hash
           list_limit_counter += 1
         end
       end
@@ -324,26 +305,47 @@ class MoogleController < ApplicationController
       
     end
     
-    response_hash ={
-      :facebook_id => @current_user.facebook_id,
-      :you_last_checkin_time => you_last_checkin_time,
-      :you_last_checkin_place_name => you_last_checkin_place_name,
-      :you_last_checkin_place_id => you_last_checkin_place_id,
-      :total_checkins => total_checkins,
-      :total_authored => total_authored,
-      :total_you_tagged => total_you_tagged,
-      :total_tagged_you => total_tagged_you,
-      :you_total_unique_places => you_total_unique_places,
-      :you_friend_total_unique_places => you_friend_total_unique_places,
-      :friend_tagged_you_count_array => friend_tagged_you_count_array,
-      :you_tagged_friend_array => you_tagged_friend_array,
-      :you_top_places_array => you_top_places_array,
-      :you_friends_top_places_array => you_friends_top_places_array
+    response_array = []
+    
+    response_array << {
+      :you_last_checkin_place_id => you_last_checkin_place_id, 
+      :you_last_checkin_place_name => you_last_checkin_place_name, 
+      :you_last_checkin_time => you_last_checkin_time
     }
     
+    response_array << {
+      :total_checkins => total_checkins,
+      :total_authored => total_authored,
+      :you_total_unique_places => you_total_unique_places,
+      :you_friend_total_unique_places => you_friend_total_unique_places
+    }
+    
+    response_array << {
+      :you_top_places_array => you_top_places_array,
+      :you_friends_top_places_array => you_friends_top_places_array,
+      :you_tagged_friend_array => you_tagged_friend_array,
+      :friend_tagged_you_array => friend_tagged_you_array
+    }
+    
+    # response_hash ={
+    #   :you_last_checkin_time => you_last_checkin_time,
+    #   :you_last_checkin_place_name => you_last_checkin_place_name,
+    #   :you_last_checkin_place_id => you_last_checkin_place_id,
+    #   :total_checkins => total_checkins,
+    #   :total_authored => total_authored,
+    #   :total_you_tagged => total_you_tagged,
+    #   :total_tagged_you => total_tagged_you,
+    #   :you_total_unique_places => you_total_unique_places,
+    #   :you_friend_total_unique_places => you_friend_total_unique_places,
+    #   :friend_tagged_you_array => friend_tagged_you_array,
+    #   :you_tagged_friend_array => you_tagged_friend_array,
+    #   :you_top_places_array => you_top_places_array,
+    #   :you_friends_top_places_array => you_friends_top_places_array
+    # }
+    
     respond_to do |format|
-      format.xml  { render :xml => response_hash }
-      format.json  { render :json => response_hash }
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
     end
     
   end
