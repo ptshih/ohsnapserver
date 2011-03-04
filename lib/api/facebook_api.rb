@@ -394,6 +394,21 @@ module API
       self.update_last_fetched_checkins(facebook_id)
     end
     
+    # Finds a checkin for ONE checkin_id and serializes
+    # API::FacebookApi.new.find_checkin_for_checkin_id(10150278443605565)
+    def find_checkin_for_checkin_id(checkin_id = nil)
+      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+      params_hash = Hash.new
+      params_hash['access_token'] = self.access_token
+      response = Typhoeus::Request.get("#{@@fb_host}/#{checkin_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      
+      parsed_response = self.parse_json(response.body)
+      self.serialize_checkin_bulk([parsed_response])
+    
+    end
+    
     # Finds all checkins for one user
     # https://graph.facebook.com/548430564/checkins?access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
     # API::FacebookApi.new.find_checkins_for_facebook_id(548430564)
