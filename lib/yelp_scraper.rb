@@ -167,6 +167,6 @@ class YelpScraper
   
 end
 
-YelpScaper.new.runTests
+YelpScraper.new.runTests
 
 
