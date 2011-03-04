@@ -2,12 +2,14 @@ require 'nokogiri'
 require 'httpclient'
 require 'pp'
 require 'json'
-# require 'CGI'
+require 'CGI'
+require 'benchmark'
 
 # USAGE : puts YelpScape.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
-# returns the closest match
-# YelpScape.new.webcacheForQuery('site:yelp.com cupertino curry house')
 
+# USAGE : puts YelpScaper.new.extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
+
+# {"Result"=>["sweet and sour soup","scallion pancakes","style dish","general tsos chicken","kung pao","pepper chicken","orange beef","black pepper","yelp","peanut sauce","rest home","family style","eggplant","carnivores","leftovers","good food","tofu","mushrooms","co workers","guilt"]}
 
 class YelpScaper
   
@@ -45,45 +47,45 @@ class YelpScaper
       
       result_array = res['events']['search.map.overlays'].map{|e|
         if e['url'].nil?
-          next
-        end
-            biz = yelpBiz(e['url'])
-            images = []
-            begin
-                biz.css('script').each{|script|
-                    if script.content.include? 'yelp.init.bizDetails.page'
-                        json = JSON.parse(script.content.gsub('yelp.init.wrapper("yelp.init.bizDetails.page", ','').gsub(');',''))
-                        json['slides'].each{|img| images << img['image_url'] }
-                    end
-            }
-            rescue
-                # Rails.logger.info "no images, or no slideshow :(" if Rails
-            end
-          {
-              :name => biz.css('#bizInfoHeader h1').first.content,
-              :rating => biz.css('#bizRating .rating img').first.attribute('title').content,
-              :url=>e['url'],
-              :hours=>e['hours'],
-              :lat=>e['lat'],
-              :lng=>e['lng'],
-              :images=>images,
-              :reviews => biz.css('.review-content').map{|review|
-                  {
-                      :rating => review.css('.rating img').first.attribute('title').content,
-                      :text => review.css('p.review_comment').first.content
-                  }
-              }
+          return nil
+        else
+          out = {
+            :url=>e['url'],
+            :hours=>e['hours'],
+            :lat=>e['lat'],
+            :lng=>e['lng'],
           }
-      }
+          return out.merge!(parseYelpURL(e['url']))
+        end
+      }.compact!
       # Sometimes the last element of the array is nil
-      result_array.compact!
-      return result_array.last # The last element is always the most relevant
+      result_arrayreturn result_array.last # The last element is always the most relevant
   end
   
-  def webcacheForQuery(query)
-    html = get('http://www.google.com/search?sclient=psy&hl=en&site=&source=hp&q='+CGI.escape(query)+'&btnG=Google+Search')
-    cachedurl = Nokogiri::HTML(html).css('span.gl a').first.attribute('href').content
-    cached = get(cachedurl)
+  def parseYelpURL(url)
+    biz = yelpBiz(url)
+    images = []
+    begin
+      biz.css('script').each{|script|
+        if script.content.include? 'yelp.init.bizDetails.page'
+            json = JSON.parse(script.content.gsub('yelp.init.wrapper("yelp.init.bizDetails.page", ','').gsub(');',''))
+            json['slides'].each{|img| images << img['image_url'] }
+        end
+    }
+    rescue
+        # Rails.logger.info "no images, or no slideshow :(" if Rails
+    end
+    return {
+      :name => biz.css('#bizInfoHeader h1').first.content,
+      :rating => biz.css('#bizRating .rating img').first.attribute('title').content,
+      :images=>images,
+      :reviews => biz.css('.review-content').map{|review|
+        {
+          :rating => review.css('.rating img').first.attribute('title').content,
+          :text => review.css('p.review_comment').first.content
+        }
+      }
+    }
   end
   
   def yelpBiz(path)
@@ -100,6 +102,22 @@ class YelpScaper
       pp path,params
       pp "http://www.yelp.com/#{path}?#{params.map{|k,v| k.to_s+'='+v.to_s}.join('&')}"
       getJSON("http://www.yelp.com/#{path}",params)
+  end
+  
+  def extractTermsForYelpBiz(path)
+    # reviews = YelpScaper.new.parseYelpURL('/biz/garden-fresh-palo-alto')[:reviews]
+    reviews = YelpScaper.new.parseYelpURL(path)[:reviews]
+    YelpScaper.new.extractTerms(reviews.map{|r|r[:text]}.join(' '))
+  end
+  
+  def extractTerms(text)
+    url = 'http://search.yahooapis.com/ContentAnalysisService/V1/termExtraction'
+    params = {
+      :appid=>'VdTLzn6q',
+      :context=>text,
+      :output=>'json'
+    }
+    JSON.parse(HTTPClient.post_content(url,params))['ResultSet']
   end
   
   private
@@ -134,6 +152,5 @@ class YelpScaper
   end
   
 end
-
 
 
