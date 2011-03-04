@@ -17,6 +17,11 @@ class YelpScaper
       
   end
   
+  def runTests
+    pp yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
+    pp extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
+  end
+  
   def search(params)
       yelpAPI('business_review_search',params)
   end
@@ -55,11 +60,10 @@ class YelpScaper
             :lat=>e['lat'],
             :lng=>e['lng'],
           }
-          return out.merge!(parseYelpURL(e['url']))
+          out.merge(parseYelpURL(e['url']))
         end
-      }.compact!
-      # Sometimes the last element of the array is nil
-      result_arrayreturn result_array.last # The last element is always the most relevant
+      }
+      return result_array.compact.last # The last element is always the most relevant
   end
   
   def parseYelpURL(url)
@@ -79,11 +83,17 @@ class YelpScaper
       :name => biz.css('#bizInfoHeader h1').first.content,
       :rating => biz.css('#bizRating .rating img').first.attribute('title').content,
       :images=>images,
-      :reviews => biz.css('.review-content').map{|review|
-        {
-          :rating => review.css('.rating img').first.attribute('title').content,
-          :text => review.css('p.review_comment').first.content
-        }
+      :categories=> biz.css('#cat_display a').map{|a| a.content},
+      :reviews => biz.css('#bizReviewsContent li.review').map{|review|
+          {
+            :rating => review.css('.rating img').first.attribute('title').content,
+            :text => review.css('p.review_comment').first.content,
+            :reviewer => {
+              :image => review.css('.photoBox img').first.attribute('src').value,
+              :name => review.css('a.reviewer_name').first.content,
+              :profile_url => review.css('a.reviewer_name').first.attribute('href').value
+            }
+          }
       }
     }
   end
@@ -143,7 +153,6 @@ class YelpScaper
       url = URI.escape(url)
       url = CGI.escape(url)
       url = "http://72.2.118.126/index.php?url=#{url}"
-      puts url
       HTTPClient.new.get_content(url,params,o)
   end
   
@@ -152,5 +161,7 @@ class YelpScaper
   end
   
 end
+
+YelpScaper.new.runTests
 
 
