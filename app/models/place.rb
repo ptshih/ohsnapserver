@@ -1,5 +1,5 @@
-require 'pp'
-require 'yelp_scraper'
+# require 'pp'
+# require 'yelp_scraper'
 class Place < ActiveRecord::Base
   has_one :yelp, :foreign_key => 'place_id', :primary_key => 'place_id', :inverse_of => :place
   has_one :gowalla, :foreign_key => 'gowalla_id', :primary_key => 'gowalla_id', :inverse_of => :place
