@@ -40,7 +40,8 @@ class PlaceController < ApplicationController
     place_list = place_id_array.join(',')
     
     # Adds pages to all the new places
-    @facebook_api.find_page_for_page_alias(place_id_array)
+    # NOTE: DISABLE TEMPORARILY
+    # @facebook_api.find_page_for_page_alias(place_id_array)
     
     # LIMIT 
     limit_count = " limit 100"
@@ -76,7 +77,7 @@ class PlaceController < ApplicationController
       response_hash = {
         :place_id => place['place_id'],
         :place_name => place['name'],
-        :picture => place['picture_url'],
+        # :picture => place['picture_url'],
         :street => place['street'],
         :city => place['city'],
         :state => place['state'],
