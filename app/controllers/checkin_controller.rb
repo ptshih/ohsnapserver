@@ -156,7 +156,7 @@ class CheckinController < ApplicationController
     place_list = place_id_array.join(',')
     
     # Adds pages to all the new places
-    API::FacebookApi.new.find_page_for_page_alias(place_id_array)
+    API::FacebookApi.new.find_page_for_page_alias(place_i d_array)
     
     # LIMIT 
     limit_count = " limit 100"
@@ -215,6 +215,38 @@ class CheckinController < ApplicationController
       format.xml  { render :xml => response_array }
       format.json  { render :json => response_array }
     end
+  end
+  
+  
+  # Checkin - 
+  #  (client still does checkin so client can get most up to date information,
+  #  then DB updates so client can have info without having to do the full refresh of recent checkins)
+  # - parameters checkinid
+  # - call facebook for checkin information
+  # - 
+  # - add to database
+  # return true
+  def checkin
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    if params[:checkin_id].nil?
+      return false
+    end
+    
+    # Add checkin to database; calls facebook and gets tagged users etc.
+    API::FacebookApi.new.find_checkin_for_checkin_id(params[:checkin_id])
+    
+    
+    # params[:share_message]
+    # params[:share_place_id]
+    # params[:share_facebook_id_array]
+    if 
+    
+    # Add shares info to database
+    
+    return true
+    
   end
   
   # Show checkin trends; sort descending popularity
