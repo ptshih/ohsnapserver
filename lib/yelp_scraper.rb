@@ -11,7 +11,7 @@ require 'benchmark'
 
 # {"Result"=>["sweet and sour soup","scallion pancakes","style dish","general tsos chicken","kung pao","pepper chicken","orange beef","black pepper","yelp","peanut sauce","rest home","family style","eggplant","carnivores","leftovers","good food","tofu","mushrooms","co workers","guilt"]}
 
-class YelpScaper
+class YelpScraper
   
   def initalize
       
@@ -120,8 +120,8 @@ class YelpScaper
   
   def extractTermsForYelpBiz(path)
     # reviews = YelpScaper.new.parseYelpURL('/biz/garden-fresh-palo-alto')[:reviews]
-    reviews = YelpScaper.new.parseYelpURL(path)[:reviews]
-    YelpScaper.new.extractTerms(reviews.map{|r|r[:text]}.join(' '))
+    reviews = parseYelpURL(path)[:reviews]
+    extractTerms(reviews.map{|r|r[:text]}.join(' '))
   end
   
   def extractTerms(text)
@@ -167,6 +167,6 @@ class YelpScaper
   
 end
 
-YelpScaper.new.runTests
+# YelpScraper.new.runTests
 
 

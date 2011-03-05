@@ -179,6 +179,7 @@ class PlaceController < ApplicationController
         :name => share.user['full_name'],
         :place_name => share.place['name'],
         :place_id => share['place_id'],
+        :message => share['message'],
         :timestamp => Time.parse(share['shared_at'].to_s).to_i
       }
       response_array << response_hash

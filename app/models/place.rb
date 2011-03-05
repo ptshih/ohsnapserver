@@ -1,11 +1,11 @@
-require 'pp'
-require 'yelp_scraper'
+# require 'pp'
+# require 'yelp_scraper'
 class Place < ActiveRecord::Base
   has_one :yelp, :foreign_key => 'place_id', :primary_key => 'place_id', :inverse_of => :place
   has_one :gowalla, :foreign_key => 'gowalla_id', :primary_key => 'gowalla_id', :inverse_of => :place
   
   def scrape_yelp
-    result = YelpScaper.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
+    result = YelpScraper.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})
     pp result
     
     if !result.nil?
@@ -40,6 +40,23 @@ class Place < ActiveRecord::Base
     y.lat = result[:lat]
     y.lng = result[:lng]
     y.review_count = result[:reviews].size
+    
+    if !result[:categories].empty?
+      result[:categories].each do |category|
+        y.yelp_categories << YelpCategory.find_or_initialize_by_category(:category => category)
+      end
+    end
+    
+      
+    terms = YelpScraper.new.extractTermsForYelpBiz("#{result[:url]}")
+    pp terms
+    
+    if !terms["Result"].empty?
+      terms["Result"].each do |term|
+        y.yelp_terms << YelpTerm.find_or_initialize_by_term(:term => term)
+      end
+    end
+    
     y.save
     
     serialize_yelp_images(yelp_pid ,result[:images])

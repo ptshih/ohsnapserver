@@ -35,13 +35,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
 
-  create_table "checkins_users", :force => true do |t|
-    t.integer "checkin_id",  :limit => 8, :default => 0
-    t.integer "facebook_id", :limit => 8, :default => 0
-  end
-
-  add_index "checkins_users", ["checkin_id"], :name => "idx_checkin_id"
-
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
     t.integer  "attempts",   :default => 0
@@ -229,15 +222,32 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
-
+  
+  create_table "yelp_categories", :force => true do |t|
+    t.string "category"
+  end
+  
+  add_index "yelp_categories", ["category"], :name => "idx_category", :unique => true
+  
+  create_table "yelp_terms", :force => true do |t|
+    t.string "term"
+  end
+  
+  add_index "yelp_terms", ["term"], :name => "idx_term", :unique => true
+    
   create_table "yelp_images", :force => true do |t|
     t.string "yelp_pid"
     t.string "url"
   end
+  
+  add_index "yelp_images", ["url"], :name => "idx_url", :unique => true
 
   create_table "yelp_reviews", :force => true do |t|
     t.string "yelp_pid"
     t.string "rating"
+    t.string "reviewer_name"
+    t.string "reviewer_image"
+    t.string "reviewer_profile"
     t.text   "text"
   end
 
@@ -248,13 +258,20 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.decimal  "lng",                         :precision => 20, :scale => 16
     t.string   "name"
     t.string   "rating"
-    t.string   "category_1",   :limit => 100
-    t.string   "category_2",   :limit => 100
-    t.string   "category_3",   :limit => 100
     t.integer  "review_count"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "yelp_terms_yelps", :id => false, :force => true do |t|
+    t.integer "yelp_id"
+    t.integer "yelp_term_id"
+  end
+  
+  create_table "yelp_categories_yelps", :id => false, :force => true do |t|
+    t.integer "yelp_id"
+    t.integer "yelp_category_id"
   end
 
 end
