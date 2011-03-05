@@ -1,9 +1,18 @@
+require 'yelp_scraper'
+
 class PlaceController < ApplicationController
   before_filter :default_geocoordinates
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
+  end
+  
+  def yelpScrape
+    if params[:url]
+      url = url.gsub('http://www.yelp.com','')
+      render:text => YelpScaper.new.extractTermsForYelpBiz(url).to_json
+    end
   end
 
   def default_geocoordinates
