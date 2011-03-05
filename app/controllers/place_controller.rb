@@ -73,24 +73,33 @@ class PlaceController < ApplicationController
       a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
+      
+      # OPTIMIZE LATER
+      yelp = Yelp.find_by_place_id(place['place_id'])
             
       response_hash = {
-        :place_id => place['place_id'],
+        :place_id => place['place_id'].to_s,
         :place_name => place['name'],
-        # :picture => place['picture_url'],
-        :street => place['street'],
-        :city => place['city'],
-        :state => place['state'],
-        :country => place['country'],
-        :zip => place['zip'],
-        :phone => place['phone'],
-        :checkins_count => place['checkins_count'],
-        :distance => distance,
-        :checkins_friend_count => place['friend_checkins'],
-        :like_count => place['like_count'],
-        :attire => place['attire'],
-        :website => place['website'],
-        :price => place['price_range'] 
+        :place_picture => place['picture_url'],
+        :place_lng => place['lng'],
+        :place_lat => place['lat'],
+        :place_street => place['street'],
+        :place_city => place['city'],
+        :place_state => place['state'],
+        :place_country => place['country'],
+        :place_zip => place['zip'],
+        :place_phone => place['phone'],
+        :place_checkins => place['checkins_count'],
+        :place_distance => distance,
+        :place_friend_checkins => place['friend_checkins'],
+        :place_likes => place['like_count'],
+        :place_attire => place['attire'],
+        :place_website => place['website'],
+        :place_price => place['price_range'],
+        :place_reviews => yelp.nil? ? 0 : yelp.review_count,
+        :place_rating => yelp.nil? ? "N/A" : yelp.rating,
+        :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
+        :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
       }
       response_array << response_hash
     end
@@ -374,24 +383,26 @@ class PlaceController < ApplicationController
     response_hash = {
       :place_id => place['place_id'].to_s,
       :place_name => place['name'],
-      :picture => place['picture_url'],
-      :lng => place['lng'],
-      :lat => place['lat'],
-      :street => place['street'],
-      :city => place['city'],
-      :state => place['state'],
-      :country => place['country'],
-      :zip => place['zip'],
-      :phone => place['phone'],
-      :checkins_count => place['checkins_count'],
-      :distance => distance,
-      :checkins_friend_count => friend_checkins,
-      :like_count => place['like_count'],
-      :review_count => place.yelp.nil? ? 0 : place.yelp.review_count,
-      :rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
-      :attire => place['attire'],
-      :website => place['website'],
-      :price => place['price_range'] 
+      :place_picture => place['picture_url'],
+      :place_lng => place['lng'],
+      :place_lat => place['lat'],
+      :place_street => place['street'],
+      :place_city => place['city'],
+      :place_state => place['state'],
+      :place_country => place['country'],
+      :place_zip => place['zip'],
+      :place_phone => place['phone'],
+      :place_checkins => place['checkins_count'],
+      :place_distance => distance,
+      :place_friend_checkins => friend_checkins,
+      :place_likes => place['like_count'],
+      :place_attire => place['attire'],
+      :place_website => place['website'],
+      :place_price => place['price_range'],
+      :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
+      :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
+      :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
+      :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
     }
     
     #puts response_array.to_json
