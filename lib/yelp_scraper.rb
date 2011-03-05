@@ -5,9 +5,9 @@ require 'json'
 # require 'CGI'
 require 'benchmark'
 
-# USAGE : puts YelpScape.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
+# USAGE : puts YelpScraper.new.yelpResults({'lat'=>37.337212,'long'=>-122.041017,'query'=>'Curry+Hoouse'})
 
-# USAGE : puts YelpScaper.new.extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
+# USAGE : puts YelpScraper.new.extractTermsForYelpBiz('/biz/garden-fresh-palo-alto')
 
 # {"Result"=>["sweet and sour soup","scallion pancakes","style dish","general tsos chicken","kung pao","pepper chicken","orange beef","black pepper","yelp","peanut sauce","rest home","family style","eggplant","carnivores","leftovers","good food","tofu","mushrooms","co workers","guilt"]}
 
@@ -119,7 +119,7 @@ class YelpScraper
   end
   
   def extractTermsForYelpBiz(path)
-    # reviews = YelpScaper.new.parseYelpURL('/biz/garden-fresh-palo-alto')[:reviews]
+    # reviews = YelpScraper.new.parseYelpURL('/biz/garden-fresh-palo-alto')[:reviews]
     reviews = parseYelpURL(path)[:reviews]
     extractTerms(reviews.map{|r|r[:text]}.join(' '))
   end

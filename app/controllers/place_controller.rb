@@ -11,7 +11,7 @@ class PlaceController < ApplicationController
   def yelpScrape
     if params[:url]
       url = url.gsub('http://www.yelp.com','')
-      render:text => YelpScaper.new.extractTermsForYelpBiz(url).to_json
+      render:text => YelpScraper.new.extractTermsForYelpBiz(url).to_json
     end
   end
 
