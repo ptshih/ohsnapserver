@@ -110,8 +110,12 @@ module API
       
       create_new_checkin = []
       create_new_tagged_user = []
+      create_new_checkins_post= []
+      create_new_checkins_like = []
       create_new_app = []
       place_id_array=[]
+      
+      # Loop through each checkin
       checkins.each do |checkin|
         # Create new checkin
         checkin_id = checkin['id']
@@ -129,22 +133,44 @@ module API
         
         #Tagged User - for author
         create_new_tagged_user << [checkin['id'], checkin['place']['id'], checkin['from']['id'], checkin['from']['name']]
-        
         # Create Tagged Users - all other
         if checkin.has_key?('tags')
           checkin['tags']['data'].each do |t|
             create_new_tagged_user << [checkin['id'], checkin['place']['id'], t['id'], t['name']]
           end
         end
+        
+        if checkin.has_key?('likes')
+          checkin['likes']['data'].each do |t|
+            create_new_checkins_like << [checkin['id'], t['id'], t['name']]
+          end
+        end
+        
+        if checkin.has_key?('comments')
+          checkin['comments']['data'].each do |t|
+            created_time = Time.parse(t['created_time'].to_s)
+            create_new_checkins_post << [checkin['id'], t['from']['id'], t['from']['name'], t['id'], t['message'], created_time]
+          end
+        end
+        
       end
       
+      # Set the columns requires for import
       checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
       tagged_user_columns = [:checkin_id, :place_id, :facebook_id, :name]
+      checkins_like_columns = [:checkin_id, :facebook_id, :full_name]
+      checkins_post_columns = [:checkin_id,  :facebook_id, :full_name, :post_id, :message, :created_time]
       app_columns = [:app_id, :name]
       
+      # Import the data
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
       TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
-      
+      if !create_new_checkins_like.nil?
+        CheckinsLike.import checkins_like_columns, create_new_checkins_like, :on_duplicate_key_update => [:full_name]
+      end
+      if !create_new_checkins_post.nil?
+        CheckinsPost.import checkins_post_columns, create_new_checkins_post, :on_duplicate_key_update => [:message, :created_time]
+      end
       if !create_new_app.nil?
         App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
       end
@@ -441,6 +467,8 @@ module API
       response = Typhoeus::Request.get("#{@@fb_host}/#{checkin_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       
       parsed_response = self.parse_json(response.body)
+      
+      puts parsed_response
       self.serialize_checkin_bulk([parsed_response])
     
     end
@@ -949,6 +977,7 @@ module API
 
     # Finds friends for an array of facebook ids
     # https://graph.facebook.com/friends?ids=4804606,548430564,645750651&fields=third_party_id,first_name,last_name,name,gender,locale&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
+    # API::FacebookApi.new.find_friends_for_facebook_id_array
     def find_friends_for_facebook_id_array(facebook_id = nil, facebook_id_array = nil, since = nil)
       
       if facebook_id.nil? then facebook_id = @@peter_id end
@@ -1000,7 +1029,7 @@ module API
       #       end
       
       # Bulk serialize friends
-      self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
+      # self.serialize_friend_bulk(parsed_response['data'],facebook_id,1)
       
 
       return friend_id_array
