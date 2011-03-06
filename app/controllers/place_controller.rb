@@ -1,4 +1,4 @@
-require 'yelp_scraper'
+#require 'yelp_scraper'
 
 class PlaceController < ApplicationController
   before_filter :default_geocoordinates
@@ -120,15 +120,60 @@ class PlaceController < ApplicationController
     end
   end
   
+  # Show list of places your friends have gone to but you haven't
+  # Sorted by number of checkins to that place
+  def discover
+    
+    Rails.logger.info request.query_parameters.inspect
+
+    query = "select p.place_id, p.name as place_name,
+            p.lat, p.lng, p.checkins_count, p.like_count,
+            count(*) as friend_checkins
+      from tagged_users t
+      join places p on t.place_id = p.place_id
+      where t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
+      and t.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})
+      group by 1,2,3,4,5,6 order by friend_checkins desc
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    response_array = []
+    while mysqlresult = mysqlresults.fetch_hash do
+      
+      
+      
+      response_hash = {
+        :place_id => mysqlresult['place_id'],
+        :place_name => mysqlresult['place_name'],
+        :checkins_count => mysqlresult['checkins_count'],
+        :like_count => mysqlresult['like_count'],
+        :checkins_friend_count => mysqlresult['friend_checkins'],
+        :distance => distance
+      }
+      
+      response_array << response_hash
+    end
+    
+    
+  end
   
   # Show checkin trends; sort descending popularity
   # Popularity can be sorted by params[:sort] = "like_count", "checkins_count", "friend_checkins"
-  # Also can be filtered by distance
+  # Also can be filtered by distance by params[:distance] = 1 (this is in miles)
+  # Also can exclude places you have been params[:exclude_places_you_been] = "true" (1 is true, 0 is false)
+  # Also can limit response params[:limit] = 10
   def popular
     Rails.logger.info request.query_parameters.inspect
     
     if params[:sort].nil?
       params[:sort] = "friend_checkins"
+    end
+    exclude_places_you_been = ""
+    if params[:exclude_places_you_been].to_s == "true"
+      exclude_places_you_been = " and a.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})" 
+    end
+    filter_limit = " limit 10"
+    if !params[:limit].nil?
+      filter_limit = " limit #{params[:limit]}"
     end
     
     distance_filter = ""
@@ -138,13 +183,13 @@ class PlaceController < ApplicationController
     
     query = "select p.lat, p.lng, p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
         from tagged_users a
-        join checkins b on a.checkin_id = b.checkin_id
-        join places p on p.place_id = b.place_id
+        join places p on p.place_id = a.place_id
         where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
         " + distance_filter + "
+        " + exclude_places_you_been + "
         group by 1,2,3,4
         order by #{params[:sort]} desc
-    "
+        " + filter_limit
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while mysqlresult = mysqlresults.fetch_hash do
