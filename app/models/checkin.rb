@@ -3,4 +3,6 @@ class Checkin < ActiveRecord::Base
   has_one :place, :foreign_key => 'place_id', :primary_key => 'place_id'
   has_one :app, :foreign_key => 'app_id', :primary_key => 'app_id'
   has_many :tagged_users, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin
+  has_many :checkins_likes, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin
+  has_many :checkins_posts, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin  
 end
