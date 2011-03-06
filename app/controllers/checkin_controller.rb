@@ -114,6 +114,36 @@ class CheckinController < ApplicationController
         checkin_ids_array << checkin['checkin_id']
         place_ids_array << checkin['place_id']
         
+        place = checkin.place
+        
+        # OPTIMIZE LATER
+        yelp = Yelp.find_by_place_id(place['place_id'])
+        
+        place_hash = {
+          :place_id => place['place_id'].to_s,
+          :place_name => place['name'],
+          :place_picture => place['picture_url'],
+          :place_lng => place['lng'],
+          :place_lat => place['lat'],
+          :place_street => place['street'],
+          :place_city => place['city'],
+          :place_state => place['state'],
+          :place_country => place['country'],
+          :place_zip => place['zip'],
+          :place_phone => place['phone'],
+          :place_checkins => place['checkins_count'],
+          # :place_distance => distance,
+          # :place_friend_checkins => friend_checkins,
+          :place_likes => place['like_count'],
+          :place_attire => place['attire'],
+          :place_website => place['website'],
+          :place_price => place['price_range'],
+          :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
+          :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
+          :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
+          :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
+        }
+        
         checkin_hash = {
           :checkin_id => checkin['checkin_id'].to_s,
           :facebook_id => checkin['facebook_id'].to_s,
@@ -122,7 +152,7 @@ class CheckinController < ApplicationController
           :tagged_user_array => tagged_user_array,
           :message => checkin['message'],
           :place_id => checkin['place_id'].to_s,
-          :place_data => checkin.place,
+          :place_data => place_hash,
           :comments_data => checkin.checkin_posts,
           :likes_data => checkin.checkin_likes,
           :app_id => checkin_app_id,

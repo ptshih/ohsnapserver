@@ -433,6 +433,9 @@ class PlaceController < ApplicationController
     c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
     distance = 3956.0 * c;
     
+    # OPTIMIZE LATER
+    yelp = Yelp.find_by_place_id(place['place_id'])
+    
     # /place/place_id
     response_hash = {
       :place_id => place['place_id'].to_s,
