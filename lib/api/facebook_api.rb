@@ -432,7 +432,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['type'] = 'checkin'
-      params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['limit'] = 1000 # set this to a really high limit to get all results in one call
       # if !since.nil? then
       #   params_hash['since'] = since.to_i
@@ -465,10 +465,7 @@ module API
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       response = Typhoeus::Request.get("#{@@fb_host}/#{checkin_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-      
       parsed_response = self.parse_json(response.body)
-      
-      puts parsed_response
       self.serialize_checkin_bulk([parsed_response])
     
     end
@@ -486,7 +483,7 @@ module API
 
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
-      params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
         params_hash['since'] = since.to_i
@@ -623,7 +620,7 @@ module API
 
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
-      params_hash['fields'] = 'id,from,tags,place,message,application,created_time'
+      params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['ids'] = facebook_id_array.join(',')
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
