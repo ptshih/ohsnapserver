@@ -123,8 +123,8 @@ class CheckinController < ApplicationController
           :message => checkin['message'],
           :place_id => checkin['place_id'].to_s,
           :place_data => checkin.place,
-          :comments_data => checkin.checkins_posts,
-          :likes_data => checkin.checkins_likes,
+          :comments_data => checkin.checkin_posts,
+          :likes_data => checkin.checkin_likes,
           :app_id => checkin_app_id,
           :app_name => checkin_app_name,
           :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
