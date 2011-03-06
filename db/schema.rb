@@ -41,20 +41,21 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string  "full_name",   :limit => 100
   end
 
-  add_index "checkins_likes", ["checkin_id"], :name => "idx_checkin_id"
-  add_index "checkins_likes", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "checkins_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
 
-  create_table "checkins_posts", :force => true do |t|
-    t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.integer  "facebook_id",  :limit => 8, :default => 0
+  create_table "checkins_posts", :id => false, :force => true do |t|
+    t.integer  "id",                                         :null => false
+    t.integer  "checkin_id",   :limit => 8,   :default => 0
+    t.integer  "facebook_id",  :limit => 8,   :default => 0
     t.string   "full_name"
-    t.integer  "post_id",      :limit => 8, :default => 0
+    t.string   "post_id",      :limit => 100,                :null => false
     t.string   "message"
     t.datetime "created_time"
   end
 
   add_index "checkins_posts", ["checkin_id"], :name => "idx_checkin_id"
   add_index "checkins_posts", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "checkins_posts", ["post_id"], :name => "post_id_UNIQUE", :unique => true
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
