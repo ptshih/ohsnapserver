@@ -35,6 +35,27 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
 
+  create_table "checkins_likes", :force => true do |t|
+    t.integer "checkin_id",  :limit => 8,   :default => 0
+    t.integer "facebook_id", :limit => 8,   :default => 0
+    t.string  "full_name",   :limit => 100
+  end
+
+  add_index "checkins_likes", ["checkin_id"], :name => "idx_checkin_id"
+  add_index "checkins_likes", ["facebook_id"], :name => "idx_facebook_id"
+
+  create_table "checkins_posts", :force => true do |t|
+    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.integer  "facebook_id",  :limit => 8, :default => 0
+    t.string   "full_name"
+    t.integer  "post_id",      :limit => 8, :default => 0
+    t.string   "message"
+    t.datetime "created_time"
+  end
+
+  add_index "checkins_posts", ["checkin_id"], :name => "idx_checkin_id"
+  add_index "checkins_posts", ["facebook_id"], :name => "idx_facebook_id"
+
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
     t.integer  "attempts",   :default => 0
@@ -179,11 +200,11 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
 
   create_table "shares", :force => true do |t|
-    t.integer  "checkin_id",  :limit => 8, :default => 0
-    t.integer  "facebook_id", :limit => 8, :default => 0
-    t.integer  "place_id",           :limit => 8, :default => 0
-    t.string   "message",            :limit => 45
-    t.datetime "shared_at",                  :null => false
+    t.integer  "checkin_id",  :limit => 8,  :default => 0
+    t.integer  "facebook_id", :limit => 8,  :default => 0
+    t.integer  "place_id",    :limit => 8,  :default => 0
+    t.string   "message",     :limit => 45
+    t.datetime "shared_at",                                :null => false
   end
 
   add_index "shares", ["facebook_id"], :name => "idx_facebook_id"
@@ -222,24 +243,23 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
-  
+
   create_table "yelp_categories", :force => true do |t|
     t.string "category"
   end
-  
+
   add_index "yelp_categories", ["category"], :name => "idx_category", :unique => true
-  
-  create_table "yelp_terms", :force => true do |t|
-    t.string "term"
+
+  create_table "yelp_categories_yelps", :id => false, :force => true do |t|
+    t.integer "yelp_id"
+    t.integer "yelp_category_id"
   end
-  
-  add_index "yelp_terms", ["term"], :name => "idx_term", :unique => true
-    
+
   create_table "yelp_images", :force => true do |t|
     t.string "yelp_pid"
     t.string "url"
   end
-  
+
   add_index "yelp_images", ["url"], :name => "idx_url", :unique => true
 
   create_table "yelp_reviews", :force => true do |t|
@@ -251,27 +271,28 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.text   "text"
   end
 
+  create_table "yelp_terms", :force => true do |t|
+    t.string "term"
+  end
+
+  add_index "yelp_terms", ["term"], :name => "idx_term", :unique => true
+
+  create_table "yelp_terms_yelps", :id => false, :force => true do |t|
+    t.integer "yelp_id"
+    t.integer "yelp_term_id"
+  end
+
   create_table "yelps", :force => true do |t|
     t.string   "yelp_pid"
-    t.integer  "place_id",     :limit => 8,                                   :default => 0
-    t.decimal  "lat",                         :precision => 20, :scale => 16
-    t.decimal  "lng",                         :precision => 20, :scale => 16
+    t.integer  "place_id",     :limit => 8,                                 :default => 0
+    t.decimal  "lat",                       :precision => 20, :scale => 16
+    t.decimal  "lng",                       :precision => 20, :scale => 16
     t.string   "name"
     t.string   "rating"
     t.integer  "review_count"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "yelp_terms_yelps", :id => false, :force => true do |t|
-    t.integer "yelp_id"
-    t.integer "yelp_term_id"
-  end
-  
-  create_table "yelp_categories_yelps", :id => false, :force => true do |t|
-    t.integer "yelp_id"
-    t.integer "yelp_category_id"
   end
 
 end
