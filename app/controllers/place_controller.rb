@@ -181,7 +181,7 @@ class PlaceController < ApplicationController
       distance_filter = " and (3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )) <= #{params[:distance]}"
     end
     
-    query = "select p.lat, p.lng, p.place_id as place_id, p.name as place_name, p.checkins_count , p.like_count, count(*) as friend_checkins
+    query = "select p.*, count(*) as friend_checkins
         from tagged_users a
         join places p on p.place_id = a.place_id
         where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
@@ -192,23 +192,43 @@ class PlaceController < ApplicationController
         " + filter_limit
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
-    while mysqlresult = mysqlresults.fetch_hash do
+    while place = mysqlresults.fetch_hash do
       d2r = Math::PI/180.0
-      dlong = (mysqlresult['lng'].to_f - params[:lng].to_f) * d2r;
-      dlat = (mysqlresult['lat'].to_f - params[:lat].to_f) * d2r;
-      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(mysqlresult['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      dlong = (place['lng'].to_f - params[:lng].to_f) * d2r;
+      dlat = (place['lat'].to_f - params[:lat].to_f) * d2r;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
       
-      refer_hash = {
-        :place_id => mysqlresult['place_id'],
-        :place_name => mysqlresult['place_name'],
-        :checkins_count => mysqlresult['checkins_count'],
-        :like_count => mysqlresult['like_count'],
-        :checkins_friend_count => mysqlresult['friend_checkins'],
-        :distance => distance
+      # OPTIMIZE LATER
+      yelp = Yelp.find_by_place_id(place['place_id'])
+
+      # /place/place_id
+      response_hash = {
+        :place_id => place['place_id'].to_s,
+        :place_name => place['name'],
+        :place_picture => place['picture_url'],
+        :place_lng => place['lng'],
+        :place_lat => place['lat'],
+        :place_street => place['street'],
+        :place_city => place['city'],
+        :place_state => place['state'],
+        :place_country => place['country'],
+        :place_zip => place['zip'],
+        :place_phone => place['phone'],
+        :place_checkins => place['checkins_count'],
+        :place_distance => distance,
+        :place_friend_checkins => place['friend_checkins'],
+        :place_likes => place['like_count'],
+        :place_attire => place['attire'],
+        :place_website => place['website'],
+        :place_price => place['price_range'],
+        :place_reviews => yelp.nil? ? 0 : yelp.review_count,
+        :place_rating => yelp.nil? ? "N/A" : yelp.rating,
+        :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
+        :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
       }
-      response_array << refer_hash
+      response_array << response_hash
     end
     mysqlresults.free
     
@@ -456,8 +476,8 @@ class PlaceController < ApplicationController
       :place_attire => place['attire'],
       :place_website => place['website'],
       :place_price => place['price_range'],
-      :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
-      :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
+      :place_reviews => yelp.nil? ? 0 : yelp.review_count,
+      :place_rating => yelp.nil? ? "N/A" : yelp.rating,
       :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
       :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
     }
