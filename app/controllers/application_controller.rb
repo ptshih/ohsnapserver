@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   def load_facebook_api
     if params[:access_token].nil?
       params[:access_token] = "132514440148709|22ebfa70b9a561d421c076fe-100002025298734|dJd8XJJg4p67Jh_lRFkkgEHX4Go"
-      #params[:access_token] = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
+      params[:access_token] = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
     end
     @facebook_api = API::FacebookApi.new(params[:access_token])
   end

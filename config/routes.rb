@@ -2,6 +2,7 @@ Moogle::Application.routes.draw do
   
   # Routes will always pass a version
   # Example: http://api.moogle.com/v1/user/54685403
+  # Example: curl "http://localhost:3000/v1/checkins.json"
   
   # Moogle Routes
   match ':version/moogle/register', :controller => 'moogle', :action => 'register', :via => :post # Register new user
