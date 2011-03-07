@@ -164,7 +164,7 @@ class PlaceController < ApplicationController
     if params[:exclude].to_s == "true"
       exclude_places_you_been = " and a.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})" 
     end
-    filter_limit = " limit 10"
+    filter_limit = " limit 25"
     if !params[:limit].nil?
       filter_limit = " limit #{params[:limit]}"
     end
