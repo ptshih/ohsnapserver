@@ -116,9 +116,6 @@ class CheckinController < ApplicationController
         
         place = checkin.place
         
-        # OPTIMIZE LATER
-        yelp = Yelp.find_by_place_id(place['place_id'])
-        
         place_hash = {
           :place_id => place['place_id'].to_s,
           :place_name => place['name'],
@@ -138,10 +135,6 @@ class CheckinController < ApplicationController
           :place_attire => place['attire'],
           :place_website => place['website'],
           :place_price => place['price_range']
-          # :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
-          # :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
-          # :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
-          # :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
         }
         
         checkin_hash = {
