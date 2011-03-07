@@ -82,9 +82,6 @@ class PlaceController < ApplicationController
       a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
-      
-      # OPTIMIZE LATER
-      yelp = Yelp.find_by_place_id(place['place_id'])
             
       response_hash = {
         :place_id => place['place_id'].to_s,
@@ -104,11 +101,7 @@ class PlaceController < ApplicationController
         :place_likes => place['like_count'],
         :place_attire => place['attire'],
         :place_website => place['website'],
-        :place_price => place['price_range'],
-        :place_reviews => yelp.nil? ? 0 : yelp.review_count,
-        :place_rating => yelp.nil? ? "N/A" : yelp.rating,
-        :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
-        :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
+        :place_price => place['price_range']
       }
       response_array << response_hash
     end
@@ -199,10 +192,7 @@ class PlaceController < ApplicationController
       a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
-      
-      # OPTIMIZE LATER
-      yelp = Yelp.find_by_place_id(place['place_id'])
-
+  
       # /place/place_id
       response_hash = {
         :place_id => place['place_id'].to_s,
@@ -222,11 +212,7 @@ class PlaceController < ApplicationController
         :place_likes => place['like_count'],
         :place_attire => place['attire'],
         :place_website => place['website'],
-        :place_price => place['price_range'],
-        :place_reviews => yelp.nil? ? 0 : yelp.review_count,
-        :place_rating => yelp.nil? ? "N/A" : yelp.rating,
-        :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
-        :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
+        :place_price => place['price_range']
       }
       response_array << response_hash
     end
@@ -293,10 +279,6 @@ class PlaceController < ApplicationController
     response_array = []
     
     place = Place.find_by_place_id(params[:place_id])
-    
-    if place.yelp.nil?
-      place.scrape_yelp
-    end
     
     if !place.yelp.nil?
       reviews_array = place.yelp.yelp_reviews
@@ -441,6 +423,10 @@ class PlaceController < ApplicationController
 
     place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first
     #place = Place.find(:all, :conditions=> "place_id = #{place_id}").first
+        
+    if place.yelp.nil?
+      place.scrape_yelp
+    end
     
     # @facebook_api.find_page_for_page_alias(["#{place.page_parent_alias}"])
     # place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first    
@@ -478,8 +464,8 @@ class PlaceController < ApplicationController
       :place_price => place['price_range'],
       :place_reviews => yelp.nil? ? 0 : yelp.review_count,
       :place_rating => yelp.nil? ? "N/A" : yelp.rating,
-      :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
-      :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
+      :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(', '),
+      :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(', ')
     }
     
     #puts response_array.to_json
