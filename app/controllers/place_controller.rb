@@ -462,6 +462,7 @@ class PlaceController < ApplicationController
       :place_attire => place['attire'],
       :place_website => place['website'],
       :place_price => place['price_range'],
+      :place_reviews => yelp.nil? ? 0 : yelp.review_count,
       :place_rating => yelp.nil? ? "0 star rating" : yelp.rating,
       :place_terms => yelp.nil? ? nil : yelp.yelp_terms.map {|t| t.term }.join(', '),
       :place_categories => yelp.nil? ? nil : yelp.yelp_categories.map {|c| c.category }.join(', ')
