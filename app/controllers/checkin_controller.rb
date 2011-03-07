@@ -87,7 +87,7 @@ class CheckinController < ApplicationController
     
     # Store the checkin results in the hash by checkin_id, checkin_result_hash (key,value)
     recent_checkins = Hash.new
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>:tagged_users, :conditions => query_filters, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id ", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>[:tagged_users, :checkin_likes, :checkin_posts, :user, :app, :place], :conditions => query_filters, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id ", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
@@ -137,11 +137,11 @@ class CheckinController < ApplicationController
           :place_likes => place['like_count'],
           :place_attire => place['attire'],
           :place_website => place['website'],
-          :place_price => place['price_range'],
-          :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
-          :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
-          :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
-          :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
+          :place_price => place['price_range']
+          # :place_reviews => place.yelp.nil? ? 0 : place.yelp.review_count,
+          # :place_rating => place.yelp.nil? ? "N/A" : place.yelp.rating,
+          # :place_terms => yelp.nil? ? "N/A" : yelp.yelp_terms.map {|t| t.term }.join(','),
+          # :place_categories => yelp.nil? ? "N/A" : yelp.yelp_categories.map {|c| c.category }.join(',')
         }
         
         checkin_hash = {
