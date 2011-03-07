@@ -168,6 +168,12 @@ class PlaceController < ApplicationController
     if !params[:limit].nil?
       filter_limit = " limit #{params[:limit]}"
     end
+    filter_random = ""
+    if params[:random]==nil || params[:random]=="false"
+      filter_random = ""
+    else
+      filter_random = ", rand()"
+    end
     
     distance_filter = ""
     if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
@@ -181,7 +187,7 @@ class PlaceController < ApplicationController
         " + distance_filter + "
         " + exclude_places_you_been + "
         group by 1,2,3,4
-        order by #{params[:sort]} desc
+        order by #{params[:sort]} desc " + filter_random + "
         " + filter_limit
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
