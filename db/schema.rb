@@ -21,6 +21,27 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "apps", ["app_id"], :name => "idx_app_id", :unique => true
 
+  create_table "checkin_likes", :force => true do |t|
+    t.integer "checkin_id",  :limit => 8,   :default => 0
+    t.integer "facebook_id", :limit => 8,   :default => 0
+    t.string  "full_name",   :limit => 100
+  end
+
+  add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
+
+  create_table "checkin_posts", :primary_key => "post_id", :force => true do |t|
+    t.integer  "id",                                       :null => false
+    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.integer  "facebook_id",  :limit => 8, :default => 0
+    t.string   "full_name"
+    t.string   "message"
+    t.datetime "created_time"
+  end
+
+  add_index "checkin_posts", ["checkin_id"], :name => "idx_checkin_id"
+  add_index "checkin_posts", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "checkin_posts", ["post_id"], :name => "post_id_UNIQUE", :unique => true
+
   create_table "checkins", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
@@ -34,28 +55,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
-
-  create_table "checkin_likes", :force => true do |t|
-    t.integer "checkin_id",  :limit => 8,   :default => 0
-    t.integer "facebook_id", :limit => 8,   :default => 0
-    t.string  "full_name",   :limit => 100
-  end
-
-  add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
-
-  create_table "checkin_posts", :id => false, :force => true do |t|
-    t.integer  "id",                                         :null => false
-    t.integer  "checkin_id",   :limit => 8,   :default => 0
-    t.integer  "facebook_id",  :limit => 8,   :default => 0
-    t.string   "full_name"
-    t.string   "post_id",      :limit => 100,                :null => false
-    t.string   "message"
-    t.datetime "created_time"
-  end
-
-  add_index "checkin_posts", ["checkin_id"], :name => "idx_checkin_id"
-  add_index "checkin_posts", ["facebook_id"], :name => "idx_facebook_id"
-  add_index "checkin_posts", ["post_id"], :name => "post_id_UNIQUE", :unique => true
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -169,6 +168,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "post_updated_time"
   end
 
+  add_index "place_posts", ["place_id"], :name => "idx_place_id"
+  add_index "place_posts", ["place_post_id"], :name => "uniq_place_post_id", :unique => true
+
   create_table "places", :force => true do |t|
     t.integer  "place_id",          :limit => 8,                                   :default => 0
     t.string   "yelp_pid"
@@ -198,7 +200,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "page_parent_alias", :limit => 45
   end
 
+  add_index "places", ["lat", "lng"], :name => "idx_lat_lng"
   add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
+  add_index "places", ["yelp_pid"], :name => "idx_yelp_pid"
 
   create_table "shares", :force => true do |t|
     t.integer  "checkin_id",  :limit => 8,  :default => 0
@@ -224,6 +228,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkinid_and_fbid", :unique => true
+  add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
   add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
@@ -256,12 +261,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "yelp_category_id"
   end
 
+  add_index "yelp_categories_yelps", ["yelp_category_id"], :name => "idx_yelp_category_id"
+  add_index "yelp_categories_yelps", ["yelp_id"], :name => "idx_yelp_id"
+
   create_table "yelp_images", :force => true do |t|
     t.string "yelp_pid"
     t.string "url"
   end
 
   add_index "yelp_images", ["url"], :name => "idx_url", :unique => true
+  add_index "yelp_images", ["yelp_pid"], :name => "idx_yelp_pid"
 
   create_table "yelp_reviews", :force => true do |t|
     t.string "yelp_pid"
@@ -271,6 +280,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string "reviewer_profile"
     t.text   "text"
   end
+
+  add_index "yelp_reviews", ["yelp_pid"], :name => "idx_yelp_id"
 
   create_table "yelp_terms", :force => true do |t|
     t.string "term"
@@ -283,8 +294,11 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "yelp_term_id"
   end
 
+  add_index "yelp_terms_yelps", ["yelp_id"], :name => "idx_yelp_id"
+  add_index "yelp_terms_yelps", ["yelp_term_id"], :name => "idx_yelp_term_id"
+
   create_table "yelps", :force => true do |t|
-    t.string   "yelp_pid"
+    t.string   "yelp_pid",                                                                 :null => false
     t.integer  "place_id",     :limit => 8,                                 :default => 0
     t.decimal  "lat",                       :precision => 20, :scale => 16
     t.decimal  "lng",                       :precision => 20, :scale => 16
@@ -295,5 +309,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "yelps", ["place_id"], :name => "idx_place_id"
+  add_index "yelps", ["yelp_pid"], :name => "idx_yelp_pid", :unique => true
 
 end
