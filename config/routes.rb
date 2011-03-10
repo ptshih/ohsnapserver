@@ -5,6 +5,7 @@ Moogle::Application.routes.draw do
   # Example: curl "http://localhost:3000/v1/checkins.json"
   # Example: curl "http://localhost:3000/v1/places/popular.json"
   # Example: curl "http://localhost:3000/v1/places/popular?random=true&limit=100&wat=.json"  
+  # Example: curl "http://localhost:3000/v1/places/141012355936429.json"
   
   # Moogle Routes
   match ':version/moogle/register', :controller => 'moogle', :action => 'register', :via => :post # Register new user
