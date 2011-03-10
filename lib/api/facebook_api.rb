@@ -1103,8 +1103,8 @@ module API
         query = "update places p, pages pg
         set p.picture_url = pg.picture_sq_url
         where p.page_parent_alias = pg.page_alias
-        and (p.picture = 'http://b.static.ak.fbcdn.net/rsrc.php/v1/y2/r/pASyg-hBcD5.png' or
-          p.picture_url = 'http://b.static.ak.fbcdn.net/rsrc.php/v1/y2/r/pASyg-hBcD5.png')
+        and (p.picture not like 'http://profile%' or
+          p.picture_url = 'http://profile%')
         and pg.picture_sq_url is not null
         and p.page_parent_alias in (#{page_alias_array_string})"
         ActiveRecord::Base.connection.execute(query)
