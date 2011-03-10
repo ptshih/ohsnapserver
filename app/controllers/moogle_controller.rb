@@ -234,21 +234,21 @@ class MoogleController < ApplicationController
     # Unique places checked-in, last checked-in time and place, checkin_count
     place_queries = []
     # YOUR: Unique places checked-in, last checked-in time and place, checkin_count
-    place_queries << "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
+    place_queries << "select p.*, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
             from checkins c
             join tagged_users t on c.checkin_id = t.checkin_id
             join places p on p.place_id = c.place_id
             where t.facebook_id = #{@current_user.facebook_id}
             group by 1,2
-            order by 4 desc"
+            order by checkins desc"
     # YOU AND FRIENDS: Unique places checked-in, last checked-in time and place, checkin_count
-    place_queries << "select p.place_id, p.name as place_name, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
+    place_queries << "select p.*, max(c.created_time) as 'last_checkin_time', count(*) as 'checkins'
             from checkins c
             join tagged_users t on c.checkin_id = t.checkin_id
             join places p on p.place_id = c.place_id
             where t.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id})
             group by 1,2
-            order by 4 desc"
+            order by checkins desc"
     place_queries.each_with_index do |place_query, index|
       mysqlresults = ActiveRecord::Base.connection.execute(place_query)
       list_limit_counter = 0
@@ -270,13 +270,40 @@ class MoogleController < ApplicationController
           last_checkin_place_name = mysqlresult['place_name']
           last_checkin_place_id = mysqlresult['place_id']
         end
+        
+        # Calculate the distance between params[:lat] params[:lng] and place.lat place.lng
+        distance=-1
+        if !params[:lng]==nil && !params[:lat]==nil
+          d2r = Math::PI/180.0
+          dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
+          dlat = (place.lat.to_f - params[:lat].to_f) * d2r;
+          a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place.lat.to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+          c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
+          distance = 3956.0 * c;
+        end
       
         # Storing table list of top places
         total_unique_places += 1
         if list_limit_counter < list_limit      
           top_place_hash = {
-            :place_id => mysqlresult['place_id'],
+            :place_id => mysqlresult['place_id'].to_s,
             :place_name => mysqlresult['place_name'],
+            :place_picture => mysqlresult['picture_url'],
+            :place_lng => mysqlresult['lng'],
+            :place_lat => mysqlresult['lat'],
+            :place_street => mysqlresult['street'],
+            :place_city => mysqlresult['city'],
+            :place_state => mysqlresult['state'],
+            :place_country => mysqlresult['country'],
+            :place_zip => mysqlresult['zip'],
+            :place_phone => mysqlresult['phone'],
+            :place_checkins => mysqlresult['checkins_count'],
+            :place_distance => distance,
+            :place_friend_checkins => mysqlresult['checkins'],
+            :place_likes => mysqlresult['like_count'],
+            :place_attire => mysqlresult['attire'],
+            :place_website => mysqlresult['website'],
+            :place_price => mysqlresult['price_range'],
             :checkins => mysqlresult['checkins'],
             :last_checkin_time => last_checkin_time_for_place
           }
