@@ -267,7 +267,7 @@ class MoogleController < ApplicationController
         # Finding last checkin
         if last_checkin_time_for_place > last_checkin_time
           last_checkin_time = last_checkin_time_for_place
-          last_checkin_place_name = mysqlresult['place_name']
+          last_checkin_place_name = mysqlresult['name']
           last_checkin_place_id = mysqlresult['place_id']
         end
         
@@ -287,7 +287,7 @@ class MoogleController < ApplicationController
         if list_limit_counter < list_limit      
           top_place_hash = {
             :place_id => mysqlresult['place_id'].to_s,
-            :place_name => mysqlresult['place_name'],
+            :place_name => mysqlresult['name'],
             :place_picture => mysqlresult['picture_url'],
             :place_lng => mysqlresult['lng'],
             :place_lat => mysqlresult['lat'],
