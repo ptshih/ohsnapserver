@@ -1067,7 +1067,11 @@ module API
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
       
+      original_page_alias_array_tostring = []
+      
       page_alias_array.each do |page_alias|
+        
+        original_page_alias_array_tostring << "'"+page_alias+"'"
       
         puts "this is page alias: #{page_alias}"
         response = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}", :headers => headers_hash, :disable_ssl_peer_verification => true)  
@@ -1113,7 +1117,7 @@ module API
       # Update remaining picture to use just as the default image
       query = "update places
       set picture_url = picture
-      where page_parent_alias in (#{page_alias_array.join(',')}) and picture_url is null"
+      where page_parent_alias in (#{original_page_alias_array_tostring.join(',')}) and picture_url is null"
       ActiveRecord::Base.connection.execute(query)
       
     end
