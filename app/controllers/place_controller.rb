@@ -132,9 +132,9 @@ class PlaceController < ApplicationController
     if params[:exclude].to_s == "true"
       exclude_places_you_been = " and a.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})" 
     end
-    filter_limit = " limit 25"
+    filter_limit = 25
     if !params[:limit].nil?
-      filter_limit = " limit #{params[:limit]}"
+      filter_limit = params[:limit].to_i
     end
     filter_random = ""
     if params[:random]==nil || params[:random]=="false"
@@ -156,7 +156,7 @@ class PlaceController < ApplicationController
         " + exclude_places_you_been + "
         group by 1,2,3,4
         order by #{params[:sort]} desc " + filter_random + "
-        " + filter_limit
+        limit " + filter_limit.to_s
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     while place = mysqlresults.fetch_hash do
@@ -440,7 +440,7 @@ class PlaceController < ApplicationController
     end
     # Converting score to percentage
     top_places.each do |top_place|
-      top_place['score'] = (top_place['score'].to_i/total_score.to_i).round
+      top_place[:score] = (top_place[:score].to_f/total_score.to_f*100).round
     end
     
     
