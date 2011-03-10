@@ -732,7 +732,7 @@ module API
       params_hash['fields'] = 'id'
       params_hash['center'] = "#{lat},#{lng}"
       params_hash['distance'] = "#{distance.to_i}" # safety force to integer because FBAPI wants int (no decimals)
-      params_hash['limit'] = 50 # set this to a really high limit to get all results in one call
+      params_hash['limit'] = 100 # set this to a really high limit to get all results in one call
       if not query.nil?
         params_hash['q'] = "#{query}"
       end
