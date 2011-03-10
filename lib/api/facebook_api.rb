@@ -1037,7 +1037,14 @@ module API
     # API::FacebookApi.new.find_page_for_places_with_none
     def find_page_for_places_with_none
       page_alias_array = []
-      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url!='' ").each do |place|
+      
+      # Executing query to set picture_url to the picture if it is relevant
+      query = "update places
+              set picture_url = picture
+              where picture like 'http://profile%'"
+      ActiveRecord::Base.connection.execute(query)
+      
+      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>200).each do |place|
         page_alias_array << place.page_parent_alias
         puts place.page_parent_alias
       end
