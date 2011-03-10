@@ -1113,7 +1113,7 @@ module API
       # Update remaining picture to use just as the default image
       query = "update places
       set picture_url = picture
-      where page_parent_alias in (#{page_alias_array.join(,)}) and picture_url is null"
+      where page_parent_alias in (#{page_alias_array.join(',')}) and picture_url is null"
       ActiveRecord::Base.connection.execute(query)
       
     end
