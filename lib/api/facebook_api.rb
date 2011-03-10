@@ -1099,23 +1099,22 @@ module API
         self.serialize_page_bulk(pages_array)
         
         # After serializing page, check to see if any images need to be updated for places
-        page_alias_array_string = pages_alias_array.join(',')
+        pages_alias_array_string = pages_alias_array.join(',')
         query = "update places p, pages pg
         set p.picture_url = pg.picture_sq_url
         where p.page_parent_alias = pg.page_alias
-        and (p.picture not like 'http://profile%' or
-          p.picture_url = 'http://profile%')
+        and p.picture_url is null
         and pg.picture_sq_url is not null
-        and p.page_parent_alias in (#{page_alias_array_string})"
-        ActiveRecord::Base.connection.execute(query)
-        
-        # Update remaining picture to use just as the default image
-        query = "update places
-        set picture_url = picture
-        where page_parent_alias in (#{page_alias_array_string}) and picture_url is null"
+        and p.page_parent_alias in (#{pages_alias_array_string})"
         ActiveRecord::Base.connection.execute(query)
         
       end
+
+      # Update remaining picture to use just as the default image
+      query = "update places
+      set picture_url = picture
+      where page_parent_alias in (#{page_alias_array.join(,)}) and picture_url is null"
+      ActiveRecord::Base.connection.execute(query)
       
     end
 
