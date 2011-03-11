@@ -1039,12 +1039,10 @@ module API
       page_alias_array = []
       
       # Executing query to set picture_url to the picture if it is relevant
-      query = "update places
-              set picture_url = picture
-              where picture like 'http://profile%'"
-      ActiveRecord::Base.connection.execute(query)
+      query = "update places set picture_url = picture where picture like 'http://profile%'"
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
       
-      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>200).each do |place|
+      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>10).each do |place|
         page_alias_array << place.page_parent_alias
         puts place.page_parent_alias
       end
@@ -1074,7 +1072,9 @@ module API
         original_page_alias_array_tostring << "'"+page_alias+"'"
       
         puts "this is page alias: #{page_alias}"
-        response = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}", :headers => headers_hash, :disable_ssl_peer_verification => true)  
+        #main_url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}"))
+        main_url = URI.escape("#{@@fb_host}/#{page_alias}")
+        response = Typhoeus::Request.get(main_url, :headers => headers_hash, :disable_ssl_peer_verification => true)  
         parsed_response = self.parse_json(response.body)
         puts parsed_response
         # It's a place if it has "username" (ie username for "Jamba-Juice" is jambajuice)
@@ -1085,7 +1085,9 @@ module API
           # Only look for image if the place page exists
           if !parsed_response.has_key?("error")
             # Ex: get("graph.facebook.com/120557291328032/picture?type=square",:headers => headers_hash, :disable_ssl_peer_verification => true)
-            response_image = Typhoeus::Request.get("#{@@fb_host}/#{page_alias}/picture?type=square", :headers => headers_hash, :disable_ssl_peer_verification => true)
+            #url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}/picture?type=square"))
+            url = URI.escape("#{@@fb_host}/#{page_alias}/picture?type=square")
+            response_image = Typhoeus::Request.get(url, :headers => headers_hash, :disable_ssl_peer_verification => true)
             scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
             if !scan_for_imageurl.nil?
               parsed_response['picture_sq_url'] = scan_for_imageurl.first
@@ -1104,22 +1106,18 @@ module API
         
         # After serializing page, check to see if any images need to be updated for places
         pages_alias_array_string = pages_alias_array.join(',')
-        query = "update places p, pages pg
-        set p.picture_url = pg.picture_sq_url
-        where p.page_parent_alias = pg.page_alias
-        and p.picture_url is null
-        and pg.picture_sq_url is not null
-        and p.page_parent_alias in (#{pages_alias_array_string})"
-        ActiveRecord::Base.connection.execute(query)
-        
+        queryaddimage = "update places p, pages pg set p.picture_url = pg.picture_sq_url where p.page_parent_alias = pg.page_alias and p.picture_url is null and pg.picture_sq_url is not null and p.page_parent_alias in (#{pages_alias_array_string})"
+        mysqlresult = ActiveRecord::Base.connection.execute(queryaddimage)
       end
 
       # Update remaining picture to use just as the default image
-      query = "update places
-      set picture_url = picture
-      where page_parent_alias in (#{original_page_alias_array_tostring.join(',')}) and picture_url is null"
-      ActiveRecord::Base.connection.execute(query)
-      
+      queryupdate = "update places set picture_url = picture where page_parent_alias in (#{original_page_alias_array_tostring.join(',')}) and picture_url is null"
+      puts queryupdate
+      begin
+        mysqlresult = ActiveRecord::Base.connection.execute(queryupdate)
+      rescue
+        puts 'fail!'
+      end
     end
 
     def find_user_for_facebook_id(facebook_id = nil)
