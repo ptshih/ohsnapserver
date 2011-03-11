@@ -125,9 +125,6 @@ class PlaceController < ApplicationController
   def popular
     Rails.logger.info request.query_parameters.inspect
     
-    if params[:sort].nil?
-      params[:sort] = "friend_checkins"
-    end
     exclude_places_you_been = ""
     if params[:exclude].to_s == "true"
       exclude_places_you_been = " and a.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})" 
@@ -136,12 +133,20 @@ class PlaceController < ApplicationController
     if !params[:limit].nil?
       filter_limit = params[:limit].to_i
     end
+    filter_sort = ""
+    if params[:sort].nil?
+      filter_sort = "order by friend_checkins desc "
+    else
+      filter_sort = "order by #{params[:sort]} desc "
+    end
     filter_random = ""
     if params[:random]==nil || params[:random]=="false"
       filter_random = ""
     else
       filter_random = ", rand()"
+      filter_sort = "" #random overrides sort order
     end
+
     
     distance_filter = ""
     if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
@@ -154,8 +159,8 @@ class PlaceController < ApplicationController
         where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
         " + distance_filter + "
         " + exclude_places_you_been + "
-        group by 1,2,3,4
-        order by #{params[:sort]} desc " + filter_random + "
+        group by 1,2,3,4" +
+        filter_sort + filter_random + "
         limit " + filter_limit.to_s
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
