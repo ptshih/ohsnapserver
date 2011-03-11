@@ -1042,7 +1042,7 @@ module API
       query = "update places set picture_url = picture where picture like 'http://profile%'"
       mysqlresult = ActiveRecord::Base.connection.execute(query)
       
-      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>10).each do |place|
+      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>500).each do |place|
         page_alias_array << place.page_parent_alias
         puts place.page_parent_alias
       end
