@@ -166,7 +166,7 @@ class PlaceController < ApplicationController
     response_array = []
     mysqlresult_iterator = mysqlresults.num_rows
     while place = mysqlresults.fetch_hash do
-      mysqlresult_iterator -= 1
+      # mysqlresult_iterator -= 1
       d2r = Math::PI/180.0
       dlong = (place['lng'].to_f - params[:lng].to_f) * d2r;
       dlat = (place['lat'].to_f - params[:lat].to_f) * d2r;
@@ -198,12 +198,19 @@ class PlaceController < ApplicationController
       
       #(mysqlresults.num_rows-response_array.length)
       #(mysqlresult_iterator - response_array.length)
-      if response_array.length < params[:limit].to_i && rand(( (mysqlresult_iterator - response_array.length)/params[:limit].to_i).round)==0
-        response_array << response_hash         
-      end
+      # if response_array.length < params[:limit].to_i && rand(( (mysqlresult_iterator - response_array.length)/params[:limit].to_i).round)==0
+      #         response_array << response_hash         
+      #       end
+      response_array << response_hash
 
     end
     mysqlresults.free
+    
+    
+    # Return first few elements up to amount params[:limit]
+    if params[:random]=="true"
+      response_array = response_array.sort_by{rand}[0..(filter_limit/5)-1.to_i]
+    end
     
     respond_to do |format|
       format.xml  { render :xml => response_array }
