@@ -723,6 +723,8 @@ module API
       if lat.nil? then lat = @@peter_latitude end
       if lng.nil? then lng = @@peter_longitude end
 
+      puts "filtering by distance " + distance.to_s
+
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
@@ -742,8 +744,10 @@ module API
 
       place_id_array = []
       
-      parsed_response['data'].map do |p|
-        place_id_array << p["id"]
+      if !parsed_response['data'].nil?
+        parsed_response['data'].map do |p|
+          place_id_array << p["id"]
+        end
       end
       
       puts "place ids: #{place_id_array}"

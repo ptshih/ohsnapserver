@@ -23,8 +23,9 @@ class PlaceController < ApplicationController
     if params[:lng].nil?
       params[:lng] = -121.922429
     end
+    # in miles
     if params[:distance].nil?
-      params[:distance] = 1000
+      params[:distance] = 1
     end
   end
   # feed: the posts/comments feed of a particular place
@@ -37,17 +38,25 @@ class PlaceController < ApplicationController
 
   ############################################################
   # Show nearby places
-  # params[:lat]
-  # params[:lng]
-  # facebook API returns a filtered by distance list; so i don't have to filter in SQL DB
+  # params[:lat], params[:lng]
+  # facebook API returns a filtered by distance list; so we don't have to filter in SQL DB
   ############################################################
   def nearby
     Rails.logger.info request.query_parameters.inspect
     
-    puts "lol: #{params}"
+    #puts "lol: #{params}"
     
     # PLACE filter
-    place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], params[:distance], nil)
+    # default distance filter set to 1km
+    filter_distance = 1000
+    puts "this is the distance passed now"+params[:distance].to_s
+    if params[:distance]!=nil
+      # convert distance to meters; client calls API with miles filter
+      filter_distance = (params[:distance].to_i * 1609.3440).round
+    end
+    puts "filter distiance "+ filter_distance.to_s
+    
+    place_id_array = @facebook_api.find_places_near_location(params[:lat], params[:lng], filter_distance, nil)
     place_list = place_id_array.join(',')
     
     # Adds pages to all the new places
