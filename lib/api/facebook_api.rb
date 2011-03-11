@@ -1042,7 +1042,7 @@ module API
       query = "update places set picture_url = picture where picture like 'http://profile%'"
       mysqlresult = ActiveRecord::Base.connection.execute(query)
       
-      Place.find(:all, :select=>"page_parent_alias", :conditions=>"page_parent_alias!='' and picture_url is null", :limit=>500).each do |place|
+      Place.find(:all, :select=>"page_parent_alias, sum(like_count) as like_count", :conditions=>"page_parent_alias!='' and picture_url is null", :order => "sum(like_count) desc", :group=> "page_parent_alias",:limit=>50).each do |place|
         page_alias_array << place.page_parent_alias
         puts place.page_parent_alias
       end
@@ -1062,6 +1062,7 @@ module API
       
       pages_array = []
       pages_alias_array = []
+      failed_pages_alias_array = []
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
       
@@ -1096,17 +1097,25 @@ module API
 
           pages_array << parsed_response
           pages_alias_array << "'"+page_alias+"'"
-          
+        else
+          failed_pages_alias_array << "'"+page_alias+"'"
         end
         
       end
+      
+      # Update places if failed to find a facebook page for the place
+      # if !failed_pages_alias_array.nil?
+      #   Place.update_all("picture_url = picture", ["page_parent_alias in (?)", failed_pages_alias_array.join(",")])
+      # end
       
       if !pages_array.empty?
         self.serialize_page_bulk(pages_array)
         
         # After serializing page, check to see if any images need to be updated for places
         pages_alias_array_string = pages_alias_array.join(',')
-        queryaddimage = "update places p, pages pg set p.picture_url = pg.picture_sq_url where p.page_parent_alias = pg.page_alias and p.picture_url is null and pg.picture_sq_url is not null and p.page_parent_alias in (#{pages_alias_array_string})"
+        queryaddimage = "update places p, pages pg
+        set p.picture_url = pg.picture_sq_url
+        where p.page_parent_alias = pg.page_alias and p.picture_url is null and pg.picture_sq_url is not null and p.page_parent_alias in (#{pages_alias_array_string})"
         mysqlresult = ActiveRecord::Base.connection.execute(queryaddimage)
       end
 
