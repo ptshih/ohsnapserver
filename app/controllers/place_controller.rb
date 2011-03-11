@@ -194,7 +194,7 @@ class PlaceController < ApplicationController
         :place_price => place['price_range']
       }
       
-      if response_array.length < params[:limit].to_i && rand(4)==0
+      if response_array.length < params[:limit].to_i && rand((mysqlresults.num_rows/params[:limit].to_i).round)==0
         response_array << response_hash         
       end
 
