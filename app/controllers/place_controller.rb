@@ -129,24 +129,24 @@ class PlaceController < ApplicationController
     if params[:exclude].to_s == "true"
       exclude_places_you_been = " and a.place_id not in (select place_id from tagged_users where facebook_id = #{@current_user.facebook_id})" 
     end
+    
     filter_limit = 25
     if !params[:limit].nil?
       filter_limit = params[:limit].to_i
     end
-    filter_sort = ""
-    if params[:sort].nil?
-      filter_sort = "order by friend_checkins desc "
-    else
-      filter_sort = "order by #{params[:sort]} desc "
-    end
+    
     filter_random = ""
+    
     if params[:random]==nil || params[:random]=="false"
       filter_random = ""
     else
-      filter_random = ", rand()"
-      filter_sort = "" #random overrides sort order
+      #filter_random = ", rand()"
+      filter_limit = filter_limit * 5
     end
-
+    
+    if params[:sort].nil?
+      params[:sort] = "friend_checkins"
+    end
     
     distance_filter = ""
     if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
@@ -159,8 +159,8 @@ class PlaceController < ApplicationController
         where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
         " + distance_filter + "
         " + exclude_places_you_been + "
-        group by 1,2,3,4" +
-        filter_sort + filter_random + "
+        group by 1,2,3,4
+        order by #{params[:sort]} desc " + filter_random + "
         limit " + filter_limit.to_s
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
@@ -193,7 +193,11 @@ class PlaceController < ApplicationController
         :place_website => place['website'],
         :place_price => place['price_range']
       }
-      response_array << response_hash
+      
+      if response_array.length < params[:limit].to_i && rand(4)==0
+        response_array << response_hash         
+      end
+
     end
     mysqlresults.free
     

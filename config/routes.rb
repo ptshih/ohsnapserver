@@ -4,7 +4,7 @@ Moogle::Application.routes.draw do
   # Example: http://api.moogle.com/v1/user/54685403
   # Example: curl "http://localhost:3000/v1/checkins.json"
   # Example: curl "http://localhost:3000/v1/places/popular.json"
-  # Example: curl "http://localhost:3000/v1/places/popular?random=true&limit=100&wat=.json"  
+  # Example: curl "http://localhost:3000/v1/places/popular?random=true&limit=5&wat=.json"  
   # Example: curl "http://localhost:3000/v1/places/141012355936429.json"
   # Example: curl "http://localhost:3000/v1/moogle/me.json"
   
