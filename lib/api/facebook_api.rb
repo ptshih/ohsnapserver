@@ -1046,7 +1046,7 @@ module API
       query = "update places set picture_url = picture where picture like 'http://profile%'"
       mysqlresult = ActiveRecord::Base.connection.execute(query)
       
-      Place.find(:all, :select=>"page_parent_alias, sum(like_count) as like_count", :conditions=>"page_parent_alias!='' and picture_url is null", :order => "sum(like_count) desc", :group=> "page_parent_alias",:limit=>50).each do |place|
+      Place.find(:all, :select=>"page_parent_alias, sum(like_count) as like_count, count(*) as place_count", :conditions=>"page_parent_alias!='' and picture_url is null", :order => "count(*) desc, sum(like_count) desc", :group=> "page_parent_alias",:limit=>50).each do |place|
         page_alias_array << place.page_parent_alias
         puts place.page_parent_alias
       end
