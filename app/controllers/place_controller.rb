@@ -65,7 +65,7 @@ class PlaceController < ApplicationController
     
     # LIMIT 
     limit_count = " limit 100"
-    if !params[:count].nil?
+    if !params[:limit].nil?
       limit_count = " limit #{params[:count]}"
     end
     
@@ -73,13 +73,21 @@ class PlaceController < ApplicationController
     # Returns the result by order of distance, ascending
     order_statement = "3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )"
     
+    # DISTANCE
+    if params[:distance].nil?
+      params[:distance]=1
+    end
+    if params[:distance]!=nil && params[:lng]!=nil && params[:lat]!=nil
+      distance_filter = " or (3956.0 * 2.0 * atan2( power(power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{params[:lat]}) * pi()/180.0),2) + cos(#{params[:lat]} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{params[:lng]}) * pi()/180.0),2) , 0.5) )) <= #{params[:distance]}"
+    end
+    
     query = "
       select a.*, sum(case when b.facebook_id is not null then 1 else 0 end) as friend_checkins
       from places a
       left join tagged_users b on a.place_id = b.place_id
         and (b.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
             or b.facebook_id=#{@current_user.facebook_id})
-      where a.place_id IN (#{place_list})
+      where a.place_id IN (#{place_list})" + distance_filter + "
       group by 1
       order by " + order_statement + limit_count
     
