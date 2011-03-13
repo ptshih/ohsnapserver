@@ -24,9 +24,9 @@ class PlaceController < ApplicationController
       params[:lng] = -121.922429
     end
     # in miles
-    if params[:distance].nil?
-      params[:distance] = 1
-    end
+    # if params[:distance].nil?
+    #       params[:distance] = 1
+    #     end
   end
   # feed: the posts/comments feed of a particular place
   # show: the information about a place - address, lat/lng, likes, checkins etc.
@@ -133,6 +133,7 @@ class PlaceController < ApplicationController
   ############################################################
   def popular
     Rails.logger.info request.query_parameters.inspect
+    #puts "passed params: #{params}"
     
     exclude_places_you_been = ""
     if params[:exclude].to_s == "true"
