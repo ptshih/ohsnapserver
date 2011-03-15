@@ -66,7 +66,7 @@ class PlaceController < ApplicationController
     # LIMIT 
     limit_count = " limit 100"
     if !params[:limit].nil?
-      limit_count = " limit #{params[:count]}"
+      limit_count = " limit #{params[:limit]}"
     end
     
     # ORDER

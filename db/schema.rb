@@ -76,6 +76,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_fbid_and_friendid", :unique => true
+  add_index "friends", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "friends", ["friend_id"], :name => "idx_friend_id"
 
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
