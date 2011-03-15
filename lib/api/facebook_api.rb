@@ -1133,19 +1133,24 @@ module API
       end
     end
 
-    def find_user_for_facebook_id(facebook_id = nil)
+    # Find user and serialize by facebook_id; do not use token if you don't have to
+    # API::FacebookApi.new.find_user_for_facebook_id(4,1)
+    def find_user_for_facebook_id(facebook_id = nil, disable_token=nil)
 
       if facebook_id.nil? then facebook_id = @@peter_id end
-
       puts "find user for facebook_id: #{facebook_id}"
-
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
+      # By default, use a token and require these specific fields
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
-      params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale,verified'
-
+      if disable_token.nil?
+        params_hash['access_token'] = self.access_token
+        params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale,verified'
+      else
+        
+      end
+      
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.parse_json(response.body)
 

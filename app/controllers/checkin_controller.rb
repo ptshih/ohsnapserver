@@ -115,6 +115,14 @@ class CheckinController < ApplicationController
         place_ids_array << checkin['place_id']
         
         place = checkin.place
+        checkin_author = ""
+        # Check whether the checkin author is already in the database; if not pull from facebook
+        if checkin.user.nil?
+          checkin_author_obj = @facebook_api.find_user_for_facebook_id(checkin['facebook_id'], "disabletoken")
+          checkin_author = checkin_author_obj['full_name']
+        else
+          checkin_author = checkin.user['full_name']
+        end
         
         place_hash = {
           :place_id => place['place_id'].to_s,
@@ -140,7 +148,7 @@ class CheckinController < ApplicationController
         checkin_hash = {
           :checkin_id => checkin['checkin_id'].to_s,
           :facebook_id => checkin['facebook_id'].to_s,
-          :name => checkin.user.nil? ? "Anonymous" : checkin.user['full_name'],
+          :name => checkin_author,
           :tagged_count => tagged_count,
           :tagged_user_array => tagged_user_array,
           :message => checkin['message'],
