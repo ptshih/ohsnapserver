@@ -5,6 +5,12 @@ CLIENT ID
 CLIENT SECRET
 W45013QS5ADELZMVZYIIH3KX44TZQXDN0KQN5XVRN1JPJVGB
 
+Example API Request:
+curl "https://api.foursquare.com/v2/venues/search?ll=40.7,-74&client_id=2CPOOTGBGYH53Q2LV3AORUF1JO0XV0FZLU1ZSZ5VO0GSKELO&client_secret=W45013QS5ADELZMVZYIIH3KX44TZQXDN0KQN5XVRN1JPJVGB"
+
+Venus API Docs:
+http://developer.foursquare.com/venues/
+
 == Joyent Proxy ==
 IP: 72.2.118.126
 SSH Username: jill
