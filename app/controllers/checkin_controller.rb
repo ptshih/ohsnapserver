@@ -127,7 +127,7 @@ class CheckinController < ApplicationController
         place_hash = {
           :place_id => place['place_id'].to_s,
           :place_name => place['name'],
-          :place_picture => place['picture_url'],
+          :place_picture => place['picture'],
           :place_lng => place['lng'],
           :place_lat => place['lat'],
           :place_street => place['street'],

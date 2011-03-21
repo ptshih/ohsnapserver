@@ -105,7 +105,7 @@ class PlaceController < ApplicationController
       response_hash = {
         :place_id => place['place_id'].to_s,
         :place_name => place['name'],
-        :place_picture => place['picture_url'],
+        :place_picture => place['picture'],
         :place_lng => place['lng'],
         :place_lat => place['lat'],
         :place_street => place['street'],
@@ -196,7 +196,7 @@ class PlaceController < ApplicationController
       response_hash = {
         :place_id => place['place_id'].to_s,
         :place_name => place['name'],
-        :place_picture => place['picture_url'],
+        :place_picture => place['picture'],
         :place_lng => place['lng'],
         :place_lat => place['lat'],
         :place_street => place['street'],
@@ -466,7 +466,7 @@ class PlaceController < ApplicationController
       top_places_hash ={
         :place_id => loop_top_place['place_id'].to_s,
         :place_name => loop_top_place['name'],
-        :place_picture => loop_top_place['picture_url'],
+        :place_picture => loop_top_place['picture'],
         :place_friend_checkins => friend_checkins,
         :place_likes => loop_top_place['like_count'],
         :place_checkins => loop_top_place['checkins_count'],
@@ -503,7 +503,7 @@ class PlaceController < ApplicationController
     response_hash = {
       :place_id => place['place_id'].to_s,
       :place_name => place['name'],
-      :place_picture => place['picture_url'],
+      :place_picture => place['picture'],
       :place_lng => place['lng'],
       :place_lat => place['lat'],
       :place_street => place['street'],

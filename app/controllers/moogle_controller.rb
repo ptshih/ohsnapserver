@@ -288,7 +288,7 @@ class MoogleController < ApplicationController
           top_place_hash = {
             :place_id => mysqlresult['place_id'].to_s,
             :place_name => mysqlresult['name'],
-            :place_picture => mysqlresult['picture_url'],
+            :place_picture => mysqlresult['picture'],
             :place_lng => mysqlresult['lng'],
             :place_lat => mysqlresult['lat'],
             :place_street => mysqlresult['street'],
