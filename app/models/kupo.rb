@@ -4,7 +4,7 @@ class Kupo < ActiveRecord::Base
 
   has_attached_file :photo,
     :storage => :s3,
-    :s3_credentials => "#{RAILS_ROOT}/config/s3.yml",
+    :s3_credentials => "#{Rails.root.to_s}/config/s3.yml",
     :path => "/:class/:attachment/:id/:style/:filename",
     :url => "/:class/:attachment/:id/:style_:basename.:extension",
     :default_url => "/:class/:attachment/missing_:style.png",
