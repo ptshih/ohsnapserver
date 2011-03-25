@@ -40,13 +40,15 @@ class MoogleController < ApplicationController
     
   end
   
-  def test_post_kupos
+  def test
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
     
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
       :checkin_id => params[:checkin_id],
       :comment => params[:comment],
-      :photo => params[:photo],
+      :photo => params[:image],
       :created_at => Time.now
     )
     

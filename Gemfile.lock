@@ -32,6 +32,10 @@ GEM
       activesupport (= 3.0.5)
     activesupport (3.0.5)
     arel (2.0.9)
+    aws-s3 (0.6.2)
+      builder
+      mime-types
+      xml-simple
     builder (2.1.2)
     daemons (1.1.0)
     delayed_job (2.1.4)
@@ -87,6 +91,7 @@ GEM
     unicorn (3.4.0)
       kgio (~> 2.2)
       rack
+    xml-simple (1.0.15)
     yajl-ruby (0.8.1)
 
 PLATFORMS
@@ -94,6 +99,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import
+  aws-s3
   delayed_job
   httpclient
   mysql
