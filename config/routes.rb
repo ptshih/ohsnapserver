@@ -15,7 +15,8 @@ Moogle::Application.routes.draw do
   
   match ':version/moogle/kupos', :controller => 'moogle', :action => 'kupos', :via => :get # Kupos API; referral activity stream
   match ':version/moogle/me', :controller => 'moogle', :action => 'me', :via => :get # ME profile
-  
+  match ':version/moogle/test', :controller => 'moogle', :action =>'test_post_kupos', :via => :post # test post kupo
+   
   # User Routes
   match ':version/users', :controller => 'user', :action => 'index', :via => :get # List of Users
   match ':version/users/:id', :controller => 'user', :action => 'show', :via => :get # Single User with ID

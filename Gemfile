@@ -7,7 +7,7 @@ gem 'nokogiri'
 gem 'rails', '3.0.5'
 
 gem 'mysql'
-
+gem 'paperclip'
 gem 'unicorn'
 
 gem 'yajl-ruby'

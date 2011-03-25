@@ -5,6 +5,60 @@ class MoogleController < ApplicationController
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
+  def get_kupos
+    
+    query = " select facebook_id, checkin_id, comment, picture_url, created_at
+    from kupos
+    where facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+        or b.facebook_id=#{@current_user.facebook_id})
+        and place_id = #{params[:place]}
+    order by id desc
+    "
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    while kupo = mysqlresults.fetch_hash do
+      response_hash = {
+        :facebook_id => kupo['facebook_id'].to_s,
+        :checkin_id => kupo['checkin_id'].to_s,
+        :comment => kupo['comment'],
+        :picture_url => kupo.photo.url,
+        :created_at => kupo['created_at']
+      }
+      response_array << response_hash
+    end
+    
+  end
+  
+  # Creates a kupos
+  def post_kupos
+    
+    # if there's a checkin_id, serialize the checkin, tagged users, and feed of the place
+    # including the likes and comments previously posted for this place
+    if !params[:checkin_id].nil?
+      @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
+    end
+    
+  end
+  
+  def test_post_kupos
+    
+    k = Kupo.create(
+      :facebook_id => @current_user.facebook_id,
+      :checkin_id => params[:checkin_id],
+      :comment => params[:comment],
+      :photo => params[:photo],
+      :created_at => Time.now
+    )
+    
+    response = {:success => "true", :picture_url => k.photo.url}
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+    
+  end
+  
   def get_friends_checkins(friend_id_array = nil, last_fetched_checkins = nil)
     # We need to split up the fb_friend_id_array here so that we don't hit the FB API throttle
     # 600 calls per 600 seconds

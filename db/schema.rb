@@ -97,9 +97,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "referee_id",   :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
     t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.boolean  "is_referral",               :default => false
-    t.datetime "referred_at"
-    t.datetime "completed_at"
+    t.string  "comment",
+    t.string  "picture_url",
+    t.datetime "created_at"
   end
 
   create_table "logs", :force => true do |t|
