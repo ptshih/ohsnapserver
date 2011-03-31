@@ -274,15 +274,23 @@ module API
     def check_facebook_response_for_errors(response = nil)
       # If the response is nil, we error out
       if response.body.nil?
+        puts "\n\n======\n\nEmpty Response From Facebook\n\n=======\n\n"
         return nil
       end
 
       # puts "\n\n======\n\nPrinting raw response: #{response.body}\n\n=======\n\n"
 
+      # parse the json response
       parsed_response = self.parse_json(response.body)
+      
+      # read generic error
+      if (!parsed_response["error_code"].nil?) || (!parsed_response["error_msg"].nil?)
+        puts "\n\n======\n\nFacebook Generic Error Code: #{parsed_response["error_code"]}, Message: #{parsed_response["error_msg"]}\n\n=======\n\n"
+        return nil
+      end
 
-      # read the error
-      if not parsed_response["error"].nil?
+      # read oauth error
+      if (!parsed_response["error"].nil?)
         error_type = parsed_response["error"]["type"]
         error_message = parsed_response["error"]["message"]
 
@@ -294,9 +302,9 @@ module API
           puts "\n\n======\n\nFacebook Error Caught: #{parsed_response["error"]}\n\n=======\n\n"
         end
         return nil
-      else
-        return parsed_response
       end
+        
+      return parsed_response
     end
 
     ###
@@ -330,7 +338,7 @@ module API
     def find_recent_checkins_for_facebook_id(facebook_id = nil)
       if facebook_id.nil? then facebook_id = @@peter_id end
 
-      puts "find recent checkins for facebook_id: #{facebook_id}"
+      puts "START find recent checkins for facebook_id: #{facebook_id}"
 
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
@@ -364,6 +372,8 @@ module API
       # Update last_fetched_checkins timestamp for user
       self.update_last_fetched_checkins(facebook_id)
 
+      puts "END find recent checkins for facebook_id: #{facebook_id}"
+      
       return true
     end
 
@@ -433,7 +443,7 @@ module API
         facebook_id = @@peter_id
       end
 
-      puts "find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+      puts "START find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
 
       # OLD STYLE BATCHED
       headers_hash = Hash.new
@@ -475,6 +485,8 @@ module API
         self.find_places_for_place_id_array(place_id_array.uniq)
       end
 
+      puts "END find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+      
       return true
     end
 
@@ -656,7 +668,11 @@ module API
         # Batch places
         self.serialize_place_bulk(parsed_response)
 
+        puts "find places for place_id_array: #{place_id_array} with token: #{self.access_token}"
+      
         return true
+      else
+        return false
       end
     end
 
@@ -758,7 +774,7 @@ module API
     def find_friends_for_facebook_id(facebook_id = nil, since = nil)
       if facebook_id.nil? then facebook_id = @@peter_id end
 
-      puts "find friends for facebook_id: #{facebook_id}"
+      puts "START find friends for facebook_id: #{facebook_id}"
 
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
@@ -786,6 +802,8 @@ module API
       # Update last_fetched_friends timestamp for user
       self.update_last_fetched_friends(facebook_id)
 
+      puts "END find friends for facebook_id: #{facebook_id}"
+      
       return true
     end
 
@@ -800,7 +818,7 @@ module API
         facebook_id_array = [@@peter_id, @@tom_id, @@james_id]
       end
 
-      puts "find friends for facebook_id_array: #{facebook_id_array}"
+      puts "START find friends for facebook_id_array: #{facebook_id_array}"
 
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
@@ -827,6 +845,8 @@ module API
         self.serialize_friend_bulk([key]['data'],key.to_i,1)
       end
 
+      puts "END find friends for facebook_id_array: #{facebook_id_array}"
+      
       return true
     end
 
