@@ -1,32 +1,27 @@
 source 'http://rubygems.org'
 source 'http://gemcutter.org'
 
+gem 'rails'
 gem 'httpclient'
 gem 'nokogiri'
-
-gem 'rails', '3.0.5'
-
 gem 'mysql'
 gem 'paperclip'
-gem 'unicorn'
-
 gem 'yajl-ruby'
+gem 'typhoeus'
+gem 'oauth'
+gem 'activerecord-import'
+gem 'delayed_job'
+gem 'aws-s3', :require => 'aws/s3'
+gem 'sqlite3-ruby', :require => 'sqlite3'
+
+# Unused Gems
+# gem 'rails', '3.0.5'
+# gem 'unicorn'
 # gem 'json'
 
-gem 'typhoeus'
-
-gem 'oauth'
-
-gem 'activerecord-import'
-
-gem 'delayed_job'
-
-gem 'aws-s3', :require => 'aws/s3'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
-
-gem 'sqlite3-ruby', :require => 'sqlite3'
 
 # Use unicorn as the web server
 # gem 'unicorn'
