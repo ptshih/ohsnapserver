@@ -5,9 +5,25 @@ class MoogleController < ApplicationController
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
+  def get_feed
+    
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+    
+  end
+  
+  # Get kupos for a single page
+  # Needs params[:place_id]
   def get_kupos
     
-    query = " select facebook_id, checkin_id, comment, picture_url, created_at
+    query = " select facebook_id, type_id, comment, photo_url, photo_path, created_at
     from kupos
     where facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
         or b.facebook_id=#{@current_user.facebook_id})
@@ -19,24 +35,54 @@ class MoogleController < ApplicationController
     while kupo = mysqlresults.fetch_hash do
       response_hash = {
         :facebook_id => kupo['facebook_id'].to_s,
-        :checkin_id => kupo['checkin_id'].to_s,
+        :place_id => kupo['place_id'].to_s,
         :comment => kupo['comment'],
-        :picture_url => kupo.photo.url,
+        :photo_url => kupo.photo_url,
+        :photo_path => kupo.photo_path,
         :created_at => kupo['created_at']
       }
       response_array << response_hash
     end
     
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+    
   end
   
-  # Creates a kupos
+  # Post a kupos
+  # Kupos needs params[:place_id]
+  # And is of type params[:type_id]
+  # Each type has one or more of these: params[:comment], params[:image], or checkin
   def post_kupos
     
     # if there's a checkin_id, serialize the checkin, tagged users, and feed of the place
     # including the likes and comments previously posted for this place
-    if !params[:checkin_id].nil?
-      @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
-    end
+    # if !params[:checkin_id].nil?
+    #       @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
+    #     end     
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    
+    k = Kupo.create(
+      :facebook_id => @current_user.facebook_id,
+      :type_id => params[:type_id],
+      :place_id => params[:place_id],
+      :comment => params[:comment],
+      :photo => params[:image],
+      :created_at => Time.now
+    )
+    k.photo_url = k.photo.url
+    k.photo_path = k.photo.path
+    k.save
+
+    response = {:success => "true"}
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end    
     
   end
   

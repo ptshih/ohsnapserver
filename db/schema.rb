@@ -94,17 +94,17 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   create_table "kupos", :force => true do |t|
     t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.integer  "referee_id",   :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
-    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.integer  "type_id",   :limit => 8
     t.string  "comment",
     t.string   "photo_file_name",
     t.string   "photo_content_type",
     t.integer  "photo_file_size",
-    t.string  "picture_url",
+    t.string  "photo_url",
+    t.string  "photo_path",
     t.datetime "created_at"
   end
-
+  
   create_table "logs", :force => true do |t|
     t.datetime "event_timestamp",                                                 :null => false
     t.datetime "session_starttime",                                               :null => false
