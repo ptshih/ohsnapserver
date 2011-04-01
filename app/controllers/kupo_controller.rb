@@ -30,7 +30,7 @@ class KupoController < ApplicationController
     
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
-      :type_id => params[:type_id],
+      :type => params[:type],
       :place_id => params[:place_id],
       :comment => params[:comment],
       :photo => params[:image],

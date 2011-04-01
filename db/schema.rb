@@ -94,10 +94,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
     t.string   "type"
-    t.string   "comment",
-    t.string   "photo_file_name",
-    t.string   "photo_content_type",
-    t.integer  "photo_file_size",
+    t.string   "comment"
+    t.string   "photo_file_name"
+    t.string   "photo_content_type"
+    t.integer  "photo_file_size"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
