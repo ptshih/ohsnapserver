@@ -41,7 +41,7 @@ module API
     def serialize_checkin_bulk(checkins)
       create_new_checkin = []
       create_new_tagged_user = []
-      create_new_checkin_post= []
+      create_new_checkin_comment= []
       create_new_checkin_like = []
       create_new_app = []
       place_id_array=[]
@@ -80,7 +80,7 @@ module API
         if checkin.has_key?('comments')
           checkin['comments']['data'].each do |t|
             created_time = Time.parse(t['created_time'].to_s)
-            create_new_checkin_post << [checkin['id'], t['from']['id'], t['from']['name'], t['id'], t['message'], created_time]
+            create_new_checkin_comment << [checkin['id'], t['from']['id'], t['from']['name'], t['id'], t['message'], created_time]
           end
         end
 
@@ -90,7 +90,7 @@ module API
       checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
       tagged_user_columns = [:checkin_id, :place_id, :facebook_id, :name]
       checkin_like_columns = [:checkin_id, :facebook_id, :full_name]
-      checkin_post_columns = [:checkin_id,  :facebook_id, :full_name, :post_id, :message, :created_time]
+      checkin_comment_columns = [:checkin_id,  :facebook_id, :full_name, :message, :created_time]
       app_columns = [:app_id, :name]
 
       # Import the data
@@ -99,8 +99,8 @@ module API
       if !create_new_checkin_like.nil?
         CheckinLike.import checkin_like_columns, create_new_checkin_like, :on_duplicate_key_update => [:full_name]
       end
-      if !create_new_checkin_post.nil?
-        CheckinPost.import checkin_post_columns, create_new_checkin_post, :on_duplicate_key_update => [:message, :created_time]
+      if !create_new_checkin_comment.nil?
+        Checkincomment.import checkin_comment_columns, create_new_checkin_checkin, :on_duplicate_key_update => [:message, :created_time]
       end
       if !create_new_app.nil?
         App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
