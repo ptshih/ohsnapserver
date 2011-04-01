@@ -358,31 +358,39 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select facebook_id, kupo_type, comment, photo_url, photo_path, created_at
+    query = " select id, facebook_id, place_id, kupo_type, comment, created_at
     from kupos
     where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
         or facebook_id=#{@current_user.facebook_id})
-        and place_id = #{params[:place]}
+        and place_id = #{params[:place_id]}
         " + time_bounds + "
     order by id desc
     "
+    response_hash = {}
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     while kupo = mysqlresults.fetch_hash do
-      response_hash = {
-        :facebook_id => kupo['facebook_id'].to_s,
+      kupo_hash = {
+        :id => kupo['id'].to_s,
         :place_id => kupo['place_id'].to_s,
+        :author_id => kupo['facebook_id'].to_s,
+        :author_name => "need_to_join_here",
+        :kupo_type => kupo['kupo_type'],
         :comment => kupo['comment'],
-        :photo_url => kupo['photo_url'],
-        :photo_path => kupo['photo_path'],
-        :created_at => kupo['created_at']
+        :timestamp => Time.parse(kupo['created_at'].to_s).to_i
       }
-      response_array << response_hash
+      response_array << kupo_hash
     end
+    mysqlresults.free
+    
+    # Construct Response
+    response_hash[:values] = response_array
+    response_hash[:count] = 1
+    response_hash[:total] = 10
     
     respond_to do |format|
-      format.xml  { render :xml => response_array }
-      format.json  { render :json => response_array }
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
     end
   
   end
