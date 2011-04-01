@@ -407,7 +407,9 @@ class UserController < ApplicationController
   # /users/me/places
   # same as places/:place_id/me where it gets an index
   def places
-    
+    ##
+    # Getting the friend's list of the place
+    ##
     query = "select distinct a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
@@ -436,11 +438,27 @@ class UserController < ApplicationController
         }
         friend_list_of_place[place['place_id']] << friend_hash
       end
-      
-      
     end
-    
+    mysqlresults.free
+
+    ##    
+    # Getting the activity of the place
+    ##
+    query = "select place_id, count(*) as activity_count
+            from kupos a
+            where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+                or b.facebook_id=#{@current_user.facebook_id})
+            group by 1
+          "
+    activity_of_place = []
+    while place = mysqlresults.fetch_hash do
+      activity_of_place[place['place_id']] = place['activity_count']
+    end
+    mysqlresults.free  
+
+    ##
     # pass since, then get everything > since
+    ##    
     if params[:since]!=nil && params[:until]==nil
       time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
     # pass until, then get everything < until
@@ -450,6 +468,9 @@ class UserController < ApplicationController
       time_bounds = ""
     end
     
+    ##
+    # Get the actual last kupo of a place to show on the home screen
+    ##
     query = "
         select p.id as place_dbid, p.place_id, p.name as place_name, p.picture_url as place_picture_url,
               facebook_id, kupo_type, place_id, type, comment, photo_url, photo_path, created_at
@@ -475,7 +496,7 @@ class UserController < ApplicationController
         :picture_url => kupo['place_picture_url'],
         :facebook_id => kupo['facebook_id'].to_s,
         :friend_list => friend_list_of_place[kupo['place_id']],
-        :activity_count => nil,
+        :activity_count => activity_of_place[place['place_id']].to_s,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
         :timestamp => kupo['created_at']
