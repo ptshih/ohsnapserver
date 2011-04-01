@@ -100,7 +100,7 @@ module API
         CheckinLike.import checkin_like_columns, create_new_checkin_like, :on_duplicate_key_update => [:full_name]
       end
       if !create_new_checkin_comment.nil?
-        Checkincomment.import checkin_comment_columns, create_new_checkin_checkin, :on_duplicate_key_update => [:message, :created_time]
+        CheckinComment.import checkin_comment_columns, create_new_checkin_comment, :on_duplicate_key_update => [:message, :created_time]
       end
       if !create_new_app.nil?
         App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
