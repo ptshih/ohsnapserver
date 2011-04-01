@@ -93,7 +93,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "kupos", :force => true do |t|
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
-    t.string   "type"
+    t.string   "kupo_type"
     t.string   "comment"
     t.string   "photo_file_name"
     t.string   "photo_content_type"
