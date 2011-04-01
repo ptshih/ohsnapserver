@@ -413,7 +413,7 @@ class UserController < ApplicationController
     query = "select distinct a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
-            where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+            where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
                 or b.facebook_id=#{@current_user.facebook_id})
             order by a.place_id
           "
@@ -445,9 +445,9 @@ class UserController < ApplicationController
     # Getting the activity of the place
     ##
     query = "select place_id, count(*) as activity_count
-            from kupos a
-            where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-                or b.facebook_id=#{@current_user.facebook_id})
+            from kupos
+            where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+                or facebook_id=#{@current_user.facebook_id})
             group by 1
           "
     activity_of_place = []
@@ -478,8 +478,8 @@ class UserController < ApplicationController
         join (
           select place_id, max(id) as id
           from kupos
-          where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-              or b.facebook_id=#{@current_user.facebook_id})
+          where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+              or facebook_id=#{@current_user.facebook_id})
               " + time_bounds + "
           group by place_id
         ) b on a.id = b.id

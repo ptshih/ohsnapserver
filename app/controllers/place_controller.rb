@@ -360,8 +360,8 @@ class PlaceController < ApplicationController
     
     query = " select facebook_id, kupo_type, comment, photo_url, photo_path, created_at
     from kupos
-    where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-        or b.facebook_id=#{@current_user.facebook_id})
+    where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+        or facebook_id=#{@current_user.facebook_id})
         and place_id = #{params[:place]}
         " + time_bounds + "
     order by id desc
