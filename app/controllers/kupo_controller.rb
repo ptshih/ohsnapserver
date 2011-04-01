@@ -36,9 +36,6 @@ class KupoController < ApplicationController
       :photo => params[:image],
       :created_at => Time.now
     )
-    k.photo_url = k.photo.url
-    k.photo_path = k.photo.path
-    k.save
 
     response = {:success => "true"}
     

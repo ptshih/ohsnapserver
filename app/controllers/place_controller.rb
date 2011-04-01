@@ -377,6 +377,7 @@ class PlaceController < ApplicationController
         :author_name => "need_to_join_here",
         :kupo_type => kupo['kupo_type'],
         :comment => kupo['comment'],
+        :photo_url => kupo['photo_url'],
         :timestamp => Time.parse(kupo['created_at'].to_s).to_i
       }
       response_array << kupo_hash

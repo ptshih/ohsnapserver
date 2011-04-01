@@ -98,8 +98,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "photo_file_name"
     t.string   "photo_content_type"
     t.integer  "photo_file_size"
-    t.string   "photo_url", :limit => 256
-    t.string   "photo_path", :limit => 256
     t.datetime "created_at"
     t.datetime "updated_at"
   end
