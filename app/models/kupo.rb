@@ -9,7 +9,7 @@ class Kupo < ActiveRecord::Base
     :url => "/:class/:attachment/:id/:style_:basename.:extension",
     :default_url => "/:class/:attachment/missing_:style.png",
     :whiny_thumbnails => true,
-    :styles => { :thumb => "250x250#" , :square => "50x50#" }
+    :styles => { :thumb => "100x100#" , :square => "50x50#" }
     # has_attached_file :photo, 
     #   :storage => :s3, 
     #   :s3_credentials => "#{RAILS_ROOT}/config/s3.yml", 
