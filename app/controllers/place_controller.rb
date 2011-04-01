@@ -373,8 +373,8 @@ class PlaceController < ApplicationController
         :facebook_id => kupo['facebook_id'].to_s,
         :place_id => kupo['place_id'].to_s,
         :comment => kupo['comment'],
-        :photo_url => kupo.photo_url,
-        :photo_path => kupo.photo_path,
+        :photo_url => kupo['photo_url'],
+        :photo_path => kupo['photo_path'],
         :created_at => kupo['created_at']
       }
       response_array << response_hash
