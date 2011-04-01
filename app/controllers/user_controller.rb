@@ -408,6 +408,38 @@ class UserController < ApplicationController
   # same as places/:place_id/me where it gets an index
   def places
     
+    query = "select distinct a.place_id, a.facebook_id, b.full_name, b.first_name
+            from kupos a
+            join users b on a.facebook_id = b.facebook_id
+            where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+                or b.facebook_id=#{@current_user.facebook_id})
+            order by a.place_id
+          "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    friend_list_of_place = []
+    while place = mysqlresults.fetch_hash do
+      
+      if friend_list_of_place[place['place_id']].nil?
+        friend_hash_array = []
+        friend_hash = {
+          :facebook_id => facebook_id,
+          :full_name => full_name,
+          :first_name => first_name
+        }
+        friend_hash_array << friend_hash
+        friend_list_of_place[place['place_id']] = friend_hash_array
+      else
+        friend_hash = {
+          :facebook_id => facebook_id,
+          :full_name => full_name,
+          :first_name => first_name
+        }
+        friend_list_of_place[place['place_id']] << friend_hash
+      end
+      
+      
+    end
+    
     # pass since, then get everything > since
     if params[:since]!=nil && params[:until]==nil
       time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
@@ -433,7 +465,6 @@ class UserController < ApplicationController
         join places p on p.place_id=b.place_id
         order by id
     "
-    
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     while kupo = mysqlresults.fetch_hash do
@@ -443,14 +474,16 @@ class UserController < ApplicationController
         :place_name => kupo['place_name'],
         :place_picture_url => kupo['place_picture_url'],
         :facebook_id => kupo['facebook_id'].to_s,
+        :friend_list => friend_list_of_place[kupo['place_id']],
+        :activity_count => nil,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
-        :photo_url => kupo.photo_url,
-        :photo_path => kupo.photo_path,
         :created_at => kupo['created_at']
       }
       response_array << response_hash
     end
+    mysqlresults.free
+    
     
     respond_to do |format|
       format.xml  { render :xml => response_array }
