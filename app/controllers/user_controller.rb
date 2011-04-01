@@ -473,7 +473,7 @@ class UserController < ApplicationController
     ##
     query = "
         select p.id as place_dbid, p.place_id, p.name as place_name, p.picture as place_picture_url,
-              facebook_id, kupo_type, kupo_type, comment, photo_url, photo_path, a.created_at
+              facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at
         from kupos a
         join (
           select place_id, max(id) as id
@@ -500,6 +500,7 @@ class UserController < ApplicationController
         :activity_count => activity_of_place["#{kupo['place_id']}"].to_i,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
+        :has_photo => !kupo['photo_file_name'].nil?,
         :timestamp => Time.parse(kupo['created_at'].to_s).to_i
       }
       response_array << kupo_hash
