@@ -5,6 +5,15 @@ class CheckinController < ApplicationController
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
+  ###
+  ### Convenience Methods
+  ###
+  
+
+  ###
+  ### API Endpoints
+  ###
+  
   # This API gets a list of checkins for you or your friends based on the who param
   # Use by Moogle Checkins (ie Checkin Feed) tabs - distance or who
   # params[:who] = deciding who to filter on; used by the "who" tab
@@ -192,7 +201,18 @@ class CheckinController < ApplicationController
   def show
   end
   
-  # Checkin - 
+  def search
+  end
+  
+  def place
+  end
+  
+  def comments
+  end
+  
+  def likes
+  end
+  
   #  (client still does checkin so client can get most up to date information,
   #  then DB updates so client can have info without having to do the full refresh of recent checkins)
   # - parameters checkinid
@@ -201,7 +221,7 @@ class CheckinController < ApplicationController
   # - add to database
   # return true
   # Get params checkin_id, place_id, share_message
-  def checkin
+  def new
     Rails.logger.info request.query_parameters.inspect
     
     if !params[:checkin_id].nil?

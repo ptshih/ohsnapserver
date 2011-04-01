@@ -4,5 +4,5 @@ class Checkin < ActiveRecord::Base
   has_one :app, :foreign_key => 'app_id', :primary_key => 'app_id'
   has_many :tagged_users, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin
   has_many :checkin_likes, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin
-  has_many :checkin_posts, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin  
+  has_many :checkin_comments, :foreign_key => 'checkin_id', :primary_key => 'checkin_id', :inverse_of => :checkin  
 end

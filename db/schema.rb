@@ -29,18 +29,15 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
 
-  create_table "checkin_posts", :primary_key => "post_id", :force => true do |t|
-    t.integer  "id",                                       :null => false
+  create_table "checkin_comments", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.string   "full_name"
     t.string   "message"
     t.datetime "created_time"
   end
-
-  add_index "checkin_posts", ["checkin_id"], :name => "idx_checkin_id"
-  add_index "checkin_posts", ["facebook_id"], :name => "idx_facebook_id"
-  add_index "checkin_posts", ["post_id"], :name => "post_id_UNIQUE", :unique => true
+  
+  add_index "checkin_comments", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
 
   create_table "checkins", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
@@ -75,9 +72,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "degree",                   :default => 0
   end
 
-  add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_fbid_and_friendid", :unique => true
+  add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_facebook_id_and_friend_id", :unique => true
   add_index "friends", ["facebook_id"], :name => "idx_facebook_id"
   add_index "friends", ["friend_id"], :name => "idx_friend_id"
+  add_index "friends", ["degree"], :name => "idx_degree"
 
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
@@ -95,15 +93,17 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "kupos", :force => true do |t|
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
-    t.integer  "type_id",   :limit => 8
-    t.string  "comment",
+    t.string   "type"
+    t.string   "comment",
     t.string   "photo_file_name",
     t.string   "photo_content_type",
     t.integer  "photo_file_size",
-    t.string  "photo_url",
-    t.string  "photo_path",
     t.datetime "created_at"
+    t.datetime "updated_at"
   end
+  
+  add_index "kupos", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "kupos", ["place_id"], :name => "idx_place_id"
   
   create_table "logs", :force => true do |t|
     t.datetime "event_timestamp",                                                 :null => false
@@ -126,20 +126,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "var4",              :limit => 50
   end
 
-  create_table "notifications", :force => true do |t|
-    t.integer  "sender_id",         :limit => 8,  :default => 0
-    t.integer  "receiver_id",       :limit => 8,  :default => 0
-    t.string   "notify_type",       :limit => 10
-    t.integer  "notify_object_id",  :limit => 8
-    t.text     "message"
-    t.datetime "send_timestamp",                                 :null => false
-    t.datetime "receive_timestamp"
-  end
-
-  add_index "notifications", ["notify_type"], :name => "idx_place_id"
-  add_index "notifications", ["receiver_id"], :name => "idx_receiver_id"
-  add_index "notifications", ["sender_id"], :name => "idx_sender_id"
-
   create_table "pages", :force => true do |t|
     t.string  "page_alias",       :limit => 100,                :null => false
     t.integer "facebook_id",      :limit => 8
@@ -158,23 +144,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "pages", ["id"], :name => "id_UNIQUE", :unique => true
   add_index "pages", ["page_alias"], :name => "page_alias_UNIQUE", :unique => true
-
-  create_table "place_posts", :force => true do |t|
-    t.integer  "place_id",          :limit => 8, :default => 0
-    t.string   "place_post_id"
-    t.string   "post_type"
-    t.integer  "from_id",           :limit => 8, :default => 0
-    t.string   "from_name"
-    t.string   "message"
-    t.string   "picture"
-    t.string   "link"
-    t.string   "name"
-    t.datetime "post_created_time"
-    t.datetime "post_updated_time"
-  end
-
-  add_index "place_posts", ["place_id"], :name => "idx_place_id"
-  add_index "place_posts", ["place_post_id"], :name => "uniq_place_post_id", :unique => true
 
   create_table "places", :force => true do |t|
     t.integer  "place_id",          :limit => 8,                                   :default => 0
@@ -209,31 +178,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
   add_index "places", ["yelp_pid"], :name => "idx_yelp_pid"
 
-  create_table "shares", :force => true do |t|
-    t.integer  "checkin_id",  :limit => 8,  :default => 0
-    t.integer  "facebook_id", :limit => 8,  :default => 0
-    t.integer  "place_id",    :limit => 8,  :default => 0
-    t.string   "message",     :limit => 45
-    t.datetime "shared_at",                                :null => false
-  end
-
-  add_index "shares", ["facebook_id"], :name => "idx_facebook_id"
-
-  create_table "shares_maps", :force => true do |t|
-    t.integer  "facebook_id",       :limit => 8, :default => 0
-    t.integer  "accept_checkin_id", :limit => 8
-    t.datetime "accept_timestamp"
-  end
-
   create_table "tagged_users", :force => true do |t|
+    t.integer "facebook_id", :limit => 8, :default => 0
     t.integer "checkin_id",  :limit => 8, :default => 0
     t.integer "place_id",    :limit => 8
-    t.integer "facebook_id", :limit => 8, :default => 0
     t.string  "name"
   end
 
-  add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkinid_and_fbid", :unique => true
+  add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkin_id_and_facebook_id", :unique => true
   add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "tagged_users", ["checkin_id"], :name => "idx_checkin_id"
   add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|

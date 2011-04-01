@@ -38,4 +38,18 @@ class ApplicationController < ActionController::Base
     @current_user = @facebook_api.find_user_for_facebook_access_token
   end
   
+  def default_geocoordinates
+    # latitude +37.401955, longitude -121.922429
+    if params[:lat].nil?
+      params[:lat] = 37.401955
+    end
+    if params[:lng].nil?
+      params[:lng] = -121.922429
+    end
+    # in miles
+    # if params[:distance].nil?
+    #       params[:distance] = 1
+    #     end
+  end
+  
 end
