@@ -420,7 +420,7 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     friend_list_of_place = []
     while place = mysqlresults.fetch_hash do
-      if friend_list_of_place[place['place_id'].to_i].nil?
+      if friend_list_of_place['#{place['place_id']}'].nil?
         friend_hash_array = []
         friend_hash = {
           :facebook_id => place['facebook_id'],
@@ -428,18 +428,18 @@ class UserController < ApplicationController
           :first_name => place['first_name']
         }
         friend_hash_array << friend_hash
-        friend_list_of_place[place['place_id'].to_i] = friend_hash_array
+        friend_list_of_place['#{place['place_id']}'] = friend_hash_array
       else
         friend_hash = {
           :facebook_id => place['facebook_id'],
           :full_name => place['full_name'],
           :first_name => place['first_name']
         }
-        friend_list_of_place[place['place_id'].to_i] << friend_hash
+        friend_list_of_place['#{place['place_id']}'] << friend_hash
       end
     end
     mysqlresults.free
-
+    
     ##    
     # Getting the activity of the place
     ##
@@ -452,7 +452,7 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     activity_of_place = []
     while place = mysqlresults.fetch_hash do
-      activity_of_place[place['place_id'].to_i] = place['activity_count']
+      activity_of_place['#{place['place_id']}'] = place['activity_count']
     end
     mysqlresults.free  
 
@@ -495,8 +495,8 @@ class UserController < ApplicationController
         :name => kupo['place_name'],
         :picture_url => kupo['place_picture_url'],
         :facebook_id => kupo['facebook_id'].to_s,
-        :friend_list => friend_list_of_place[kupo['place_id'].to_i],
-        :activity_count => activity_of_place[place['place_id'].to_i].to_s,
+        :friend_list => friend_list_of_place['#{kupo['place_id']}'],
+        :activity_count => activity_of_place['#{place['place_id']}'].to_s,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
         :timestamp => kupo['created_at']
