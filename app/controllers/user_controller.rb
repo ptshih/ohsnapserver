@@ -473,7 +473,7 @@ class UserController < ApplicationController
     ##
     query = "
         select p.id as place_dbid, p.place_id, p.name as place_name, p.picture_url as place_picture_url,
-              facebook_id, kupo_type, place_id, type, comment, photo_url, photo_path, created_at
+              facebook_id, kupo_type, kupo_type, comment, photo_url, photo_path, a.created_at
         from kupos a
         join (
           select place_id, max(id) as id
@@ -484,7 +484,7 @@ class UserController < ApplicationController
           group by place_id
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
-        order by id
+        order by a.id desc
     "
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
