@@ -469,16 +469,16 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     while kupo = mysqlresults.fetch_hash do
       response_hash = {
-        :place_dbid => kupo['place_dbid'].to_s,
+        :id => kupo['place_dbid'].to_s,
         :place_id => kupo['place_id'].to_s,
-        :place_name => kupo['place_name'],
-        :place_picture_url => kupo['place_picture_url'],
+        :name => kupo['place_name'],
+        :picture_url => kupo['place_picture_url'],
         :facebook_id => kupo['facebook_id'].to_s,
         :friend_list => friend_list_of_place[kupo['place_id']],
         :activity_count => nil,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
-        :created_at => kupo['created_at']
+        :timestamp => kupo['created_at']
       }
       response_array << response_hash
     end
