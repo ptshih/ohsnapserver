@@ -472,7 +472,7 @@ class UserController < ApplicationController
     # Get the actual last kupo of a place to show on the home screen
     ##
     query = "
-        select p.id as place_dbid, p.place_id, p.name as place_name, p.picture_url as place_picture_url,
+        select p.id as place_dbid, p.place_id, p.name as place_name, p.picture as place_picture_url,
               facebook_id, kupo_type, kupo_type, comment, photo_url, photo_path, a.created_at
         from kupos a
         join (
@@ -486,29 +486,35 @@ class UserController < ApplicationController
         join places p on p.place_id=b.place_id
         order by a.id desc
     "
+    response_hash = {}
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     while kupo = mysqlresults.fetch_hash do
-      response_hash = {
+      kupo_hash = {
         :id => kupo['place_dbid'].to_s,
         :place_id => kupo['place_id'].to_s,
         :name => kupo['place_name'],
         :picture_url => kupo['place_picture_url'],
         :facebook_id => kupo['facebook_id'].to_s,
         :friend_list => friend_list_of_place["#{kupo['place_id']}"],
-        :activity_count => activity_of_place["#{kupo['place_id']}"].to_s,
+        :activity_count => activity_of_place["#{kupo['place_id']}"].to_i,
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
-        :timestamp => kupo['created_at']
+        :timestamp => Time.parse(kupo['created_at'].to_s).to_i
       }
-      response_array << response_hash
+      response_array << kupo_hash
     end
     mysqlresults.free
     
+    # Construct Response
+    response_hash[:values] = response_array
+    response_hash[:count] = 1
+    response_hash[:total] = 10
+    
     
     respond_to do |format|
-      format.xml  { render :xml => response_array }
-      format.json  { render :json => response_array }
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
     end
     
   end
