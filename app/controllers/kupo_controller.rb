@@ -1,0 +1,2 @@
+class KupoController < ApplicationController
+end
