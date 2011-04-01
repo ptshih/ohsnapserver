@@ -419,7 +419,8 @@ class UserController < ApplicationController
     end
     
     query = "
-        select facebook_id, type, place_id, type, comment, photo_url, photo_path, created_at
+        select p.id as place_dbid, p.place_id, p.name as place_name, p.picture_url as place_picture_url,
+              facebook_id, kupo_type, place_id, type, comment, photo_url, photo_path, created_at
         from kupos a
         join (
           select place_id, max(id) as id
@@ -429,6 +430,7 @@ class UserController < ApplicationController
               " + time_bounds + "
           group by place_id
         ) b on a.id = b.id
+        join places p on p.place_id=b.place_id
         order by id
     "
     
@@ -436,9 +438,12 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     while kupo = mysqlresults.fetch_hash do
       response_hash = {
-        :facebook_id => kupo['facebook_id'].to_s,
+        :place_dbid => kupo['place_dbid'].to_s,
         :place_id => kupo['place_id'].to_s,
-        :type => kupo['type'],
+        :place_name => kupo['place_name'],
+        :place_picture_url => kupo['place_picture_url'],
+        :facebook_id => kupo['facebook_id'].to_s,
+        :type => kupo['kupo_type'],
         :comment => kupo['comment'],
         :photo_url => kupo.photo_url,
         :photo_path => kupo.photo_path,

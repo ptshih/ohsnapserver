@@ -19,7 +19,7 @@ class MoogleController < ApplicationController
     
   end
   
-  # Get kupos for a single page
+  # Get kupos for a single place
   # Needs params[:place_id]
   def get_kupos
     
