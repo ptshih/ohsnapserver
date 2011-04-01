@@ -420,7 +420,6 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     friend_list_of_place = []
     while place = mysqlresults.fetch_hash do
-      
       if friend_list_of_place[place['place_id']].nil?
         friend_hash_array = []
         friend_hash = {
@@ -450,6 +449,7 @@ class UserController < ApplicationController
                 or facebook_id=#{@current_user.facebook_id})
             group by 1
           "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
     activity_of_place = []
     while place = mysqlresults.fetch_hash do
       activity_of_place[place['place_id']] = place['activity_count']
