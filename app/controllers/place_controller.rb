@@ -358,7 +358,7 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select facebook_id, type_id, comment, photo_url, photo_path, created_at
+    query = " select facebook_id, type, comment, photo_url, photo_path, created_at
     from kupos
     where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
         or b.facebook_id=#{@current_user.facebook_id})

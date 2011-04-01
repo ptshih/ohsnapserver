@@ -419,7 +419,7 @@ class UserController < ApplicationController
     end
     
     query = "
-        select facebook_id, place_id, type_id, comment, photo_url, photo_path, created_at
+        select facebook_id, type, place_id, type, comment, photo_url, photo_path, created_at
         from kupos a
         join (
           select place_id, max(id) as id
@@ -438,6 +438,7 @@ class UserController < ApplicationController
       response_hash = {
         :facebook_id => kupo['facebook_id'].to_s,
         :place_id => kupo['place_id'].to_s,
+        :type => kupo['type'],
         :comment => kupo['comment'],
         :photo_url => kupo.photo_url,
         :photo_path => kupo.photo_path,
