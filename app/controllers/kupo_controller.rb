@@ -24,18 +24,23 @@ class KupoController < ApplicationController
   end
   
   def new
+    
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
     
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
-      :checkin_id => params[:checkin_id],
+      :type_id => params[:type_id],
+      :place_id => params[:place_id],
       :comment => params[:comment],
       :photo => params[:image],
       :created_at => Time.now
     )
-    
-    response = {:success => "true", :picture_url => k.photo.url}
+    k.photo_url = k.photo.url
+    k.photo_path = k.photo.path
+    k.save
+
+    response = {:success => "true"}
     
     respond_to do |format|
       format.xml  { render :xml => response }

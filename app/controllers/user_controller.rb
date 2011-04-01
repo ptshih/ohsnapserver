@@ -404,7 +404,53 @@ class UserController < ApplicationController
   def friends
   end
   
+  # /users/me/places
+  # same as places/:place_id/me where it gets an index
   def places
+    
+    # pass since, then get everything > since
+    if params[:since]!=nil && params[:until]==nil
+      time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
+    # pass until, then get everything < until
+    elsif params[:since]==nil && params[:until]!=nil
+      time_bounds = " and kupos.created_at<from_unixtime(#{params[:until].to_i})"
+    else
+      time_bounds = ""
+    end
+    
+    query = "
+        select facebook_id, place_id, type_id, comment, photo_url, photo_path, created_at
+        from kupos a
+        join (
+          select place_id, max(id) as id
+          from kupos
+          where (facebook_id = (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+              or b.facebook_id=#{@current_user.facebook_id})
+              " + time_bounds + "
+          group by place_id
+        ) b on a.id = b.id
+        order by id
+    "
+    
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    while kupo = mysqlresults.fetch_hash do
+      response_hash = {
+        :facebook_id => kupo['facebook_id'].to_s,
+        :place_id => kupo['place_id'].to_s,
+        :comment => kupo['comment'],
+        :photo_url => kupo.photo_url,
+        :photo_path => kupo.photo_path,
+        :created_at => kupo['created_at']
+      }
+      response_array << response_hash
+    end
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_array }
+      format.json  { render :json => response_array }
+    end
+    
   end
   
   def kupos
