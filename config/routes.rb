@@ -64,5 +64,8 @@ Moogle::Application.routes.draw do
   # match ':version/checkins/:checkin_id/likes', :controller => 'checkin', :action => 'likes', :via => :get # LIST: get likes for a single checkin
   # Actions
   match ':version/checkins/new', :controller => 'checkin', :action =>'new', :via => :post # CREATE: create a new checkin
+  
+  # Moogle
+  match 'moogle/fbcallback', :controller => 'moogle', :action => 'fbcallback'
 
 end
