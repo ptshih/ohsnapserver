@@ -10,7 +10,7 @@ class MoogleController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     
     # Check for GET
-    if request.get? && params[:hub_mode] == 'subscribe' && params[:hub_verify_token] == '925b0a280e685631acf466dfea13b154'
+    if request.get? && params[:hub_mode] == 'subscribe' && params[:hub_verify_token] == 'omgwtfbbq'
       # Is a GET verification request
       return params[:hub_challenge]
     else
