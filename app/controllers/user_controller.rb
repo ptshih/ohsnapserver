@@ -119,7 +119,7 @@ class UserController < ApplicationController
     # This API is hit to provide a fast set of data for the user to start using the app
     @facebook_api.find_recent_checkins_for_facebook_id(@current_user.facebook_id)
     
-    if time_diff.to_i > 600 then
+    if time_diff.to_i > 0 then
       puts "\n\nREFETCHING\n\n"
     
       last_fetched_friends = @current_user.last_fetched_friends
