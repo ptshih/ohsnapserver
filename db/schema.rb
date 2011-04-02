@@ -21,14 +21,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "apps", ["app_id"], :name => "idx_app_id", :unique => true
 
-  create_table "checkin_likes", :force => true do |t|
-    t.integer "checkin_id",  :limit => 8,   :default => 0
-    t.integer "facebook_id", :limit => 8,   :default => 0
-    t.string  "full_name",   :limit => 100
-  end
-
-  add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
-
   create_table "checkin_comments", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
@@ -36,8 +28,16 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "message"
     t.datetime "created_time"
   end
-  
+
   add_index "checkin_comments", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
+
+  create_table "checkin_likes", :force => true do |t|
+    t.integer "checkin_id",  :limit => 8,   :default => 0
+    t.integer "facebook_id", :limit => 8,   :default => 0
+    t.string  "full_name",   :limit => 100
+  end
+
+  add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
 
   create_table "checkins", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_time"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "kupo_id",      :limit => 8, :default => 0
   end
 
   add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
@@ -72,10 +73,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "degree",                   :default => 0
   end
 
+  add_index "friends", ["degree"], :name => "idx_degree"
   add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_facebook_id_and_friend_id", :unique => true
   add_index "friends", ["facebook_id"], :name => "idx_facebook_id"
   add_index "friends", ["friend_id"], :name => "idx_friend_id"
-  add_index "friends", ["degree"], :name => "idx_degree"
 
   create_table "gowallas", :force => true do |t|
     t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
@@ -91,9 +92,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "kupos", :force => true do |t|
-    t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.integer  "place_id",     :limit => 8, :default => 0
-    t.string   "kupo_type"
+    t.integer  "facebook_id",        :limit => 8,  :default => 0
+    t.integer  "place_id",           :limit => 8,  :default => 0
+    t.integer  "checkin_id",         :limit => 8
+    t.string   "kupo_type",          :limit => 20
     t.string   "comment"
     t.string   "photo_file_name"
     t.string   "photo_content_type"
@@ -101,10 +103,10 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-  
+
   add_index "kupos", ["facebook_id"], :name => "idx_facebook_id"
   add_index "kupos", ["place_id"], :name => "idx_place_id"
-  
+
   create_table "logs", :force => true do |t|
     t.datetime "event_timestamp",                                                 :null => false
     t.datetime "session_starttime",                                               :null => false
@@ -186,8 +188,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "tagged_users", ["checkin_id", "facebook_id"], :name => "idx_checkin_id_and_facebook_id", :unique => true
-  add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
   add_index "tagged_users", ["checkin_id"], :name => "idx_checkin_id"
+  add_index "tagged_users", ["facebook_id"], :name => "idx_facebook_id"
   add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
