@@ -412,7 +412,7 @@ module API
       end
 
       # Update last_fetched_checkins timestamp for user
-      self.update_last_fetched_checkins(facebook_id)
+      # self.update_last_fetched_checkins(facebook_id)
 
       puts "END find recent checkins for facebook_id: #{facebook_id}"
       
