@@ -2,6 +2,7 @@ source 'http://rubygems.org'
 source 'http://gemcutter.org'
 
 gem 'rails'
+gem 'unicorn'
 gem 'httpclient'
 gem 'nokogiri'
 gem 'mysql'
@@ -16,7 +17,6 @@ gem 'sqlite3-ruby', :require => 'sqlite3'
 
 # Unused Gems
 # gem 'rails', '3.0.5'
-# gem 'unicorn'
 # gem 'json'
 
 
