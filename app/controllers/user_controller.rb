@@ -413,7 +413,7 @@ class UserController < ApplicationController
     query = "select distinct a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
-            where (a.facebook_id in (select friend_id from friends where a.facebook_id=#{@current_user.facebook_id})
+            where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
                 or b.facebook_id=#{@current_user.facebook_id})
             order by a.place_id
           "
