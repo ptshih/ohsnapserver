@@ -52,7 +52,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.16)
-    mysql (2.8.1)
+    mysql2 (0.2.7)
     nokogiri (1.4.4)
     oauth (0.4.4)
     paperclip (2.3.8)
@@ -87,7 +87,7 @@ GEM
     typhoeus (0.2.4)
       mime-types
       mime-types
-    tzinfo (0.3.25)
+    tzinfo (0.3.26)
     unicorn (3.5.0)
       kgio (~> 2.3)
       rack
@@ -102,7 +102,7 @@ DEPENDENCIES
   aws-s3
   delayed_job
   httpclient
-  mysql
+  mysql2
   nokogiri
   oauth
   paperclip
