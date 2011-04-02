@@ -45,6 +45,7 @@ module API
       create_new_checkin_like = []
       create_new_app = []
       place_id_array=[]
+      checkin_id_array = []
 
       # Loop through each checkin
       checkins.each do |checkin|
@@ -57,6 +58,8 @@ module API
         created_time = Time.parse(checkin['created_time'].to_s)
 
         place_id_array << place_id
+        checkin_id_array << checkin_id
+        
         create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
         if checkin.has_key?('application') && !checkin['application'].nil? then
           create_new_app << [checkin['application']['id'], checkin['application']['name']]
@@ -99,14 +102,40 @@ module API
       if !create_new_checkin_like.nil?
         CheckinLike.import checkin_like_columns, create_new_checkin_like, :on_duplicate_key_update => [:full_name]
       end
+      
+      # 2011/04/02 tliou
+      # commenting out checkin comment for now because not used by kupos and there is attribute error
+      # ActiveRecord::UnknownAttributeError: unknown attribute:
       if !create_new_checkin_comment.nil?
-        CheckinComment.import checkin_comment_columns, create_new_checkin_comment, :on_duplicate_key_update => [:message, :created_time]
+        #CheckinComment.import checkin_comment_columns, create_new_checkin_comment, :on_duplicate_key_update => [:message, :created_time]
       end
       if !create_new_app.nil?
         App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
       end
 
+      # Serialize the checkin to a kupo
+      self.serialize_kupo_via_checkin_bulk(checkin_id_array)
+
       return place_id_array
+    end
+    
+    def serialize_kupo_via_checkin_bulk(checkin_id_array)
+      
+      # Create the kupos ONLY IF it hasn't already been created in kupos table already
+      checkins_id_string = checkin_id_array.join(',')
+      query = "insert into kupos
+              (facebook_id, place_id, checkin_id, kupo_type, comment, created_at, updated_at)
+              select facebook_id, place_id, checkin_id, 'Checkin', message, created_at, updated_at
+              from checkins
+              where kupo_id =0 and checkin_id in (#{checkins_id_string})"
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
+      
+      # Mark the checkin object as having been copied to kupos table
+      query = "update checkins
+              set kupo_id=1
+              where kupo_id =0 and checkin_id in (#{checkins_id_string})"
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
+      
     end
 
     def serialize_place_bulk(places)
