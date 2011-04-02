@@ -390,9 +390,14 @@ module API
       if parsed_response.nil?
         return false
       end
+      
+      # if there are no recent checkins, don't try to serialize it
+      if parsed_response['data'].empty?
+        return true
+      end
 
       place_id_array = Array.new
-
+      
       # Batch parse checkins
       place_id_array = self.serialize_checkin_bulk(parsed_response['data'])
 
@@ -434,6 +439,11 @@ module API
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
         return false
+      end
+      
+      # if there are no recent checkins, don't try to serialize it
+      if parsed_response['data'].empty?
+        return true
       end
 
       place_id_array = Array.new
