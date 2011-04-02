@@ -1,1 +1,1 @@
-sudo "monit -g dj_<app_name> restart all"
+sudo "monit -g dj_moogle restart all"
