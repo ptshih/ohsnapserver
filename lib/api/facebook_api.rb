@@ -915,7 +915,7 @@ module API
       params_hash['fields'] = 'checkins'
       params_hash['callback_url'] = "http://moogle.heroku.com/fbcallback"
 
-      response = Typhoeus::Request.get("#{@@fb_host}/#{@@fb_app_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
