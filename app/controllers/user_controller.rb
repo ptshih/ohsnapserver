@@ -418,16 +418,25 @@ class UserController < ApplicationController
             order by a.place_id
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
+    
     friend_list_of_place = {}
-    while place = mysqlresults.fetch_hash do
-      friend_hash_array = []
-      friend_hash = {
-        :facebook_id => place['facebook_id'],
-        :full_name => place['full_name'],
-        :first_name => place['first_name']
-      }
-      friend_hash_array << friend_hash
-      friend_list_of_place["#{place['place_id']}"] = friend_hash_array
+    while row = mysqlresults.fetch_hash do
+      if !friend_list_of_place.has_key?("#{row['place_id']}")
+        friend_list_of_place["#{row['place_id']}"] = []
+        friend_hash = {
+          :facebook_id => row['facebook_id'],
+          :full_name => row['full_name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_place["#{row['place_id']}"] << friend_hash
+      else
+        friend_hash = {
+          :facebook_id => row['facebook_id'],
+          :full_name => row['full_name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_place["#{row['place_id']}"] << friend_hash
+      end
     end
     mysqlresults.free
     
