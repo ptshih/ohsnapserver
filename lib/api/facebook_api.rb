@@ -530,7 +530,10 @@ module API
           checkins_array << checkin
         end
       end
-      place_id_array = self.serialize_checkin_bulk(checkins_array)
+      
+      if !checkins_array.empty?
+        place_id_array = self.serialize_checkin_bulk(checkins_array)
+      end
 
 
       # Serialize unique list of place_ids
