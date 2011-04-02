@@ -286,7 +286,7 @@ class UserController < ApplicationController
       last_checkin_place_id = ""
       
       while mysqlresult = mysqlresults.fetch_hash do
-        last_checkin_time_for_place = Time.parse(mysqlresult['last_checkin_time'].to_s).to_i
+        last_checkin_time_for_place = mysqlresult['last_checkin_time'].to_i
       
         # Finding last checkin
         if last_checkin_time_for_place > last_checkin_time
@@ -501,7 +501,7 @@ class UserController < ApplicationController
         :type => kupo['kupo_type'],
         :comment => kupo['comment'],
         :has_photo => !kupo['photo_file_name'].nil?,
-        :timestamp => Time.parse(kupo['created_at'].to_s).to_i
+        :timestamp => ActiveSupport::TimeZone.new('UTC').parse(kupo['created_at']).to_i
       }
       response_array << kupo_hash
     end
