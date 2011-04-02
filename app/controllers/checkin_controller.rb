@@ -221,28 +221,37 @@ class CheckinController < ApplicationController
   # - add to database
   # return true
   # Get params checkin_id, place_id, share_message
+  # def new
+  #   Rails.logger.info request.query_parameters.inspect
+  #   
+  #   if !params[:checkin_id].nil?
+  #     # Add checkin to database; calls facebook and gets tagged users etc.
+  #     @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
+  #   
+  #     # Add share information
+  #     # serialize_share(sharer, share_place, share_message, share_to_facebook_id)
+  #     # if !params[:share_facebook_id_array].nil?
+  #     #   @facebook_api.serialize_share(params[:checkin_id], @current_user.facebook_id, params[:place_id], params[:share_message])
+  #     # end
+  #     
+  #     response = {:success => "true"}
+  #   else
+  #     response = {:success => "false"}
+  #   end
+  #   
+  #   respond_to do |format|
+  #     format.xml  { render :xml => response }
+  #     format.json  { render :json => response }
+  #   end
+  # end
+  
   def new
+    
     Rails.logger.info request.query_parameters.inspect
     
-    if !params[:checkin_id].nil?
-      # Add checkin to database; calls facebook and gets tagged users etc.
-      @facebook_api.find_checkin_for_checkin_id(params[:checkin_id])
+    # add_checkin(message='', place=nil, coordinates=nil, tags=nil)
+    @facebook_api.add_checkin(params[:message], params[:place], params[:coordinates], params[:tags])
     
-      # Add share information
-      # serialize_share(sharer, share_place, share_message, share_to_facebook_id)
-      # if !params[:share_facebook_id_array].nil?
-      #   @facebook_api.serialize_share(params[:checkin_id], @current_user.facebook_id, params[:place_id], params[:share_message])
-      # end
-      
-      response = {:success => "true"}
-    else
-      response = {:success => "false"}
-    end
-    
-    respond_to do |format|
-      format.xml  { render :xml => response }
-      format.json  { render :json => response }
-    end
   end
   
 end
