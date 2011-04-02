@@ -119,7 +119,7 @@ class UserController < ApplicationController
     # This API is hit to provide a fast set of data for the user to start using the app
     @facebook_api.find_recent_checkins_for_facebook_id(@current_user.facebook_id)
     
-    if time_diff.to_i > 0 then
+    if time_diff.to_i > 600 then
       puts "\n\nREFETCHING\n\n"
     
       last_fetched_friends = @current_user.last_fetched_friends
@@ -210,18 +210,19 @@ class UserController < ApplicationController
             order by 3 desc"
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     list_limit_counter = 0
-    while mysqlresult = mysqlresults.fetch_hash do
-      total_checkins += mysqlresult['checkins'].to_i
+    
+    mysqlresults.each(:as => :hash) do |row|
+      total_checkins += row['checkins'].to_i
       
-      if mysqlresult['facebook_id'].to_i == @current_user.facebook_id.to_i
-        total_authored += mysqlresult['checkins'].to_i
+      if row['facebook_id'].to_i == @current_user.facebook_id.to_i
+        total_authored += row['checkins'].to_i
       else
-        total_tagged_you += mysqlresult['checkins'].to_i
+        total_tagged_you += row['checkins'].to_i
         if list_limit_counter < list_limit
           friend_tagged_you_count_hash = {
-            :facebook_id => mysqlresult['facebook_id'],
-            :full_name => mysqlresult['full_name'],
-            :checkins => mysqlresult['checkins']
+            :facebook_id => row['facebook_id'],
+            :full_name => row['full_name'],
+            :checkins => row['checkins']
           }
           friend_tagged_you_array << friend_tagged_you_count_hash
           list_limit_counter += 1
@@ -229,7 +230,6 @@ class UserController < ApplicationController
       end
            
     end
-    mysqlresults.free
     
     # Top list of people you tagged, and total people you tagged
     query = "select t.facebook_id, t.name, count(*) as checkins
@@ -239,20 +239,19 @@ class UserController < ApplicationController
             group by 1 order by 3 desc"
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     list_limit_counter = 0
-    while mysqlresult = mysqlresults.fetch_hash do
-      total_you_tagged += mysqlresult['checkins'].to_i
+    mysqlresults.each(:as => :hash) do |row|
+      total_you_tagged += row['checkins'].to_i
       
       if list_limit_counter < list_limit
         you_tagged_friend_count_hash = {
-          :facebook_id => mysqlresult['facebook_id'],
-          :full_name => mysqlresult['name'],
-          :checkins => mysqlresult['checkins']
+          :facebook_id => row['facebook_id'],
+          :full_name => row['name'],
+          :checkins => row['checkins']
         }
         you_tagged_friend_array << you_tagged_friend_count_hash
         list_limit_counter += 1
       end
     end
-    mysqlresults.free
     
     
     # Unique places checked-in, last checked-in time and place, checkin_count
@@ -285,14 +284,14 @@ class UserController < ApplicationController
       last_checkin_place_name = ""
       last_checkin_place_id = ""
       
-      while mysqlresult = mysqlresults.fetch_hash do
-        last_checkin_time_for_place = mysqlresult['last_checkin_time'].to_i
+      mysqlresults.each(:as => :hash) do |row|
+        last_checkin_time_for_place = row['last_checkin_time'].to_i
       
         # Finding last checkin
         if last_checkin_time_for_place > last_checkin_time
           last_checkin_time = last_checkin_time_for_place
-          last_checkin_place_name = mysqlresult['name']
-          last_checkin_place_id = mysqlresult['place_id']
+          last_checkin_place_name = row['name']
+          last_checkin_place_id = row['place_id']
         end
         
         # Calculate the distance between params[:lat] params[:lng] and place.lat place.lng
@@ -310,32 +309,31 @@ class UserController < ApplicationController
         total_unique_places += 1
         if list_limit_counter < list_limit      
           top_place_hash = {
-            :place_id => mysqlresult['place_id'].to_s,
-            :place_name => mysqlresult['name'],
-            :place_picture => mysqlresult['picture'],
-            :place_lng => mysqlresult['lng'],
-            :place_lat => mysqlresult['lat'],
-            :place_street => mysqlresult['street'],
-            :place_city => mysqlresult['city'],
-            :place_state => mysqlresult['state'],
-            :place_country => mysqlresult['country'],
-            :place_zip => mysqlresult['zip'],
-            :place_phone => mysqlresult['phone'],
-            :place_checkins => mysqlresult['checkins_count'],
+            :place_id => row['place_id'].to_s,
+            :place_name => row['name'],
+            :place_picture => row['picture'],
+            :place_lng => row['lng'],
+            :place_lat => row['lat'],
+            :place_street => row['street'],
+            :place_city => row['city'],
+            :place_state => row['state'],
+            :place_country => row['country'],
+            :place_zip => row['zip'],
+            :place_phone => row['phone'],
+            :place_checkins => row['checkins_count'],
             :place_distance => distance,
-            :place_friend_checkins => mysqlresult['checkins'],
-            :place_likes => mysqlresult['like_count'],
-            :place_attire => mysqlresult['attire'],
-            :place_website => mysqlresult['website'],
-            :place_price => mysqlresult['price_range'],
-            :checkins => mysqlresult['checkins'],
+            :place_friend_checkins => row['checkins'],
+            :place_likes => row['like_count'],
+            :place_attire => row['attire'],
+            :place_website => row['website'],
+            :place_price => row['price_range'],
+            :checkins => row['checkins'],
             :last_checkin_time => last_checkin_time_for_place
           }
           top_places_array << top_place_hash
           list_limit_counter += 1
         end
       end
-      mysqlresults.free
       
       # index=0 is yours; index=1 is you and friends top places
       if index==0
@@ -420,25 +418,25 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     
     friend_list_of_place = {}
-    while row = mysqlresults.fetch_hash do
-      if !friend_list_of_place.has_key?("#{row['place_id']}")
-        friend_list_of_place["#{row['place_id']}"] = []
+    
+    mysqlresults.each(:as => :hash) do |row|
+      if !friend_list_of_place.has_key?(row['place_id'].to_s)
+        friend_list_of_place[row['place_id'].to_s] = []
         friend_hash = {
           :facebook_id => row['facebook_id'],
           :full_name => row['full_name'],
           :first_name => row['first_name']
         }
-        friend_list_of_place["#{row['place_id']}"] << friend_hash
+        friend_list_of_place[row['place_id'].to_s] << friend_hash
       else
         friend_hash = {
           :facebook_id => row['facebook_id'],
           :full_name => row['full_name'],
           :first_name => row['first_name']
         }
-        friend_list_of_place["#{row['place_id']}"] << friend_hash
+        friend_list_of_place[row['place_id'].to_s] << friend_hash
       end
     end
-    mysqlresults.free
     
     ##    
     # Getting the activity of the place
@@ -451,10 +449,9 @@ class UserController < ApplicationController
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     activity_of_place = {}
-    while place = mysqlresults.fetch_hash do
-      activity_of_place["#{place['place_id']}"] = place['activity_count']
+    mysqlresults.each(:as => :hash) do |row|
+      activity_of_place[row['place_id'].to_s] = row['activity_count']
     end
-    mysqlresults.free  
 
     ##
     # pass since, then get everything > since
@@ -489,23 +486,22 @@ class UserController < ApplicationController
     response_hash = {}
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
-    while kupo = mysqlresults.fetch_hash do
-      kupo_hash = {
-        :id => kupo['place_dbid'].to_s,
-        :place_id => kupo['place_id'].to_s,
-        :name => kupo['place_name'],
-        :picture_url => kupo['place_picture_url'],
-        :facebook_id => kupo['facebook_id'].to_s,
-        :friend_list => friend_list_of_place["#{kupo['place_id']}"],
-        :activity_count => activity_of_place["#{kupo['place_id']}"].to_i,
-        :type => kupo['kupo_type'],
-        :comment => kupo['comment'],
-        :has_photo => !kupo['photo_file_name'].nil?,
-        :timestamp => ActiveSupport::TimeZone.new('UTC').parse(kupo['created_at']).to_i
+    mysqlresults.each(:as => :hash) do |row|
+      row_hash = {
+        :id => row['place_dbid'].to_s,
+        :place_id => row['place_id'].to_s,
+        :name => row['place_name'],
+        :picture_url => row['place_picture_url'],
+        :facebook_id => row['facebook_id'].to_s,
+        :friend_list => friend_list_of_place[row['place_id'].to_s],
+        :activity_count => activity_of_place[row['place_id'].to_s].to_i,
+        :type => row['kupo_type'],
+        :comment => row['comment'],
+        :has_photo => !row['photo_file_name'].nil?,
+        :timestamp => row['created_at'].to_i
       }
-      response_array << kupo_hash
+      response_array << row_hash
     end
-    mysqlresults.free
     
     # Construct Response
     response_hash[:values] = response_array

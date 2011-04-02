@@ -370,20 +370,19 @@ class PlaceController < ApplicationController
     response_hash = {}
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
-    while kupo = mysqlresults.fetch_hash do
-      kupo_hash = {
-        :id => kupo['id'].to_s,
-        :place_id => kupo['place_id'].to_s,
-        :author_id => kupo['facebook_id'].to_s,
-        :author_name => kupo['full_name'],
-        :kupo_type => kupo['kupo_type'],
-        :comment => kupo['comment'],
-        :has_photo => !kupo['photo_file_name'].nil?,
-        :timestamp => ActiveSupport::TimeZone.new('UTC').parse(kupo['created_at']).to_i
+    mysqlresults.each(:as => :hash) do |row|
+      row_hash = {
+        :id => row['id'].to_s,
+        :place_id => row['place_id'].to_s,
+        :author_id => row['facebook_id'].to_s,
+        :author_name => row['full_name'],
+        :kupo_type => row['kupo_type'],
+        :comment => row['comment'],
+        :has_photo => !row['photo_file_name'].nil?,
+        :timestamp => row['created_at'].to_i
       }
-      response_array << kupo_hash
+      response_array << row_hash
     end
-    mysqlresults.free
     
     # Construct Response
     response_hash[:values] = response_array
