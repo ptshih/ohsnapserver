@@ -4,6 +4,33 @@ class MoogleController < ApplicationController
     controller.load_version(["v1","v2","v3"])
     controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
+  
+  # Facebook Real Time Updates callback
+  def fbcallback
+    Rails.logger.info request.query_parameters.inspect
+    
+    # Check for GET
+    if request.get? && params[:hub_mode] == 'subscribe' && params[:hub_verify_token] == '925b0a280e685631acf466dfea13b154'
+      # Is a GET verification request
+      return params[:hub_challenge]
+    else
+      # Is a POST subscription request
+      parsed_json = JSON.parse(response.body)
+      puts "fb response: #{parsed_json}"
+    end
+  end
+  
+  if ($method == 'GET' && $_GET['hub_mode'] == 'subscribe' &&       
+      $_GET['hub_verify_token'] == VERIFY_TOKEN) {
+    echo $_GET['hub_challenge'];
+  } else if ($method == 'POST') {                                   
+    $updates = json_decode(file_get_contents("php://input"), true); 
+    // Replace with your own code here to handle the update 
+    // Note the request must complete within 15 seconds.
+    // Otherwise Facebook server will consider it a timeout and 
+    // resend the push notification again.
+    error_log('updates = ' . print_r($updates, true));              
+  }
 
   # Shows the ME timeline
   def kupos

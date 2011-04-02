@@ -9,6 +9,7 @@ module API
     @@moone_access_token = "132514440148709|22ebfa70b9a561d421c076fe-100002025298734|dJd8XJJg4p67Jh_lRFkkgEHX4Go"
 
     @@fb_host = 'https://graph.facebook.com'
+    @@fb_app_id = '132514440148709'
     @@peter_id = 548430564
     @@james_id = 645750651
     @@tom_id = 4804606
@@ -900,6 +901,29 @@ module API
       facebook_user = self.serialize_user(parsed_response, access_token)
 
       return facebook_user
+    end
+    
+    def add_subscription_for_user_checkins
+      # https://graph.facebook.com/oauth/access_token?client_id=<app-id>&client_secret=<app-secret>&grant_type=client_credentials
+      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+
+      params_hash = Hash.new
+      params_hash['access_token'] = self.access_token
+      params_hash['object'] = 'user'
+      params_hash['fields'] = 'checkins'
+      params_hash['callback_url'] = "http://moogle.heroku.com/fbcallback"
+
+      response = Typhoeus::Request.get("#{@@fb_host}/#{@@fb_app_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+      parsed_response = self.check_facebook_response_for_errors(response)
+      if parsed_response.nil?
+        return nil
+      end
+      
+      puts "sub response: #{parsed_response}"
+      
     end
 
   end
