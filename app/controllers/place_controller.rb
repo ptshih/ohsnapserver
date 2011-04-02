@@ -361,7 +361,7 @@ class PlaceController < ApplicationController
     query = " select a.id, a.facebook_id, a.place_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
     from kupos a
     join users b on a.facebook_id = b.facebook_id
-    where (a.facebook_id in (select friend_id from friends where a.facebook_id=#{@current_user.facebook_id})
+    where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
         or a.facebook_id=#{@current_user.facebook_id})
         and a.place_id = #{params[:place_id]}
         " + time_bounds + "
