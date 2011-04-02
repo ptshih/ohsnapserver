@@ -10,6 +10,8 @@ module API
 
     @@fb_host = 'https://graph.facebook.com'
     @@fb_app_id = '132514440148709'
+    @@fb_app_secret = '925b0a280e685631acf466dfea13b154'
+    @@fb_app_access_token = '132514440148709|a7Wfkm22IRitMGJSGTUtr1hI7CE'
     @@peter_id = 548430564
     @@james_id = 645750651
     @@tom_id = 4804606
@@ -910,7 +912,7 @@ module API
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @@fb_app_access_token
       params_hash['object'] = 'user'
       params_hash['fields'] = 'checkins'
       params_hash['callback_url'] = "http://moogle.heroku.com/fbcallback"
