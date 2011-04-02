@@ -506,17 +506,14 @@ module API
       end
 
       response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      
+      puts response.body
 
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
         return false
       end
       
-      # if there are no recent checkins, don't try to serialize it
-      if parsed_response['data'].empty?
-        return true
-      end
-
       place_id_array = Array.new
 
       # Parse checkins for each user
@@ -525,6 +522,10 @@ module API
       # Serialize checkins in bulk
       checkins_array = Array.new
       parsed_keys.each_with_index do |key,i|
+        # if there are no recent checkins for this user, don't try to serialize it
+        if parsed_response[key]['data'].empty?
+          next
+        end
         parsed_response[key]['data'].each do |checkin|
           checkins_array << checkin
         end

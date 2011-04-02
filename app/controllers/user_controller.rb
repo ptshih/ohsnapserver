@@ -24,18 +24,18 @@ class UserController < ApplicationController
     # first we get the initial slice of IDs
     first_batch = friend_id_array.slice!(0..499)
     
-    sliced_first_batch = first_batch.each_slice(100).to_a
+    sliced_first_batch = first_batch.each_slice(50).to_a
     
     sliced_first_batch.each do |first_slice|
-      t = Thread.new do
-        @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
-      end
-      # first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
-      # first_slice_checkins.delay.get_friends_checkins_async
+      # t = Thread.new do
+      #   @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
+      # end
+      first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
+      first_slice_checkins.delay.get_friends_checkins_async
     end
     
     # now we slice up the remaining IDs into chunks of 500
-    sliced_friend_id_array = friend_id_array.each_slice(100).to_a
+    sliced_friend_id_array = friend_id_array.each_slice(50).to_a
     
     # @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
     # [DEPRECATION] `object.send_at(time, :method)` is deprecated. Use `object.delay(:run_at => time).method
