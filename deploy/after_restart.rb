@@ -1,0 +1,1 @@
+sudo "monit -g dj_<app_name> restart all"
