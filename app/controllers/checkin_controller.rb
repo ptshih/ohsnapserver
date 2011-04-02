@@ -167,7 +167,7 @@ class CheckinController < ApplicationController
           :likes_data => checkin.checkin_likes,
           :app_id => checkin_app_id,
           :app_name => checkin_app_name,
-          :checkin_timestamp => Time.parse(checkin['created_time'].to_s).to_i
+          :checkin_timestamp => checkin['created_time'].to_i
         }
         recent_checkins[checkin['checkin_id']] = checkin_hash
       end

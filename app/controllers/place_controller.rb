@@ -379,7 +379,7 @@ class PlaceController < ApplicationController
         :kupo_type => kupo['kupo_type'],
         :comment => kupo['comment'],
         :has_photo => !kupo['photo_file_name'].nil?,
-        :timestamp => Time.parse(kupo['created_at'].to_s).to_i
+        :timestamp => ActiveSupport::TimeZone.new('UTC').parse(kupo['created_at']).to_i
       }
       response_array << kupo_hash
     end
@@ -491,7 +491,7 @@ class PlaceController < ApplicationController
         :facebook_id => taggeduser['facebook_id'].to_s,
         :message => taggeduser['message'],
         :place_name => taggeduser['name'],
-        :timestamp => Time.parse(taggeduser['created_time'].to_s).to_i
+        :timestamp => taggeduser['created_time'].to_i
       }
       response_array << response_hash
     end
