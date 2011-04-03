@@ -452,9 +452,10 @@ class UserController < ApplicationController
     ##
     # Getting tagged user places
     ##
-    query = "select b.place_id, b.facebook_id, b.name
+    query = "select b.place_id, b.facebook_id, u.full_name, u.first_name
         from tagged_users b
         join friends f on b.facebook_id = f.friend_id or b.facebook_id= #{@current_user.facebook_id}
+        join users u on u.facebook_id = b.facebook_id
         where f.facebook_id = #{@current_user.facebook_id}"
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -465,15 +466,15 @@ class UserController < ApplicationController
           friend_list_of_place[row['place_id'].to_s] = []
           friend_hash = {
             :facebook_id => row['facebook_id'],
-            :full_name => row['name'],
-            :first_name => row['name']
+            :full_name => row['full_name'],
+            :first_name => row['first_name']
           }
           friend_list_of_place[row['place_id'].to_s] << friend_hash
         else
           friend_hash = {
             :facebook_id => row['facebook_id'],
-            :full_name => row['name'],
-            :first_name => row['name']
+            :full_name => row['full_name'],
+            :first_name => row['first_name']
           }
           friend_list_of_place[row['place_id'].to_s] << friend_hash
           
