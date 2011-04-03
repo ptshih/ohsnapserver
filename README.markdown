@@ -1,21 +1,43 @@
 Setting up the Rails Environment
 ---
-* TBD
+* Rails 3.0.5+
+* Ruby 1.9.2
+
+* See Gems
+
+Gems required and any special precautions
+---
+* unicorn (for EY)
+* delayed_job
+* mysql2
+* activerecord-import
+* yajl-ruby
+* paperclip
+* aws-s3
+* typhoeus
+* nokogiri (yelp)
+* httpclient (yelp)
 
 Deploying on localhost
 ---
-* In first console: rails s
-* In a second console: rake jobs:work
+Start the server:
+    rails s
+    
+Start the worker:
+    rake jobs:work
 
 Deploying on Engine Yard
 ---
 * First push all changes to Github
-* To just deploy:
-    ey deploy
-* To do a DB schema reload:
-    ey deploy -m "rake db:schema:load"
 
 * Workers should be automatically started
+
+To just deploy
+    ey deploy
+    
+To do a DB schema reload:
+    ey deploy -m "rake db:schema:load"
+
 
 Testing the API
 ---
@@ -28,12 +50,6 @@ Setting up Routes
 Connecting to MySQL
 ---
 * TBD
-
-Gems required and any special precautions
----
-* Unicorn (for EY)
-* delayed_jobs
-* mysql2
 
 Foursquare Consumer
 ---
@@ -59,9 +75,9 @@ Heroku Quirks
 heroku config:add DATABASE_URL=mysql2://friendmash:Lik3aG6@friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com/moogle?encoding=utf8
 
 Facebook API Errors
+---
     {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}} - Throttled LOL
-
-  {"error_code":1,"error_msg":"An unknown error occurred"} - Seems to happen when using multiquery (ids) and there are too many ids
+    {"error_code":1,"error_msg":"An unknown error occurred"} - Seems to happen when using multiquery (ids) and there are too many ids
 
 Console
 ---
