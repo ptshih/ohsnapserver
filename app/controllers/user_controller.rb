@@ -551,7 +551,7 @@ class UserController < ApplicationController
           :facebook_id => row['facebook_id'].to_s,
           :friend_list => friend_list_of_place[row['place_id'].to_s],
           :activity_count => activity_of_place[row['place_id'].to_s].to_i,
-          :type => row['kupo_type'],
+          :kupo_type => row['kupo_type'],
           :comment => row['comment'],
           :has_photo => !row['photo_file_name'].nil?,
           :timestamp => row['created_at'].to_i

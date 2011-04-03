@@ -137,7 +137,7 @@ module API
       checkins_id_string = checkin_id_array.join(',')
       query = "insert into kupos
               (facebook_id, place_id, checkin_id, kupo_type, comment, created_at, updated_at)
-              select facebook_id, place_id, checkin_id, 'Checkin', message, created_time, updated_at
+              select facebook_id, place_id, checkin_id, 'checkin', message, created_time, updated_at
               from checkins
               where kupo_id =0 and checkin_id in (#{checkins_id_string})"
       mysqlresult = ActiveRecord::Base.connection.execute(query)
