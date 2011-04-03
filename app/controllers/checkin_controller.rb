@@ -257,7 +257,7 @@ class CheckinController < ApplicationController
     
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
-      :checkin_id => facebook_checkin_id,
+      :checkin_id => facebook_checkin_id.to_i,
       :kupo_type => params[:kupo_type],
       :place_id => params[:place_id],
       :comment => params[:comment],
