@@ -354,6 +354,34 @@ class PlaceController < ApplicationController
        limit_count = " limit #{params[:count]}"
      end
     
+     ##
+     # Getting tagged user of a place grouped by checkin_id
+     ##
+     friend_list_of_place = {}
+     query = "select a.checkin_id, b.facebook_id, b.name
+         from checkins a
+         join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id
+         where a.place_id = #{params[:place_id]}"
+     mysqlresults = ActiveRecord::Base.connection.execute(query)
+     mysqlresults.each(:as => :hash) do |row|
+       if !friend_list_of_place.has_key?(row['checkin_id'].to_s)
+         friend_list_of_place[row['checkin_id'].to_s] = []
+         friend_hash = {
+           :facebook_id => row['facebook_id'],
+           :full_name => row['name'],
+           :first_name => row['name']
+         }
+         friend_list_of_place[row['checkin_id'].to_s] << friend_hash
+       else
+         friend_hash = {
+           :facebook_id => row['facebook_id'],
+           :full_name => row['name'],
+           :first_name => row['name']
+         }
+         friend_list_of_place[row['checkin_id'].to_s] << friend_hash
+       end      
+     end
+    
     # pass since, then get everything > since
     if params[:since]!=nil && params[:until]==nil
       time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
@@ -364,7 +392,7 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select a.id, a.facebook_id, a.place_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
+    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
     from kupos a
     join users b on a.facebook_id = b.facebook_id
     where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
@@ -377,13 +405,18 @@ class PlaceController < ApplicationController
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
+      
+      if !row['checkin_id'].nil?
+        friend_list = friend_list_of_place[row['checkin_id'].to_s]
+      end
+      
       row_hash = {
         :id => row['id'].to_s,
         :place_id => row['place_id'].to_s,
         :author_id => row['facebook_id'].to_s,
         :author_name => row['full_name'],
         :kupo_type => row['kupo_type'],
-        :friend_list => nil,
+        :friend_list => friend_list,
         :comment => row['comment'],
         :has_photo => !row['photo_file_name'].nil?,
         :timestamp => row['created_at'].to_i
