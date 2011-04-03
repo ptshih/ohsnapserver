@@ -407,8 +407,8 @@ class UserController < ApplicationController
   # same as places/:place_id/me where it gets an index
   def places
     
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,nil)
-    
+    api_call_start = Time.now.to_i
+        
     # We should limit results to 50 if no count is specified
      limit_count = 50
      if !params[:count].nil?
@@ -565,6 +565,10 @@ class UserController < ApplicationController
     response_hash[:values] = response_array
     response_hash[:count] = response_array.length
     response_hash[:total] = response_array.length+limit_count*-1
+    
+    api_call_duration = api_call_start - Time.now.to_i
+    
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',api_call_duration,nil,nil)
     
     respond_to do |format|
       format.xml  { render :xml => response_hash }
