@@ -488,11 +488,16 @@ class UserController < ApplicationController
     ##
     # pass since, then get everything > since
     ##    
+
+    # convert the UTC unix timestamp to Ruby Date and them back to MySQL datetime (utc)
+    # retarded lol
     if params[:since]!=nil && params[:until]==nil
-      time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
+    since_time = Time.at(params[:since].to_i).utc.to_s(:db)
+      time_bounds = " and kupos.created_at > ('#{since_time}')"
     # pass until, then get everything < until
     elsif params[:since]==nil && params[:until]!=nil
-      time_bounds = " and kupos.created_at<from_unixtime(#{params[:until].to_i})"
+    until_time = Time.at(params[:until].to_i).utc.to_s(:db)
+      time_bounds = " and kupos.created_at < ('#{until_time}')"
     else
       time_bounds = ""
     end
