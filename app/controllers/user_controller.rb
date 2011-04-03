@@ -419,13 +419,17 @@ class UserController < ApplicationController
     query = "select a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
-            where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-                or b.facebook_id=#{@current_user.facebook_id})
+            join friends f on a.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+            where f.facebook_id=#{@current_user.facebook_id}
             group by a.place_id, a.facebook_id
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     friend_list_of_place = {}
+    place_id_friend_array = {}
     mysqlresults.each(:as => :hash) do |row|
+      
+      place_id_friend_array[row['place_id'].to_s+'_'+row['facebook_id'].to_s]=1
+      
       if !friend_list_of_place.has_key?(row['place_id'].to_s)
         friend_list_of_place[row['place_id'].to_s] = []
         friend_hash = {
@@ -442,31 +446,38 @@ class UserController < ApplicationController
         }
         friend_list_of_place[row['place_id'].to_s] << friend_hash
       end
+      
     end
     
     ##
     # Getting tagged user places
     ##
-    query = "select a.place_id, b.facebook_id, b.name
-        from checkins a
-        join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id"
+    query = "select b.place_id, b.facebook_id, b.name
+        from tagged_users b
+        join friends f on b.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+        where f.facebook_id = #{@current_user.facebook_id}"
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
-      if !friend_list_of_place.has_key?(row['place_id'].to_s)
-        friend_list_of_place[row['place_id'].to_s] = []
-        friend_hash = {
-          :facebook_id => row['facebook_id'],
-          :full_name => row['name'],
-          :first_name => row['name']
-        }
-        friend_list_of_place[row['place_id'].to_s] << friend_hash
-      else
-        friend_hash = {
-          :facebook_id => row['facebook_id'],
-          :full_name => row['name'],
-          :first_name => row['name']
-        }
-        friend_list_of_place[row['place_id'].to_s] << friend_hash
+      
+      if !place_id_friend_array.has_key?(row['place_id'].to_s+'_'+row['facebook_id'].to_s)
+        place_id_friend_array[row['place_id'].to_s+'_'+row['facebook_id'].to_s]=1
+        if !friend_list_of_place.has_key?(row['place_id'].to_s)
+          friend_list_of_place[row['place_id'].to_s] = []
+          friend_hash = {
+            :facebook_id => row['facebook_id'],
+            :full_name => row['name'],
+            :first_name => row['name']
+          }
+          friend_list_of_place[row['place_id'].to_s] << friend_hash
+        else
+          friend_hash = {
+            :facebook_id => row['facebook_id'],
+            :full_name => row['name'],
+            :first_name => row['name']
+          }
+          friend_list_of_place[row['place_id'].to_s] << friend_hash
+          
+        end
       end      
     end
     
@@ -474,9 +485,9 @@ class UserController < ApplicationController
     # Getting the activity of the place
     ##
     query = "select place_id, count(*) as activity_count
-            from kupos
-            where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-                or facebook_id=#{@current_user.facebook_id})
+            from kupos a
+            join friends f on a.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+            where f.facebook_id=#{@current_user.facebook_id}
             group by 1
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
@@ -505,15 +516,15 @@ class UserController < ApplicationController
               facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at
         from kupos a
         join (
-          select place_id, max(id) as id
-          from kupos
-          where (facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
-              or facebook_id=#{@current_user.facebook_id})
+          select place_id, max(in_k.id) as id
+          from kupos in_k
+          join friends f on in_k.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+          where f.facebook_id=#{@current_user.facebook_id}
               " + time_bounds + "
           group by place_id
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
-        order by a.id desc
+        order by a.created_at desc
         " + limit_count + "
     "
     response_hash = {}

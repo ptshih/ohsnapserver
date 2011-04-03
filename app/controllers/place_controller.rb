@@ -361,7 +361,8 @@ class PlaceController < ApplicationController
      query = "select a.checkin_id, b.facebook_id, b.name
          from checkins a
          join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id
-         where a.place_id = #{params[:place_id]}"
+         join friends f on b.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+         where a.place_id = #{params[:place_id]} and f.facebook_id = #{@current_user.facebook_id}" 
      mysqlresults = ActiveRecord::Base.connection.execute(query)
      mysqlresults.each(:as => :hash) do |row|
        if !friend_list_of_place.has_key?(row['checkin_id'].to_s)
@@ -400,6 +401,7 @@ class PlaceController < ApplicationController
         and a.place_id = #{params[:place_id]}
         " + time_bounds + "
     order by id desc
+    " + limit_count + "
     "
     response_hash = {}
     response_array = []
