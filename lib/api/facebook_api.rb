@@ -989,7 +989,8 @@ module API
         # Facebook returns the checkin id
         self.find_checkin_for_checkin_id(parsed_response['id'])
       end
-      
+
+      return parsed_response['id']
       # puts "Should have checked-in to Facebook with returns id #{parsed_response['id']}"
       
     end
