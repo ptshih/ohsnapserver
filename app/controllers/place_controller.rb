@@ -148,7 +148,7 @@ class PlaceController < ApplicationController
   ############################################################
   def nearby
     Rails.logger.info request.query_parameters.inspect
-    
+    api_call_start = Time.now.to_i
     #puts "lol: #{params}"
     
     # PLACE filter
@@ -226,6 +226,9 @@ class PlaceController < ApplicationController
       }
       response_array << response_hash
     end
+    
+    api_call_duration = Time.now.to_i - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'nearby',params[:lat], params[:lng],nil,api_call_duration) 
      
     respond_to do |format|
       format.xml  { render :xml => response_array }
