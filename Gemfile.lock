@@ -53,6 +53,7 @@ GEM
       treetop (~> 1.4.8)
     mime-types (1.16)
     mysql2 (0.2.7)
+    newrelic_rpm (2.14.1)
     nokogiri (1.4.4)
     oauth (0.4.4)
     paperclip (2.3.8)
@@ -103,6 +104,7 @@ DEPENDENCIES
   delayed_job
   httpclient
   mysql2
+  newrelic_rpm
   nokogiri
   oauth
   paperclip
