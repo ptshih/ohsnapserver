@@ -204,6 +204,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.boolean  "verified",                                                         :default => false
     t.decimal  "fetch_progress",                     :precision => 3, :scale => 2
     t.datetime "last_fetched_checkins"
+    t.datetime "last_fetched_friends_checkins"
     t.datetime "last_fetched_friends"
     t.datetime "created_at"
     t.datetime "updated_at"

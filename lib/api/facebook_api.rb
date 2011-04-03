@@ -274,6 +274,14 @@ module API
         u.update_attribute('last_fetched_checkins', Time.now)
       end
     end
+    
+    def update_last_fetched_friends_checkins(facebook_id)
+      puts "updating #{facebook_id} last fetched friends checkins"
+      u = User.find_by_facebook_id(facebook_id)
+      if not u.nil?
+        u.update_attribute('last_fetched_friends_checkins', Time.now)
+      end
+    end
 
     def update_last_fetched_friends(facebook_id)
       puts "updating #{facebook_id} last fetched friends"
@@ -411,9 +419,6 @@ module API
         self.find_places_for_place_id_array(place_id_array.uniq)
       end
 
-      # Update last_fetched_checkins timestamp for user
-      # self.update_last_fetched_checkins(facebook_id)
-
       puts "END find recent checkins for facebook_id: #{facebook_id}"
       
       return true
@@ -540,6 +545,9 @@ module API
       if !place_id_array.empty?
         self.find_places_for_place_id_array(place_id_array.uniq)
       end
+      
+      # Update last_fetched_friends_checkins timestamp for user
+      self.update_last_fetched_friends_checkins(facebook_id)
 
       puts "END find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
       

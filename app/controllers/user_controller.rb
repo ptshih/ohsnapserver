@@ -10,14 +10,14 @@ class UserController < ApplicationController
   ### Convenience Methods
   ###
   
-  def get_friends_checkins_thread(friend_id_array = nil, last_fetched_checkins = nil)
+  def get_friends_checkins_thread(friend_id_array = nil, last_fetched_friends_checkins = nil)
     # This version just fires off a thread and immediately does the scrape
     t = Thread.new do
-      @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, friend_id_array, last_fetched_checkins)
+      @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, friend_id_array, last_fetched_friends_checkins)
     end
   end
   
-  def get_friends_checkins(friend_id_array = nil, last_fetched_checkins = nil)
+  def get_friends_checkins(friend_id_array = nil, last_fetched_friends_checkins = nil)
     # We need to split up the fb_friend_id_array here so that we don't hit the FB API throttle
     # 600 calls per 600 seconds (maybe get unthrottled in the future)
     
@@ -27,10 +27,7 @@ class UserController < ApplicationController
     sliced_first_batch = first_batch.each_slice(50).to_a
     
     sliced_first_batch.each do |first_slice|
-      # t = Thread.new do
-      #   @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
-      # end
-      first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_checkins)
+      first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_friends_checkins)
       first_slice_checkins.delay.get_friends_checkins_async
     end
     
@@ -42,7 +39,7 @@ class UserController < ApplicationController
     
     # Fire off a background job to get all friend checkins
     sliced_friend_id_array.each_with_index do |slice, index|
-      queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, slice, last_fetched_checkins)
+      queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, slice, last_fetched_friends_checkins)
       delayed_time = (index+1) * 1
       queued_checkins.delay(:run_at => delayed_time.minutes.from_now).get_friends_checkins_async
     end
@@ -67,9 +64,11 @@ class UserController < ApplicationController
   def register
     last_fetched_friends = @current_user.last_fetched_friends
     last_fetched_checkins = @current_user.last_fetched_checkins
+    last_fetched_friends_checkins = @current_user.last_fetched_friends_checkins
     
     puts "Last fetched friends before: #{last_fetched_friends}"
     puts "Last fetched checkins before: #{last_fetched_checkins}"
+    puts "Last fetched friends checkins before: #{last_fetched_friends_checkins}"
     
     # Get all friends from facebook for the current user again
     @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
@@ -85,7 +84,7 @@ class UserController < ApplicationController
     # Get all checkins for friends of the current user
     friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
     friend_id_array = friend_array.map  do |f| f[:friend_id] end
-    get_friends_checkins(friend_id_array, last_fetched_checkins)
+    get_friends_checkins(friend_id_array, last_fetched_friends_checkins)
     
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
@@ -108,8 +107,8 @@ class UserController < ApplicationController
     # should this be a blocking call? or just let the user start playing with cached data
   
     # if last fetched date is under 10 minutes (that is facebook's throttle), don't refetch
-    if not @current_user.last_fetched_checkins.nil?
-      time_diff = Time.now - @current_user.last_fetched_checkins
+    if not @current_user.last_fetched_friends_checkins.nil?
+      time_diff = Time.now - @current_user.last_fetched_friends_checkins
       puts "\n\nLast Session time diff #{time_diff.to_i}\n\n"
     else
       time_diff = 601
@@ -119,14 +118,16 @@ class UserController < ApplicationController
     # This API is hit to provide a fast set of data for the user to start using the app
     @facebook_api.find_recent_checkins_for_facebook_id(@current_user.facebook_id)
     
-    if time_diff.to_i > 0 then
+    if time_diff.to_i > 600 then
       puts "\n\nREFETCHING\n\n"
     
       last_fetched_friends = @current_user.last_fetched_friends
       last_fetched_checkins = @current_user.last_fetched_checkins
+      last_fetched_friends_checkins = @current_user.last_fetched_friends_checkins
       
       puts "Last fetched friends before: #{last_fetched_friends}"
       puts "Last fetched checkins before: #{last_fetched_checkins}"
+      puts "Last fetched friends checkins before: #{last_fetched_friends_checkins}"
       
       # Get all friends from facebook for the current user again with since timestamp
       @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
@@ -137,7 +138,7 @@ class UserController < ApplicationController
       # # Get all checkins for friends of the current user
       friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
       friend_id_array = friend_array.map  do |f| f[:friend_id] end
-      get_friends_checkins(friend_id_array, last_fetched_checkins)
+      get_friends_checkins(friend_id_array, last_fetched_friends_checkins)
     end
     
     # The response should include the current user ID and name for the client to cache
