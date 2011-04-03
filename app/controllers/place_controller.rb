@@ -348,6 +348,12 @@ class PlaceController < ApplicationController
   
   def kupos
     
+    # We should limit results to 50 if no count is specified
+     limit_count = " limit 50"
+     if !params[:count].nil?
+       limit_count = " limit #{params[:count]}"
+     end
+    
     # pass since, then get everything > since
     if params[:since]!=nil && params[:until]==nil
       time_bounds = " and kupos.created_at>from_unixtime(#{params[:since].to_i})"
@@ -377,6 +383,7 @@ class PlaceController < ApplicationController
         :author_id => row['facebook_id'].to_s,
         :author_name => row['full_name'],
         :kupo_type => row['kupo_type'],
+        :friend_list => nil,
         :comment => row['comment'],
         :has_photo => !row['photo_file_name'].nil?,
         :timestamp => row['created_at'].to_i

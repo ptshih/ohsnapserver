@@ -424,9 +424,7 @@ class UserController < ApplicationController
             order by a.place_id
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
-    
     friend_list_of_place = {}
-    
     mysqlresults.each(:as => :hash) do |row|
       if !friend_list_of_place.has_key?(row['place_id'].to_s)
         friend_list_of_place[row['place_id'].to_s] = []
@@ -446,7 +444,33 @@ class UserController < ApplicationController
       end
     end
     
-    ##    
+    ##
+    # Getting tagged user places
+    ##
+    query = "select a.place_id, b.facebook_id, b.name
+        from checkins a
+        join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !friend_list_of_place.has_key?(row['place_id'].to_s)
+        friend_list_of_place[row['place_id'].to_s] = []
+        friend_hash = {
+          :facebook_id => row['facebook_id'],
+          :full_name => row['name'],
+          :first_name => row['name']
+        }
+        friend_list_of_place[row['place_id'].to_s] << friend_hash
+      else
+        friend_hash = {
+          :facebook_id => row['facebook_id'],
+          :full_name => row['name'],
+          :first_name => row['name']
+        }
+        friend_list_of_place[row['place_id'].to_s] << friend_hash
+      end      
+    end
+    
+    ##
     # Getting the activity of the place
     ##
     query = "select place_id, count(*) as activity_count
@@ -490,6 +514,7 @@ class UserController < ApplicationController
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
         order by a.id desc
+        " + limit_count + "
     "
     response_hash = {}
     response_array = []
