@@ -36,10 +36,10 @@ Moogle::Application.routes.draw do
   # Places
   # General
   match ':version/places', :controller => 'place', :action => 'index', :via => :get # LIST: get all places in the database, optional param to filter by @current_user
-  match ':version/places/:place_id', :controller => 'place', :action => 'show', :via => :get # SINGLE: get detail for place with ID
   # match ':version/places/search', :controller => 'place', :action => 'search', :via => :get # LIST: search for a place with query
   match ':version/places/nearby', :controller => 'place', :action => 'nearby', :via => :get # LIST: get all places nearby location (lat,lng)
   match ':version/places/popular', :controller => 'place', :action => 'popular', :via => :get # LIST: get all popular nearby location (lat,lng), optional param for filter by user's social network
+  match ':version/places/:place_id', :controller => 'place', :action => 'show', :via => :get # SINGLE: get detail for place with ID
   # Connections
   match ':version/places/:place_id/kupos', :controller => 'place', :action => 'kupos', :via => :get # LIST: get all kupos for a single place with ID, param allows filter by @current_user
   match ':version/places/:place_id/photos', :controller => 'place', :action => 'photos', :via => :get # LIST: get all photos associated with a kupo for a single place with ID
@@ -49,15 +49,15 @@ Moogle::Application.routes.draw do
 
   # Kupos
   # match ':version/kupos', :controller => 'kupo', :action =>'index', :via => :get # LIST: get all kupos in the database
-  # match ':version/kupos/:kupo_id', :controller => 'kupo', :action =>'show', :via => :get # SINGLE: get detail for kupo with ID
   # match ':version/kupos/search', :controller => 'kupo', :action => 'search', :via => :get # LIST: search for a kupo with query
   # Actions
   match ':version/kupos/new', :controller => 'kupo', :action =>'new', :via => :post # CREATE: create a new kupo
+  # match ':version/kupos/:kupo_id', :controller => 'kupo', :action =>'show', :via => :get # SINGLE: get detail for kupo with ID
   
   # Checkins
   # match ':version/checkins', :controller => 'checkin', :action => 'index', :via => :get # LIST: get all checkins in the database
-  # match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # SINGLE: get details for a single checkin
   # match ':version/checkins/search', :controller => 'checkin', :action => 'search', :via => :get # LIST: search for a checkin with query
+  # match ':version/checkins/:checkin_id', :controller => 'checkin', :action => 'show', :via => :get # SINGLE: get details for a single checkin
   # Connections
   # match ':version/checkins/:checkin_id/place', :controller => 'checkin', :action => 'place', :via => :get # SINGLE: get place associated with this checkin
   # match ':version/checkins/:checkin_id/comments', :controller => 'checkin', :action => 'comments', :via => :get # LIST: get comments for a single checkin

@@ -198,38 +198,34 @@ class PlaceController < ApplicationController
     
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
-    while place = mysqlresults.fetch_hash do
+    mysqlresults.each(:as => :hash) do |row|
       # calculate the distance between params[:lat] params[:lng] and place.lat place.lng
       d2r = Math::PI/180.0
-      dlong = (place['lng'].to_f - params[:lng].to_f) * d2r;
-      dlat = (place['lat'].to_f - params[:lat].to_f) * d2r;
-      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(place['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
+      dlong = (row['lng'].to_f - params[:lng].to_f) * d2r;
+      dlat = (row['lat'].to_f - params[:lat].to_f) * d2r;
+      a = (Math.sin(dlat/2.0))**2.0 + Math.cos(params[:lat].to_f*d2r) * Math.cos(row['lat'].to_f*d2r) * (Math.sin(dlong/2.0))**2.0;
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
             
       response_hash = {
-        :place_id => place['place_id'].to_s,
-        :place_name => place['name'],
-        :place_picture => place['picture'],
-        :place_lng => place['lng'],
-        :place_lat => place['lat'],
-        :place_street => place['street'],
-        :place_city => place['city'],
-        :place_state => place['state'],
-        :place_country => place['country'],
-        :place_zip => place['zip'],
-        :place_phone => place['phone'],
-        :place_checkins => place['checkins_count'],
+        :place_id => row['place_id'].to_s,
+        :place_name => row['name'],
+        :place_picture => row['picture'],
+        :place_lng => row['lng'],
+        :place_lat => row['lat'],
+        :place_street => row['street'],
+        :place_city => row['city'],
+        :place_state => row['state'],
+        :place_country => row['country'],
+        :place_zip => row['zip'],
+        :place_phone => row['phone'],
+        :place_checkins => row['checkins_count'],
         :place_distance => distance,
-        :place_friend_checkins => place['friend_checkins'],
-        :place_likes => place['like_count'],
-        :place_attire => place['attire'],
-        :place_website => place['website'],
-        :place_price => place['price_range']
+        :place_friend_checkins => row['friend_checkins'],
+        :place_likes => row['like_count']
       }
       response_array << response_hash
     end
-    mysqlresults.free
      
     respond_to do |format|
       format.xml  { render :xml => response_array }
