@@ -419,7 +419,7 @@ class UserController < ApplicationController
     query = "select a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
-            join friends f on a.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+            join friends f on a.facebook_id = f.friend_id or a.facebook_id= #{@current_user.facebook_id}
             where f.facebook_id=#{@current_user.facebook_id}
             group by a.place_id, a.facebook_id
           "
@@ -454,7 +454,7 @@ class UserController < ApplicationController
     ##
     query = "select b.place_id, b.facebook_id, b.name
         from tagged_users b
-        join friends f on b.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+        join friends f on b.facebook_id = f.friend_id or b.facebook_id= #{@current_user.facebook_id}
         where f.facebook_id = #{@current_user.facebook_id}"
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -486,8 +486,8 @@ class UserController < ApplicationController
     ##
     query = "select place_id, count(*) as activity_count
             from kupos a
-            join friends f on a.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
-            where f.facebook_id=#{@current_user.facebook_id}
+            where a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+                or a.facebook_id=#{@current_user.facebook_id}
             group by 1
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
@@ -523,7 +523,7 @@ class UserController < ApplicationController
         join (
           select place_id, max(in_k.id) as id
           from kupos in_k
-          join friends f on in_k.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+          join friends f on in_k.facebook_id = f.friend_id or in_k.facebook_id= #{@current_user.facebook_id}
           where f.facebook_id=#{@current_user.facebook_id}
               " + time_bounds + "
           group by place_id

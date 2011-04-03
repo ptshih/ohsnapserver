@@ -361,7 +361,7 @@ class PlaceController < ApplicationController
      query = "select a.checkin_id, b.facebook_id, b.name
          from checkins a
          join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id
-         join friends f on b.facebook_id = f.friend_id or f.facebook_id= #{@current_user.facebook_id}
+         join friends f on b.facebook_id = f.friend_id or a.facebook_id= #{@current_user.facebook_id}
          where a.place_id = #{params[:place_id]} and f.facebook_id = #{@current_user.facebook_id}" 
      mysqlresults = ActiveRecord::Base.connection.execute(query)
      mysqlresults.each(:as => :hash) do |row|
