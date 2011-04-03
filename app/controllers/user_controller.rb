@@ -518,7 +518,7 @@ class UserController < ApplicationController
     # Get the actual last kupo of a place to show on the home screen
     ##
     query = "
-        select p.id as place_dbid, p.place_id, p.name as place_name, p.picture as place_picture_url,
+        select p.id as place_dbid, p.place_id, p.name as place_name, p.city, p.state, p.picture as place_picture_url,
               facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at
         from kupos a
         join (
@@ -542,6 +542,8 @@ class UserController < ApplicationController
         row_hash = {
           :id => row['place_dbid'].to_s,
           :place_id => row['place_id'].to_s,
+          :place_city => row['city'],
+          :place_state => row['state'],
           :name => row['place_name'],
           :picture_url => row['place_picture_url'],
           :facebook_id => row['facebook_id'].to_s,
