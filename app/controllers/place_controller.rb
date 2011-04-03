@@ -228,7 +228,7 @@ class PlaceController < ApplicationController
     end
     
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'nearby',params[:lat], params[:lng],nil,api_call_duration) 
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'nearby',params[:lat], params[:lng],api_call_duration,nil) 
      
     respond_to do |format|
       format.xml  { render :xml => response_array }

@@ -249,6 +249,8 @@ class CheckinController < ApplicationController
     
     Rails.logger.info request.query_parameters.inspect
     
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'checkinattempt',params[:lat],params[:lng],params[:message], ,params[:place],params[:tags])
+    
     api_call_start = Time.now.to_f
     
     # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
@@ -264,7 +266,7 @@ class CheckinController < ApplicationController
       :photo => params[:image],
       :created_at => Time.now
     )
-    
+    k.save
     # k = Kupo.find(:conditions => "checkin_id = #{facebook_checkin_id}").first
     # if !params[:image].nil?  
     #   k.photo = params[:image]

@@ -980,7 +980,7 @@ module API
     # http://developers.facebook.com/docs/reference/api/checkin/
     # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # adds a checkin without creating kupos
-    def add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
+    def add_checkin(message=nil, place=nil, lat=nil, lng=nil, tags=nil)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
