@@ -41,7 +41,7 @@ module API
 
     # Create or update checkin in model/database
     # Returns a list of place_ids
-    def serialize_checkin_bulk(checkins)
+    def serialize_checkin_bulk(checkins,createkupos=true)
       create_new_checkin = []
       create_new_tagged_user = []
       create_new_checkin_comment= []
@@ -117,8 +117,17 @@ module API
       end
 
       # Serialize the checkin to a kupo
-      self.serialize_kupo_via_checkin_bulk(checkin_id_array)
-
+      if createkupos
+        self.serialize_kupo_via_checkin_bulk(checkin_id_array)
+      else
+        checkins_id_string = checkin_id_array.join(',')
+        # Mark the checkin object as having been copied to kupos table
+        query = "update checkins
+                set kupo_id=1
+                where kupo_id =0 and checkin_id in (#{checkins_id_string})"
+        mysqlresult = ActiveRecord::Base.connection.execute(query)
+      end
+      
       return place_id_array
     end
     
@@ -353,7 +362,7 @@ module API
 
     # Finds a checkin for ONE checkin_id and serializes
     # API::FacebookApi.new.find_checkin_for_checkin_id(10150278443605565)
-    def find_checkin_for_checkin_id(checkin_id = nil)
+    def find_checkin_for_checkin_id(checkin_id = nil, createkupos=true)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
       params_hash = Hash.new
@@ -370,7 +379,7 @@ module API
         return true
       end
 
-      self.serialize_checkin_bulk([parsed_response])
+      self.serialize_checkin_bulk([parsed_response],createkupos)
 
       return true
     end
@@ -969,7 +978,8 @@ module API
     # Checkin to Facebook
     # Then pull the checkin from Facebook (which also serializes it as a kupos)
     # http://developers.facebook.com/docs/reference/api/checkin/
-    # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
+    # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651
+    # adds a checkin without creating kupos
     def add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
@@ -987,7 +997,7 @@ module API
         return nil
       else
         # Facebook returns the checkin id
-        self.find_checkin_for_checkin_id(parsed_response['id'])
+        self.find_checkin_for_checkin_id(parsed_response['id'],false)
       end
 
       return parsed_response['id']

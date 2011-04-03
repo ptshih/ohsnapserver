@@ -254,12 +254,22 @@ class CheckinController < ApplicationController
     # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
     facebook_checkin_id = @facebook_api.add_checkin(params[:message], params[:place], params[:lat], params[:lng], params[:tags])
-    k = Kupo.find(:conditions => "checkin_id = #{facebook_checkin_id}").first
     
-    if !params[:image].nil?  
-      k.photo = params[:image]
-      k.save
-    end
+    k = Kupo.create(
+      :facebook_id => @current_user.facebook_id,
+      :checkin_id => facebook_checkin_id,
+      :kupo_type => params[:kupo_type],
+      :place_id => params[:place_id],
+      :comment => params[:comment],
+      :photo => params[:image],
+      :created_at => Time.now
+    )
+    
+    # k = Kupo.find(:conditions => "checkin_id = #{facebook_checkin_id}").first
+    # if !params[:image].nil?  
+    #   k.photo = params[:image]
+    #   k.save
+    # end
     
     api_call_duration = Time.now.to_f - api_call_start
     
