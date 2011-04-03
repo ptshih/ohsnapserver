@@ -408,9 +408,9 @@ class UserController < ApplicationController
   def places
     
     # We should limit results to 50 if no count is specified
-     limit_count = " limit 50"
+     limit_count = 50
      if !params[:count].nil?
-       limit_count = " limit #{params[:count]}"
+       limit_count =  params[:count].to_i
      end
     
     ##
@@ -531,33 +531,36 @@ class UserController < ApplicationController
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
         order by a.created_at desc
-        " + limit_count + "
     "
     response_hash = {}
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
-      row_hash = {
-        :id => row['place_dbid'].to_s,
-        :place_id => row['place_id'].to_s,
-        :name => row['place_name'],
-        :picture_url => row['place_picture_url'],
-        :facebook_id => row['facebook_id'].to_s,
-        :friend_list => friend_list_of_place[row['place_id'].to_s],
-        :activity_count => activity_of_place[row['place_id'].to_s].to_i,
-        :type => row['kupo_type'],
-        :comment => row['comment'],
-        :has_photo => !row['photo_file_name'].nil?,
-        :timestamp => row['created_at'].to_i
-      }
-      response_array << row_hash
+      limit_count-=1
+      if limit_count>=0
+        
+        row_hash = {
+          :id => row['place_dbid'].to_s,
+          :place_id => row['place_id'].to_s,
+          :name => row['place_name'],
+          :picture_url => row['place_picture_url'],
+          :facebook_id => row['facebook_id'].to_s,
+          :friend_list => friend_list_of_place[row['place_id'].to_s],
+          :activity_count => activity_of_place[row['place_id'].to_s].to_i,
+          :type => row['kupo_type'],
+          :comment => row['comment'],
+          :has_photo => !row['photo_file_name'].nil?,
+          :timestamp => row['created_at'].to_i
+        }
+        response_array << row_hash
+      else
+      end
     end
     
     # Construct Response
     response_hash[:values] = response_array
-    response_hash[:count] = 1
-    response_hash[:total] = 10
-    
+    response_hash[:count] = response_array.length
+    response_hash[:total] = response_array.length+limit_count*-1
     
     respond_to do |format|
       format.xml  { render :xml => response_hash }
