@@ -4,14 +4,14 @@ module LOGGING
   class Logging
     
     # General purpose logging
-    def logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
+    def self.logfunction(request, id, actiontype, lat=nil, lng=nil, var1=nil, var2=nil, var3=nil, var4=nil)
 
       if request.env["HTTP_X_USER_ID"].nil?
-        facebook_id =  params[:id]
+        facebook_id = id
       else
         facebook_id = request.env["HTTP_X_USER_ID"]
       end
-
+      
       if !request.env["HTTP_X_VAR1"].nil?
         var1 = request.env["HTTP_X_VAR1"]
       end    
@@ -25,7 +25,7 @@ module LOGGING
         var4 = request.env["HTTP_X_VAR4"]
       end
       
-      logs = Logs.create(
+      logs = Log.create(
         :event_timestamp => Time.now,
         :session_starttime => request.env["HTTP_X_SESSION_KEY"].nil? ? '1900-01-01' : Time.at(request.env["HTTP_X_SESSION_KEY"].to_i),
         :udid => request.env["HTTP_X_UDID"].nil? ? nil: request.env["HTTP_X_UDID"],
@@ -47,5 +47,5 @@ module LOGGING
       )
 
     end
-
+  end
 end

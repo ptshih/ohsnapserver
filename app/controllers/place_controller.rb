@@ -222,10 +222,10 @@ class PlaceController < ApplicationController
         :place_checkins => place['checkins_count'],
         :place_distance => distance,
         :place_friend_checkins => place['friend_checkins'],
-        :place_likes => place['like_count'],
-        :place_attire => place['attire'],
-        :place_website => place['website'],
-        :place_price => place['price_range']
+        :place_likes => place['like_count']
+        # :place_attire => place['attire'],
+        # :place_website => place['website'],
+        # :place_price => place['price_range']
       }
       response_array << response_hash
     end
@@ -347,6 +347,10 @@ class PlaceController < ApplicationController
   ###
   
   def kupos
+    # logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
+    Rails.logger.info request.query_parameters.inspect
+    
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupos',nil,nil,params[:place_id])
     
     # We should limit results to 50 if no count is specified
      limit_count = 50

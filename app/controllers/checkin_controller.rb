@@ -252,6 +252,7 @@ class CheckinController < ApplicationController
     # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
     @facebook_api.add_checkin(params[:message], params[:place], params[:lat], params[:lng], params[:tags])
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'checkin',nil,nil,params[:place])
     
   end
   

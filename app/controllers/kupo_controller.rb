@@ -37,6 +37,7 @@ class KupoController < ApplicationController
       :created_at => Time.now
     )
 
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,k.id,k.kupo_type,k.place_id)
     response = {:success => "true"}
     
     respond_to do |format|

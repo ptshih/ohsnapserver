@@ -407,6 +407,8 @@ class UserController < ApplicationController
   # same as places/:place_id/me where it gets an index
   def places
     
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,nil)
+    
     # We should limit results to 50 if no count is specified
      limit_count = 50
      if !params[:count].nil?
