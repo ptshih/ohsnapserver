@@ -441,7 +441,7 @@ class PlaceController < ApplicationController
     response_hash[:total] = response_array.length + limit_count*-1
     
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupos',nil,nil,api_call_duration,params[:place_id])
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupos',nil,nil,api_call_duration,params[:place_id],response_hash[:total],response_hash[:count])
     
     respond_to do |format|
       format.xml  { render :xml => response_hash }
