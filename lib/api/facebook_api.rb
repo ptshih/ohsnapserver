@@ -364,9 +364,9 @@ module API
       if parsed_response.nil?
         return false
       end
-      
+
       # if there are no recent checkins, don't try to serialize it
-      if parsed_response['data'].empty?
+      if parsed_response.empty?
         return true
       end
 
@@ -969,19 +969,19 @@ module API
     # Checkin to Facebook
     # Then pull the checkin from Facebook (which also serializes it as a kupos)
     # http://developers.facebook.com/docs/reference/api/checkin/
-    def add_checkin(message='', place=nil, coordinates=nil, tags=nil)
+    # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
+    def add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = @@fb_app_access_token
+      params_hash['access_token'] = self.access_token
       params_hash['message'] = message
       params_hash['place'] = place
-      params_hash['coordinates'] = coordinates
+      params_hash['coordinates'] = {"latitude"=>"#{lat}","longitude"=>"#{lng}"}
       params_hash['tags'] = tags
 
       response = Typhoeus::Request.post("#{@@fb_host}/me/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
         return nil
@@ -990,7 +990,7 @@ module API
         self.find_checkin_for_checkin_id(parsed_response['id'])
       end
       
-      puts "Should have checked-in to Facebook with returns id #{parsed_response['id']}"
+      # puts "Should have checked-in to Facebook with returns id #{parsed_response['id']}"
       
     end
     

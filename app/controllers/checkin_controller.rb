@@ -249,8 +249,9 @@ class CheckinController < ApplicationController
     
     Rails.logger.info request.query_parameters.inspect
     
-    # add_checkin(message='', place=nil, coordinates=nil, tags=nil)
-    @facebook_api.add_checkin(params[:message], params[:place], params[:coordinates], params[:tags])
+    # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
+    # add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
+    @facebook_api.add_checkin(params[:message], params[:place], params[:lat], params[:lng], params[:tags])
     
   end
   
