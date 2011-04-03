@@ -416,12 +416,12 @@ class UserController < ApplicationController
     ##
     # Getting the friend's list of the place
     ##
-    query = "select distinct a.place_id, a.facebook_id, b.full_name, b.first_name
+    query = "select a.place_id, a.facebook_id, b.full_name, b.first_name
             from kupos a
             join users b on a.facebook_id = b.facebook_id
             where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
                 or b.facebook_id=#{@current_user.facebook_id})
-            order by a.place_id
+            group by a.place_id, a.facebook_id
           "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     friend_list_of_place = {}
