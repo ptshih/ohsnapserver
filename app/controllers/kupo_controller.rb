@@ -37,7 +37,7 @@ class KupoController < ApplicationController
       :created_at => Time.now
     )
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,k.id,k.kupo_type,k.place_id)
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,api_call_duration,k.id,k.kupo_type,k.place_id)
     response = {:success => "true"}
     
     respond_to do |format|
