@@ -406,6 +406,13 @@ class UserController < ApplicationController
   # /users/me/places
   # same as places/:place_id/me where it gets an index
   def places
+    
+    # We should limit results to 50 if no count is specified
+     limit_count = " limit 50"
+     if !params[:count].nil?
+       limit_count = " limit #{params[:count]}"
+     end
+    
     ##
     # Getting the friend's list of the place
     ##
