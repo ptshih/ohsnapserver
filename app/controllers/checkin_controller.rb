@@ -249,7 +249,7 @@ class CheckinController < ApplicationController
     
     Rails.logger.info request.query_parameters.inspect
     
-    api_call_start = Time.now.to_i
+    api_call_start = Time.now.to_f
     
     # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
@@ -261,7 +261,7 @@ class CheckinController < ApplicationController
       k.save
     end
     
-    api_call_duration = api_call_start - Time.now.to_i
+    api_call_duration = Time.now.to_f - api_call_start
     
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'checkin',params[:lat],params[:lng],api_call_duration, k.id,params[:place])
     

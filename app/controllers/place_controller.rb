@@ -148,7 +148,7 @@ class PlaceController < ApplicationController
   ############################################################
   def nearby
     Rails.logger.info request.query_parameters.inspect
-    api_call_start = Time.now.to_i
+    api_call_start = Time.now.to_f
     #puts "lol: #{params}"
     
     # PLACE filter
@@ -227,7 +227,7 @@ class PlaceController < ApplicationController
       response_array << response_hash
     end
     
-    api_call_duration = Time.now.to_i - api_call_start
+    api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'nearby',params[:lat], params[:lng],nil,api_call_duration) 
      
     respond_to do |format|
@@ -349,7 +349,7 @@ class PlaceController < ApplicationController
     # logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
     Rails.logger.info request.query_parameters.inspect
     
-    api_call_start = Time.now.to_i
+    api_call_start = Time.now.to_f
     
     # We should limit results to 50 if no count is specified
      limit_count = 50
@@ -440,7 +440,7 @@ class PlaceController < ApplicationController
     response_hash[:count] = response_array.length
     response_hash[:total] = response_array.length + limit_count*-1
     
-    api_call_duration = api_call_start - Time.now.to_i
+    api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupos',nil,nil,api_call_duration,params[:place_id])
     
     respond_to do |format|

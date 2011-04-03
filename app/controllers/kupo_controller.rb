@@ -27,7 +27,7 @@ class KupoController < ApplicationController
     
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"
-    api_call_start = Time.now.to_i
+    api_call_start = Time.now.to_f
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
       :kupo_type => params[:kupo_type],
@@ -36,7 +36,7 @@ class KupoController < ApplicationController
       :photo => params[:image],
       :created_at => Time.now
     )
-    api_call_duration = api_call_start - Time.now.to_i
+    api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,k.id,k.kupo_type,k.place_id)
     response = {:success => "true"}
     
