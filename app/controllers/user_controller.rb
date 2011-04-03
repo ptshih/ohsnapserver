@@ -568,7 +568,7 @@ class UserController < ApplicationController
     
     api_call_duration = Time.now.to_f - api_call_start
     
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,nil,nil)
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,response_hash[:count],response_hash[:total])
     
     respond_to do |format|
       format.xml  { render :xml => response_hash }
