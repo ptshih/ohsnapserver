@@ -260,6 +260,7 @@ class CheckinController < ApplicationController
       :place_id => params[:place_id],
       :comment => params[:comment],
       :photo => params[:image],
+      :has_photo => params[:image].nil? ? 0:1,
       :video => params[:video],
       :created_at => Time.now
     )
