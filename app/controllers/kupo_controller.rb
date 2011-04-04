@@ -34,6 +34,7 @@ class KupoController < ApplicationController
       :place_id => params[:place_id],
       :comment => params[:comment],
       :photo => params[:image],
+      :has_photo => params[:image].nil? ? 0:1,
       :created_at => Time.now
     )
     api_call_duration = Time.now.to_f - api_call_start
