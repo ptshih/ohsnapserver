@@ -99,6 +99,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "photo_file_name"
     t.string   "photo_content_type"
     t.integer  "photo_file_size"
+    t.string   "video_file_name"
+    t.string   "video_content_type"
+    t.integer  "video_file_size"
     t.integer  "has_photo",          :limit => 1
     t.datetime "created_at"
     t.datetime "updated_at"

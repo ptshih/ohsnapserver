@@ -14,4 +14,9 @@ class Kupo < ActiveRecord::Base
     #   :storage => :s3, 
     #   :s3_credentials => "#{RAILS_ROOT}/config/s3.yml", 
     #   :path => "/:style/:filename"
+  has_attached_file :video,
+    :storage => :s3,
+    :s3_credentials => "#{Rails.root.to_s}/config/s3.yml",
+    :path => "/:class/:attachment/:id/:style/:filename",
+    :url => "/:class/:attachment/:id/:style_:basename.:extension",
 end
