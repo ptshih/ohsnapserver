@@ -73,7 +73,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer "degree",                   :default => 0
   end
 
-  add_index "friends", ["degree"], :name => "idx_degree"
   add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_facebook_id_and_friend_id", :unique => true
   add_index "friends", ["facebook_id"], :name => "idx_facebook_id"
   add_index "friends", ["friend_id"], :name => "idx_friend_id"
@@ -92,20 +91,23 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   create_table "kupos", :force => true do |t|
-    t.integer  "facebook_id",        :limit => 8,  :default => 0
-    t.integer  "place_id",           :limit => 8,  :default => 0
+    t.integer  "facebook_id",        :limit => 8, :default => 0
+    t.integer  "place_id",           :limit => 8, :default => 0
     t.integer  "checkin_id",         :limit => 8
-    t.string   "kupo_type",          :limit => 20
+    t.integer  "kupo_type"
     t.string   "comment"
     t.string   "photo_file_name"
     t.string   "photo_content_type"
     t.integer  "photo_file_size"
+    t.integer  "has_photo",          :limit => 1
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   add_index "kupos", ["checkin_id"], :name => "idx_checkin_id"
+  add_index "kupos", ["facebook_id", "place_id"], :name => "idx_fbid_place_id"
   add_index "kupos", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "kupos", ["has_photo"], :name => "idx_has_photo"
   add_index "kupos", ["place_id"], :name => "idx_place_id"
 
   create_table "logs", :force => true do |t|
@@ -123,8 +125,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.decimal  "lat",                             :precision => 20, :scale => 16
     t.decimal  "lng",                             :precision => 20, :scale => 16
     t.string   "action_type",       :limit => 30
-    t.string   "var1",              :limit => 50
-    t.string   "var2",              :limit => 50
+    t.decimal  "var1",                            :precision => 16, :scale => 8
+    t.integer  "var2",              :limit => 8
     t.string   "var3",              :limit => 50
     t.string   "var4",              :limit => 50
   end
@@ -194,7 +196,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
-    t.integer  "facebook_id",           :limit => 8,                               :default => 0
+    t.integer  "facebook_id",                   :limit => 8,                               :default => 0
     t.string   "third_party_id"
     t.string   "access_token"
     t.string   "full_name"
@@ -202,13 +204,14 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "last_name"
     t.string   "gender"
     t.string   "locale"
-    t.boolean  "verified",                                                         :default => false
-    t.decimal  "fetch_progress",                     :precision => 3, :scale => 2
+    t.boolean  "verified",                                                                 :default => false
+    t.decimal  "fetch_progress",                             :precision => 3, :scale => 2
     t.datetime "last_fetched_checkins"
     t.datetime "last_fetched_friends"
     t.datetime "last_fetched_friends_checkins"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.datetime "joined_at"
   end
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true

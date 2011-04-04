@@ -131,13 +131,25 @@ module API
       return place_id_array
     end
     
+    def set_joined_at(facebook_id)
+      
+      now_time = Time.now.to_i
+      query = " update users
+                set joined_at = from_unixtime#{now_time}
+                where facebook_id = #{facebook_id} and joined_at is null
+              "
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
+      
+    end
+    
     def serialize_kupo_via_checkin_bulk(checkin_id_array)
       
       # Create the kupos ONLY IF it hasn't already been created in kupos table already
+      # kupo_type=0 is a checkin
       checkins_id_string = checkin_id_array.join(',')
       query = "insert into kupos
               (facebook_id, place_id, checkin_id, kupo_type, comment, created_at, updated_at)
-              select facebook_id, place_id, checkin_id, 'checkin', message, created_time, updated_at
+              select facebook_id, place_id, checkin_id, 0, message, created_time, updated_at
               from checkins
               where kupo_id =0 and checkin_id in (#{checkins_id_string})"
       mysqlresult = ActiveRecord::Base.connection.execute(query)

@@ -74,6 +74,9 @@ class UserController < ApplicationController
     puts "Last fetched checkins before: #{last_fetched_checkins}"
     puts "Last fetched friends checkins before: #{last_fetched_friends_checkins}"
     
+    # Setting the join time of the user
+    @facebook_api.set_joined_at(@current_user.facebook_id)
+    
     # Get all friends from facebook for the current user again
     @facebook_api.find_friends_for_facebook_id(@current_user.facebook_id, last_fetched_friends)
 
