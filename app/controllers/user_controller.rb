@@ -577,6 +577,57 @@ class UserController < ApplicationController
     
   end
   
+  # Gets complete facebook friend's list
+  # Also show joined_at date of user if they registered with Moogle
+  # ':version/users/:user_id/friends'
+  def friends
+    
+    # We should limit results to 50 if no count is specified
+     limit_count = 50
+     if !params[:count].nil?
+       limit_count =  params[:count].to_i
+     end
+    
+    api_call_start = Time.now.to_f
+    
+    query = "
+      select b.facebook_id, b.full_name, b.first_name,
+        case when b.access_token is not null then '2011-01-01' else null end as joined_at
+            from friends a
+            join users b on a.friend_id = b.facebook_id
+      where a.facebook_id = #{@current_user.facebook_id}
+      order by joined_at desc, first_name
+    "
+
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      limit_count-=1
+      if limit_count>=0
+        row_hash = {
+          :facebook_id => row['facebook_id'],
+          :full_name => row['full_name'],
+          :first_name => row['first_name'],
+          :joined_at => row['joined_at']
+        }
+        response_array << row_hash
+      end
+    end
+        
+    response_hash[:values] = response_array
+    response_hash[:count] = response_array.length
+    response_hash[:total] = response_array.length+limit_count*-1
+    
+    api_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'friends',nil,nil,api_call_duration,nil,nil)
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
+    end
+    
+  end
+  
   def kupos
   end
   
