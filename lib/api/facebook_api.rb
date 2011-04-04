@@ -489,6 +489,67 @@ module API
       return true
 
     end
+    
+    def find_checkins_for_facebook_id_array_async(facebook_id = nil, facebook_id_array = nil, since = nil)
+      # async call to find_checkins_for_facebook_id_array
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+
+      params_hash = Hash.new
+      params_hash['access_token'] = self.access_token
+      params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
+      params_hash['ids'] = facebook_id_array.join(',')
+      params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
+      if !since.nil? then
+        params_hash['since'] = since.to_i
+      end
+      
+      r = Typhoeus::Request.new("#{@@fb_host}/checkins", :method => :get, :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+      
+      # Run this block when the request completes
+      r.on_complete do |response|
+        puts "START async find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+        
+        # check for fb errors
+        parsed_response = self.check_facebook_response_for_errors(response)
+        if parsed_response.nil?
+          next
+        end
+        
+        place_id_array = Array.new
+
+        # Parse checkins for each user
+        parsed_keys = parsed_response.keys
+
+        # Serialize checkins in bulk
+        checkins_array = Array.new
+        parsed_keys.each_with_index do |key,i|
+          # if there are no recent checkins for this user, don't try to serialize it
+          if parsed_response[key]['data'].empty?
+            next
+          end
+          parsed_response[key]['data'].each do |checkin|
+            checkins_array << checkin
+          end
+        end
+
+        if !checkins_array.empty?
+          place_id_array = self.serialize_checkin_bulk(checkins_array)
+        end
+
+        # Serialize unique list of place_ids
+        if !place_id_array.empty?
+          self.find_places_for_place_id_array(place_id_array.uniq)
+        end
+
+        # Update last_fetched_friends_checkins timestamp for user
+        self.update_last_fetched_friends_checkins(facebook_id)
+
+        puts "END async find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+      end
+
+      self.hydra.queue r # add the request to the queue
+    end
 
     # Finds all checkins for an array of user ids
     # https://graph.facebook.com/checkins?ids=4804606,548430564,645750651&access_token=H_U8HT7bMvsDjEjb8oOjq4qWaY-S7MP8F5YQFNFzggQ.eyJpdiI6Ino1LXpBQ0pNRjJkNzM3YTdGRDhudXcifQ.h5zY_4HM_Ir3jg4mnyySYRvL26DxPgzg3NSI4Tcn_1bXn1Fqdgui1X7W6pDmJQagM5fXqCo7ie4EnCsi2t8OaMGVSTAZ-LSn9fuJFL-ucYj3Siz3bW17Dn6kMDcwxA3fghX9tUgzK0Vtnli6Sn1afA
@@ -521,7 +582,7 @@ module API
 
       response = Typhoeus::Request.get("#{@@fb_host}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       
-      puts response.body
+      # puts response.body
 
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
