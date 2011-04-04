@@ -1,10 +1,10 @@
 development:
-  bucket: kupostaging
+  bucket: kupo
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
 
 test:
-  bucket: kupostaging
+  bucket: kupo
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
 
@@ -14,7 +14,7 @@ production:
   secret_access_key: XoNIhyk72m/rvVb4s5BBBxOi9Pl2eTcEzxDS2NGK
   
 staging:
-  bucket: kupostaging
+  bucket: kupo
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
   

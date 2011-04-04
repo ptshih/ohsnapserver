@@ -249,24 +249,30 @@ class CheckinController < ApplicationController
     
     Rails.logger.info request.query_parameters.inspect
     
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'checkinattempt',params[:lat],params[:lng],params[:message], ,params[:place],params[:tags])
-    
     api_call_start = Time.now.to_f
     
     # Sample pass: add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # add_checkin(message='', place=nil, lat=nil, lng=nil, tags=nil)
-    facebook_checkin_id = @facebook_api.add_checkin(params[:message], params[:place], params[:lat], params[:lng], params[:tags])
     
     k = Kupo.create(
       :facebook_id => @current_user.facebook_id,
-      :checkin_id => facebook_checkin_id.to_i,
       :kupo_type => params[:kupo_type],
       :place_id => params[:place_id],
       :comment => params[:comment],
       :photo => params[:image],
       :created_at => Time.now
     )
-    k.save
+    
+    if !params[:image].nil?
+      photo_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/image.png"
+    else
+      photo_url = nil
+    end
+    
+    facebook_checkin_id = @facebook_api.add_checkin(params[:comment], params[:place_id], params[:lat], params[:lng], params[:tags], photo_url)
+    
+    k.update_attribute(:checkin_id, facebook_checkin_id.to_i)
+
     # k = Kupo.find(:conditions => "checkin_id = #{facebook_checkin_id}").first
     # if !params[:image].nil?  
     #   k.photo = params[:image]
@@ -276,6 +282,13 @@ class CheckinController < ApplicationController
     api_call_duration = Time.now.to_f - api_call_start
     
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'checkin',params[:lat],params[:lng],api_call_duration, k.id,params[:place])
+    
+    response = {:success => "true"}
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
     
   end
   

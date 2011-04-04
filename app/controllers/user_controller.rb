@@ -27,21 +27,25 @@ class UserController < ApplicationController
     sliced_first_batch = first_batch.each_slice(50).to_a
     
     sliced_first_batch.each do |first_slice|
-      first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_friends_checkins)
-      first_slice_checkins.delay.get_friends_checkins_async
+      @facebook_api.find_checkins_for_facebook_id_array_async(@current_user.facebook_id, first_slice, last_fetched_friends_checkins)
+      
+      # first_slice_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, first_slice, last_fetched_friends_checkins)
+      # first_slice_checkins.delay.get_friends_checkins_async
     end
     
     # now we slice up the remaining IDs into chunks of 500
-    sliced_friend_id_array = friend_id_array.each_slice(50).to_a
+    sliced_friend_id_array = friend_id_array.each_slice(500).to_a
     
     # @facebook_api.find_checkins_for_facebook_id_array(@current_user.facebook_id, first_slice, last_fetched_checkins)
     # [DEPRECATION] `object.send_at(time, :method)` is deprecated. Use `object.delay(:run_at => time).method
     
     # Fire off a background job to get all friend checkins
     sliced_friend_id_array.each_with_index do |slice, index|
-      queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, slice, last_fetched_friends_checkins)
-      delayed_time = (index+1) * 1
-      queued_checkins.delay(:run_at => delayed_time.minutes.from_now).get_friends_checkins_async
+      slice.each do |s|
+        queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, s, last_fetched_friends_checkins)
+        delayed_time = (index+1) * 1
+        queued_checkins.delay(:run_at => delayed_time.minutes.from_now).get_friends_checkins_async
+      end
     end
   end
   
@@ -85,6 +89,11 @@ class UserController < ApplicationController
     friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
     friend_id_array = friend_array.map  do |f| f[:friend_id] end
     get_friends_checkins(friend_id_array, last_fetched_friends_checkins)
+    
+    # run the hydra queue asynchronously
+    t = Thread.new do
+      @facebook_api.hydra.run
+    end
     
     # The response should include the current user ID and name for the client to cache
     session_response_hash = {
@@ -139,6 +148,11 @@ class UserController < ApplicationController
       friend_array = Friend.find(:all, :select=>"friends.friend_id, users.full_name", :conditions=>"friends.facebook_id = #{@current_user.facebook_id}", :joins=>"left join users on friends.friend_id = users.facebook_id").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.full_name}}
       friend_id_array = friend_array.map  do |f| f[:friend_id] end
       get_friends_checkins(friend_id_array, last_fetched_friends_checkins)
+      
+      # run the hydra queue asynchronously
+      t = Thread.new do
+        @facebook_api.hydra.run
+      end
     end
     
     # The response should include the current user ID and name for the client to cache
@@ -146,7 +160,7 @@ class UserController < ApplicationController
       :facebook_id => @current_user.facebook_id,
       :name => @current_user.full_name
     }
-    
+
     respond_to do |format|
       format.xml  { render :xml => session_response_hash.to_xml }
       format.json  { render :json => session_response_hash.to_json }
@@ -551,7 +565,7 @@ class UserController < ApplicationController
           :facebook_id => row['facebook_id'].to_s,
           :friend_list => friend_list_of_place[row['place_id'].to_s],
           :activity_count => activity_of_place[row['place_id'].to_s].to_i,
-          :type => row['kupo_type'],
+          :kupo_type => row['kupo_type'],
           :comment => row['comment'],
           :has_photo => !row['photo_file_name'].nil?,
           :timestamp => row['created_at'].to_i
