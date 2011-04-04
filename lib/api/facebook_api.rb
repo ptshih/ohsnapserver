@@ -980,9 +980,11 @@ module API
     # http://developers.facebook.com/docs/reference/api/checkin/
     # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # adds a checkin without creating kupos
-    def add_checkin(message=nil, place=nil, lat=nil, lng=nil, tags=nil)
+    def add_checkin(message=nil, place=nil, lat=nil, lng=nil, tags=nil, photo_url=nil)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
+      
+      puts "attaching a photo: #{photo_url}"
 
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
@@ -990,7 +992,11 @@ module API
       params_hash['place'] = place
       params_hash['coordinates'] = {"latitude"=>"#{lat}","longitude"=>"#{lng}"}
       params_hash['tags'] = tags
-
+      params_hash['link'] = photo_url
+      params_hash['picture'] = photo_url
+      params_hash['name'] = "Attached Photo"
+      params_hash['caption'] = "Shared a photo via Moogle"
+    
       response = Typhoeus::Request.post("#{@@fb_host}/me/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
