@@ -133,9 +133,10 @@ module API
     
     def set_joined_at(facebook_id)
       
-      now_time = Time.now.to_i
+      now_time = Time.now.utc.to_s(:db)
+      
       query = " update users
-                set joined_at = from_unixtime#{now_time}
+                set joined_at = '#{now_time}'
                 where facebook_id = #{facebook_id} and joined_at is null
               "
       mysqlresult = ActiveRecord::Base.connection.execute(query)
