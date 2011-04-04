@@ -553,9 +553,11 @@ class UserController < ApplicationController
     "
     response_hash = {}
     response_array = []
+    total_count=0
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       limit_count-=1
+      total_count+=1
       if limit_count>=0
         
         row_hash = {
@@ -581,7 +583,7 @@ class UserController < ApplicationController
     # Construct Response
     response_hash[:values] = response_array
     response_hash[:count] = response_array.length
-    response_hash[:total] = response_array.length+limit_count*-1
+    response_hash[:total] = total_count
     
     api_call_duration = Time.now.to_f - api_call_start
     
@@ -617,9 +619,11 @@ class UserController < ApplicationController
     "
 
     response_array = []
+    total_count=0
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       limit_count-=1
+      total_count+=1
       if limit_count>=0
         row_hash = {
           :facebook_id => row['facebook_id'],
@@ -633,7 +637,7 @@ class UserController < ApplicationController
         
     response_hash[:values] = response_array
     response_hash[:count] = response_array.length
-    response_hash[:total] = response_array.length+limit_count*-1
+    response_hash[:total] = total_count
     
     api_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'friends',nil,nil,api_call_duration,nil,nil)
