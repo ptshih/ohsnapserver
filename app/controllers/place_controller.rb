@@ -450,7 +450,115 @@ class PlaceController < ApplicationController
   
   end
   
+  
+  # Exact same call as 'kupos' except with the filter
+  # 'a.photo_file_name is not null'
+  # In the future may not need to grab tagged user information... unless they are viewing the
+  # enlarged photo itself; in album view it may not be necessary
   def photos
+    Rails.logger.info request.query_parameters.inspect
+    
+    api_call_start = Time.now.to_f
+    
+    # We should limit results to 50 if no count is specified
+     limit_count = 50
+     if !params[:count].nil?
+       limit_count = params[:count].to_i
+     end
+    
+     ##
+     # Getting tagged user of a place grouped by checkin_id
+     ##
+     friend_list_of_place = {}
+     query = "select a.checkin_id, b.facebook_id, b.name
+         from checkins a
+         join tagged_users b on a.checkin_id = b.checkin_id and a.facebook_id != b.facebook_id
+         join friends f on b.facebook_id = f.friend_id or a.facebook_id= #{@current_user.facebook_id}
+         where a.place_id = #{params[:place_id]} and f.facebook_id = #{@current_user.facebook_id}" 
+     mysqlresults = ActiveRecord::Base.connection.execute(query)
+     mysqlresults.each(:as => :hash) do |row|
+       if !friend_list_of_place.has_key?(row['checkin_id'].to_s)
+         friend_list_of_place[row['checkin_id'].to_s] = []
+         friend_hash = {
+           :facebook_id => row['facebook_id'],
+           :full_name => row['name'],
+           :first_name => row['name']
+         }
+         friend_list_of_place[row['checkin_id'].to_s] << friend_hash
+       else
+         friend_hash = {
+           :facebook_id => row['facebook_id'],
+           :full_name => row['name'],
+           :first_name => row['name']
+         }
+         friend_list_of_place[row['checkin_id'].to_s] << friend_hash
+       end      
+     end
+    
+     # convert the UTC unix timestamp to Ruby Date and them back to MySQL datetime (utc)
+     # retarded lol
+    # pass since, then get everything > since
+    if params[:since]!=nil && params[:until]==nil
+      since_time = Time.at(params[:since].to_i).utc.to_s(:db)
+      time_bounds = " and kupos.created_at > ('#{since_time}')"
+    # pass until, then get everything < until
+    elsif params[:since]==nil && params[:until]!=nil
+      until_time = Time.at(params[:until].to_i).utc.to_s(:db)
+      time_bounds = " and kupos.created_at < ('#{until_time}')"
+    else
+      time_bounds = ""
+    end
+    
+    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
+    from kupos a
+    join users b on a.facebook_id = b.facebook_id
+    where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
+        or a.facebook_id=#{@current_user.facebook_id})
+        and a.place_id = #{params[:place_id]}
+        and a.photo_file_name is not null
+        " + time_bounds + "
+    order by id desc
+    "
+    response_hash = {}
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      
+      limit_count-=1
+      if limit_count>=0
+        if !row['checkin_id'].nil?
+          friend_list = friend_list_of_place[row['checkin_id'].to_s]
+        end
+        row_hash = {
+          :id => row['id'].to_s,
+          :place_id => row['place_id'].to_s,
+          :author_id => row['facebook_id'].to_s,
+          :author_name => row['full_name'],
+          :kupo_type => row['kupo_type'],
+          :friend_list => friend_list,
+          :comment => row['comment'],
+          :has_photo => !row['photo_file_name'].nil?,
+          :timestamp => row['created_at'].to_i
+        }
+        response_array << row_hash
+        
+      end
+    end
+    
+    # Construct Response
+    response_hash[:values] = response_array
+    response_hash[:count] = response_array.length
+    response_hash[:total] = response_array.length + limit_count*-1
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'photos',
+        nil,nil,api_call_duration,params[:place_id],response_hash[:total],response_hash[:count])
+    
+    respond_to do |format|
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
+    end
+   
   end
   
   ############################################################
