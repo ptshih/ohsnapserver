@@ -538,7 +538,7 @@ class UserController < ApplicationController
     ##
     query = "
         select p.id as place_dbid, p.place_id, p.name as place_name, p.city, p.state, p.picture as place_picture_url,
-              facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at
+              a.facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at, u.full_name
         from kupos a
         join (
           select place_id, max(in_k.id) as id
@@ -549,6 +549,7 @@ class UserController < ApplicationController
           group by place_id
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
+        join users u on a.facebook_id = u.facebook_id
         order by a.created_at desc
     "
     response_hash = {}
@@ -567,7 +568,8 @@ class UserController < ApplicationController
           :place_state => row['state'],
           :name => row['place_name'],
           :picture_url => row['place_picture_url'],
-          :facebook_id => row['facebook_id'].to_s,
+          :author_id => row['facebook_id'].to_s,
+          :author_name => row['full_name'],
           :friend_list => friend_list_of_place[row['place_id'].to_s],
           :activity_count => activity_of_place[row['place_id'].to_s].to_i,
           :kupo_type => row['kupo_type'],
