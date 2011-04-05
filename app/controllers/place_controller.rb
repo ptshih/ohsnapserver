@@ -401,7 +401,7 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
+    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.has_photo, a.has_video, a.created_at, b.full_name
     from kupos a
     join users b on a.facebook_id = b.facebook_id
     where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
@@ -430,7 +430,8 @@ class PlaceController < ApplicationController
           :kupo_type => row['kupo_type'],
           :friend_list => friend_list,
           :comment => row['comment'],
-          :has_photo => !row['photo_file_name'].nil?,
+          :has_photo => row['has_photo'],
+          :has_video => row['has_video'],
           :timestamp => row['created_at'].to_i
         }
         response_array << row_hash
@@ -513,7 +514,7 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.photo_file_name, a.created_at, b.full_name
+    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.has_photo, a.has_video, a.created_at, b.full_name
     from kupos a
     join users b on a.facebook_id = b.facebook_id
     where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
@@ -543,7 +544,8 @@ class PlaceController < ApplicationController
           :kupo_type => row['kupo_type'],
           :friend_list => friend_list,
           :comment => row['comment'],
-          :has_photo => !row['photo_file_name'].nil?,
+          :has_photo => row['has_photo'],
+          :has_video => row['has_video'],
           :timestamp => row['created_at'].to_i
         }
         response_array << row_hash

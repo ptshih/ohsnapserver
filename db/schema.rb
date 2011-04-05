@@ -102,7 +102,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "video_file_name"
     t.string   "video_content_type"
     t.integer  "video_file_size"
-    t.integer  "has_photo",          :limit => 1
+    t.boolean  "has_photo",          :default => false
+    t.boolean  "has_video",          :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -111,6 +112,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "kupos", ["facebook_id", "place_id"], :name => "idx_fbid_place_id"
   add_index "kupos", ["facebook_id"], :name => "idx_facebook_id"
   add_index "kupos", ["has_photo"], :name => "idx_has_photo"
+  add_index "kupos", ["has_video"], :name => "idx_has_video"
   add_index "kupos", ["place_id"], :name => "idx_place_id"
 
   create_table "logs", :force => true do |t|

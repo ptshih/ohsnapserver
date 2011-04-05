@@ -538,7 +538,7 @@ class UserController < ApplicationController
     ##
     query = "
         select p.id as place_dbid, p.place_id, p.name as place_name, p.city, p.state, p.picture as place_picture_url,
-              a.facebook_id, kupo_type, kupo_type, comment, photo_file_name, a.created_at, u.full_name
+              a.facebook_id, a.kupo_type, a.kupo_type, a.comment, a.has_photo, a.has_video, a.created_at, u.full_name
         from kupos a
         join (
           select place_id, max(in_k.id) as id
@@ -574,7 +574,8 @@ class UserController < ApplicationController
           :activity_count => activity_of_place[row['place_id'].to_s].to_i,
           :kupo_type => row['kupo_type'],
           :comment => row['comment'],
-          :has_photo => !row['photo_file_name'].nil?,
+          :has_photo => row['has_photo'],
+          :has_video => row['has_video'],
           :timestamp => row['created_at'].to_i
         }
         response_array << row_hash
