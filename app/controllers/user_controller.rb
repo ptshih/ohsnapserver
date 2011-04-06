@@ -563,7 +563,7 @@ class UserController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       limit_count-=1
       total_count+=1
-      if limit_count>=0
+      if limit_count>0
         
         row_hash = {
           :id => row['place_dbid'].to_s,
