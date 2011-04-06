@@ -561,10 +561,8 @@ class UserController < ApplicationController
     last_time_hit = 0
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
-      limit_count-=1
       total_count+=1
-      if limit_count>0
-        
+      if total_count<=limit_count
         row_hash = {
           :id => row['place_dbid'].to_s,
           :place_id => row['place_id'].to_s,
