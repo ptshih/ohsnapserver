@@ -207,7 +207,7 @@ class PlaceController < ApplicationController
       c = 2.0 * Math.atan2(a**(1.0/2.0), (1.0-a)**(1.0/2.0));
       distance = 3956.0 * c;
             
-      response_hash = {
+      row_hash = {
         :place_id => row['place_id'].to_s,
         :place_name => row['name'],
         :place_picture => row['picture'],
@@ -224,15 +224,21 @@ class PlaceController < ApplicationController
         :place_friend_checkins => row['friend_checkins'],
         :place_likes => row['like_count']
       }
-      response_array << response_hash
+      response_array << row_hash
     end
     
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'nearby',params[:lat], params[:lng],api_call_duration,nil) 
+    
+    # Construct Response
+    response_hash = {}
+    response_hash[:values] = response_array
+    response_hash[:count] = response_array.length
+    response_hash[:total] = response_array.length
      
     respond_to do |format|
-      format.xml  { render :xml => response_array }
-      format.json  { render :json => response_array }
+      format.xml  { render :xml => response_hash }
+      format.json  { render :json => response_hash }
     end
   end
   
@@ -287,7 +293,7 @@ class PlaceController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     response_array = []
     mysqlresult_iterator = mysqlresults.num_rows
-    while place = mysqlresults.fetch_hash do
+    mysqlresults.each(:as => :hash) do |row|
       # mysqlresult_iterator -= 1
       d2r = Math::PI/180.0
       dlong = (place['lng'].to_f - params[:lng].to_f) * d2r;
@@ -297,7 +303,7 @@ class PlaceController < ApplicationController
       distance = 3956.0 * c;
 
       # /place/place_id
-      response_hash = {
+      row_hash = {
         :place_id => place['place_id'].to_s,
         :place_name => place['name'],
         :place_picture => place['picture'],
@@ -323,16 +329,21 @@ class PlaceController < ApplicationController
       # if response_array.length < params[:limit].to_i && rand(( (mysqlresult_iterator - response_array.length)/params[:limit].to_i).round)==0
       #         response_array << response_hash         
       #       end
-      response_array << response_hash
+      response_array << row_hash
 
     end
-    mysqlresults.free
     
     
     # Return first few elements up to amount params[:limit]
     if params[:random]=="true"
       response_array = response_array.sort_by{rand}[0..(filter_limit/5)-1.to_i]
     end
+    
+    # Construct Response
+    response_hash = {}
+    response_hash[:values] = response_array
+    response_hash[:count] = response_array.length
+    response_hash[:total] = response_array.length
     
     respond_to do |format|
       format.xml  { render :xml => response_array }
