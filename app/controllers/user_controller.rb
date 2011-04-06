@@ -558,6 +558,7 @@ class UserController < ApplicationController
     response_hash = {}
     response_array = []
     total_count=0
+    last_time_hit = 0
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       limit_count-=1
@@ -581,6 +582,7 @@ class UserController < ApplicationController
           :has_video => row['has_video'],
           :timestamp => row['created_at'].to_i
         }
+        last_time_hit = row['created_at'].to_i
         response_array << row_hash
       else
       end
@@ -593,7 +595,11 @@ class UserController < ApplicationController
     
     api_call_duration = Time.now.to_f - api_call_start
     
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,response_hash[:count],response_hash[:total])
+    #LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,response_hash[:count],response_hash[:total])
+
+# temporary for debugging
+LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,response_hash[:count],response_hash[:total],params[:until].to_i,last_time_hit)
+
     
     respond_to do |format|
       format.xml  { render :xml => response_hash }
