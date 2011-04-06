@@ -547,7 +547,6 @@ class UserController < ApplicationController
           from kupos in_k
           join friends f on in_k.facebook_id = f.friend_id or in_k.facebook_id= #{@current_user.facebook_id}
           where f.facebook_id=#{@current_user.facebook_id}
-              " + time_bounds + "
           group by place_id
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
