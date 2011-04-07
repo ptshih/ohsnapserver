@@ -20,9 +20,11 @@ class ApplicationController < ActionController::Base
   def authenticate_token
     self.load_facebook_api
     
-    puts "\nauthenticating token\n"
+    # puts "\nauthenticating token\n"
+    
     if not params[:access_token].nil?
-      @current_user = User.find_by_access_token(params[:access_token])
+      t = Token.find_by_access_token(params[:access_token])
+      @current_user = User.find_by_facebook_id(t[:facebook_id])
       if @current_user.nil?
         puts "cant find user"
         self.create_new_user

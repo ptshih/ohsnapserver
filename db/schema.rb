@@ -232,4 +232,14 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "yelps", ["place_id"], :name => "idx_place_id"
   add_index "yelps", ["yelp_pid"], :name => "idx_yelp_pid", :unique => true
 
+  create_table "tokens", :force => true do |t|
+    t.integer "facebook_id", :limit => 8, :default => 0
+    t.string "access_token"
+    t.datetime "expires_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "tokens", ["access_token"], :name => "idx_access_token", :unique => true
+    
 end
