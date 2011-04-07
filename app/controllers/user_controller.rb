@@ -619,12 +619,15 @@ LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,re
     api_call_start = Time.now.to_f
     
     query = "
-      select b.facebook_id, b.full_name, b.first_name,
-        case when b.access_token is not null then '2011-01-01' else null end as joined_at
+      select b.facebook_id, b.full_name, b.first_name, a.joined_at,
+            k.id, k.kupo_type, k.comment, k.place_id, k.checkin_id,
+            p.name as place_name
             from friends a
             join users b on a.friend_id = b.facebook_id
+            left join kupos k on c.id = b.last_kupo
+            left join places p on p.place_id = c.place_id
       where a.facebook_id = #{@current_user.facebook_id}
-      order by joined_at desc, first_name
+      order by joined_at desc, b.first_name
     "
 
     response_array = []
