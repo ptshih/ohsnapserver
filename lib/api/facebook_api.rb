@@ -104,18 +104,6 @@ module API
       return place_id_array
     end
     
-    def set_joined_at(facebook_id)
-      
-      now_time = Time.now.utc.to_s(:db)
-      
-      query = " update users
-                set joined_at = '#{now_time}'
-                where facebook_id = #{facebook_id} and joined_at is null
-              "
-      mysqlresult = ActiveRecord::Base.connection.execute(query)
-      
-    end
-    
     def serialize_kupo_via_checkin_bulk(checkin_id_array)
       
       # Create the kupos ONLY IF it hasn't already been created in kupos table already
@@ -191,7 +179,6 @@ module API
       return u
     end
 
-
     def serialize_friend_bulk(friends, facebook_id, degree)
       create_new_user = []
       create_new_friend = []
@@ -252,6 +239,15 @@ module API
       if not p.nil?
         p.update_attribute('expires_at', Time.now)
       end
+    end
+    
+    def set_joined_at(facebook_id)
+      now_time = Time.now.utc.to_s(:db)
+      query = " update users
+                set joined_at = '#{now_time}'
+                where facebook_id = #{facebook_id} and joined_at is null
+              "
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
     end
 
     ###
@@ -436,6 +432,7 @@ module API
 
     end
     
+    # This is used by the /user/register and /user/session THREADED calls
     def find_checkins_for_facebook_id_array_async(facebook_id = nil, facebook_id_array = nil, since = nil)
       # async call to find_checkins_for_facebook_id_array
       headers_hash = Hash.new
@@ -880,6 +877,8 @@ module API
       
     end
     
+    # broken because facebook is retarded
+    # Facebook Error Caught: {"type"=>"OAuthException", "message"=>"(#10) Apps must have at least 100 users to use this API"}
     def add_subscription_for_user_checkins
       # https://graph.facebook.com/oauth/access_token?client_id=<app-id>&client_secret=<app-secret>&grant_type=client_credentials
       
