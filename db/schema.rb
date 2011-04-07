@@ -102,8 +102,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "video_file_name"
     t.string   "video_content_type"
     t.integer  "video_file_size"
-    t.boolean  "has_photo",          :default => false
-    t.boolean  "has_video",          :default => false
+    t.boolean  "has_photo",                       :default => false
+    t.boolean  "has_video",                       :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -201,7 +201,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "tagged_users", ["place_id"], :name => "idx_place_id"
 
   create_table "users", :force => true do |t|
-    t.integer  "facebook_id",                   :limit => 8,                               :default => 0
+    t.integer  "facebook_id",                   :limit => 8,                                 :default => 0
     t.string   "third_party_id"
     t.string   "access_token"
     t.string   "full_name"
@@ -209,14 +209,18 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "last_name"
     t.string   "gender"
     t.string   "locale"
-    t.boolean  "verified",                                                                 :default => false
-    t.decimal  "fetch_progress",                             :precision => 3, :scale => 2
+    t.boolean  "verified",                                                                   :default => false
+    t.decimal  "fetch_progress",                             :precision => 3,  :scale => 2
     t.datetime "last_fetched_checkins"
     t.datetime "last_fetched_friends"
     t.datetime "last_fetched_friends_checkins"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "joined_at"
+    t.decimal  "last_loc_lat",                               :precision => 20, :scale => 16
+    t.decimal  "last_loc_lng",                               :precision => 20, :scale => 16
+    t.datetime "last_loc_at"
+    t.integer  "last_kupo"
   end
 
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
