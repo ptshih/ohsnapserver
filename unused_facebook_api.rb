@@ -1,3 +1,146 @@
+
+# START CHECKINS LIKES/COMMENTS
+create_new_checkin_comment= []
+create_new_checkin_like = []
+
+if checkin.has_key?('likes')
+  checkin['likes']['data'].each do |t|
+    create_new_checkin_like << [checkin['id'], t['id'], t['name']]
+  end
+end
+
+if checkin.has_key?('comments')
+  checkin['comments']['data'].each do |t|
+    created_time = Time.parse(t['created_time'].to_s)
+    create_new_checkin_comment << [checkin['id'], t['from']['id'], t['from']['name'], t['id'], t['message'], created_time]
+  end
+end
+
+checkin_like_columns = [:checkin_id, :facebook_id, :full_name]
+checkin_comment_columns = [:checkin_id,  :facebook_id, :full_name, :message, :created_time]
+
+if !create_new_checkin_like.nil?
+  CheckinLike.import checkin_like_columns, create_new_checkin_like, :on_duplicate_key_update => [:full_name]
+end
+
+# 2011/04/02 tliou
+# commenting out checkin comment for now because not used by kupos and there is attribute error
+# ActiveRecord::UnknownAttributeError: unknown attribute:
+if !create_new_checkin_comment.nil?
+  #CheckinComment.import checkin_comment_columns, create_new_checkin_comment, :on_duplicate_key_update => [:message, :created_time]
+end
+
+# END CHECKIN LIKES/COMMENTS
+
+# START PAGES
+
+# puts places[place]
+# Pull parent page alias
+# Example: Get "24-Hour-Fitness" from "http://www.facebook.com/pages/24-Hour-Fitness"
+page_parent_alias = ""
+if !places[place]['link'].nil?
+  scan_result = places[place]['link'].scan(/pages\/([^\/]*)/).first
+  if !scan_result.nil?
+    page_parent_alias = scan_result.first
+  end
+end
+
+def serialize_page_bulk(page_array=nil)
+  create_new_pages = []
+  page_array.each do |page|
+    create_new_pages << [page['id'], page['name'], page['page_alias'], page['picture_sq_url'], page['picture'], page['link'], page['category'], page['website'], page['username'], page['company_overview'], page['products'], page, page['likes']]
+  end
+  page_columns = [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :likes]
+
+  Page.import page_columns, create_new_pages, :on_duplicate_key_update => [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :likes]
+end
+
+
+# After serializing page, check to see if any images need to be updated for places
+pages_alias_array_string = pages_alias_array.join(',')
+queryaddimage = "update places p, pages pg
+set p.picture_url = pg.picture_sq_url
+where p.page_parent_alias = pg.page_alias and p.picture_url is null and pg.picture_sq_url is not null and p.page_parent_alias in (#{pages_alias_array_string})"
+mysqlresult = ActiveRecord::Base.connection.execute(queryaddimage)
+
+###
+### Pages
+###
+
+
+# Find the main page for the given alias
+# Example:
+# The place http://graph.facebook.com/120557291328032 is a place
+# has http://www.facebook.com/pages/Starbucks/120557291328032
+# which has a "page_alias" that is "Starbucks"
+# API::FacebookApi.new.find_page_for_page_alias
+def find_page_for_page_alias(page_alias_array = nil)
+  if page_alias_array.nil? then page_alias_array = ["Starbucks"] end
+
+  puts "find page for page alias: #{page_alias_array}"
+
+  pages_array = []
+  pages_alias_array = []
+  failed_pages_alias_array = []
+  headers_hash = Hash.new
+  headers_hash['Accept'] = 'application/json'
+
+  original_page_alias_array_tostring = []
+
+  page_alias_array.each do |page_alias|
+
+    original_page_alias_array_tostring << "'"+page_alias+"'"
+
+    puts "this is page alias: #{page_alias}"
+    #main_url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}"))
+    main_url = URI.escape("#{@@fb_host}/#{page_alias}")
+    response = Typhoeus::Request.get(main_url, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+    parsed_response = self.check_facebook_response_for_errors(response)
+    if parsed_response.nil?
+      return false
+    end
+
+    # It's a place if it has "username" (ie username for "Jamba-Juice" is jambajuice)
+    # People do not have user names; just full-name, first, last
+    if parsed_response && parsed_response.has_key?("username")
+      parsed_response['page_alias'] = page_alias
+
+      # Only look for image if the place page exists
+      if !parsed_response.has_key?("error")
+        # Ex: get("graph.facebook.com/120557291328032/picture?type=square",:headers => headers_hash, :disable_ssl_peer_verification => true)
+        #url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}/picture?type=square"))
+        url = URI.escape("#{@@fb_host}/#{page_alias}/picture?type=square")
+        response_image = Typhoeus::Request.get(url, :headers => headers_hash, :disable_ssl_peer_verification => true)
+        scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
+        if !scan_for_imageurl.nil?
+          parsed_response['picture_sq_url'] = scan_for_imageurl.first
+        end
+      end
+
+      pages_array << parsed_response
+      pages_alias_array << "'"+page_alias+"'"
+    else
+      failed_pages_alias_array << "'"+page_alias+"'"
+    end
+  end
+
+  if !pages_array.empty?
+    self.serialize_page_bulk(pages_array)
+  end
+
+  # Update remaining picture to use just as the default image
+  queryupdate = "update places set picture_url = picture where page_parent_alias in (#{original_page_alias_array_tostring.join(',')}) and picture_url is null"
+  puts queryupdate
+  begin
+    mysqlresult = ActiveRecord::Base.connection.execute(queryupdate)
+  rescue
+    puts 'fail!'
+  end
+end
+
+
+# END PAGES
 # Serialize the sharing
 # API::FacebookApi.new.serialize_share(13412412, 4804606, 29302, "hello message")
 def serialize_share(checkin_id=nil, facebook_id=nil, place_id=nil, message=nil)
@@ -177,4 +320,92 @@ def find_page_for_places_with_none
   end
   
   self.find_page_for_page_alias(page_alias_array)
+end
+
+
+
+
+
+############################################################
+# Returns a time sorted stream of posts made to that place
+############################################################
+def wall
+  Rails.logger.info request.query_parameters.inspect
+  
+  if params[:limit].nil?
+    limit_return = 20
+  else
+    limit_return = params[:limit]
+  end
+  
+  # Serializing the posts for that place
+  @facebook_api.find_place_post_for_place_id(params[:place_id])
+  
+  response_array = []
+  
+  PlacePost.find(:all, :conditions=>"place_id=#{params[:place_id]} and post_type='status'", :order => "post_created_time desc", :limit => limit_return).each do |feed|
+    response_hash = {
+      :post_created_time => feed['post_created_time'],
+      :from_id=> feed['from_id'],
+      :from => feed['from_name'],
+      :message => feed['message']
+    }
+    response_array << response_hash
+  end
+  
+  respond_to do |format|
+    format.xml  { render :xml => response_array }
+    format.json  { render :json => response_array }
+  end
+
+end
+
+# Get Place Posts
+# https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
+# to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
+# probably don't need to pass token; get publicly accessible information for feeds
+params_hash = Hash.new
+params_hash['limit']=10
+response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+parsed_response = self.parse_json(response.body)
+
+# check facebook response for errors
+if not (check_facebook_response_for_errors(parsed_response))
+  return false
+end
+
+parsed_response['data'].map do |feed|
+  # Serialize Place posts
+  facebook_place_posts = self.serialize_place_post(feed, place_id)
+  #puts feed["id"]
+end
+
+def find_place_post_for_place_id(place_id = nil)
+  if place_id.nil? then place_id = 57167660895 end # cafe zoe
+
+  headers_hash = Hash.new
+  headers_hash['Accept'] = 'application/json'
+
+  puts "find place post for place id: #{place_id}"
+
+  # Get Place Posts
+  # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
+  # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
+  # probably don't need to pass token; get publicly accessible information for feeds
+  params_hash = Hash.new
+  params_hash['limit']=10
+  response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+  parsed_response = self.check_facebook_response_for_errors(response)
+  if parsed_response.nil?
+    return false
+  end
+
+  parsed_response['data'].map do |feed|
+    # Serialize Place posts
+    facebook_place_posts = self.serialize_place_post(feed, place_id)
+    #puts feed["id"]
+  end
+
+  return true
 end

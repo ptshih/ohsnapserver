@@ -57,7 +57,7 @@ class PlaceController < ApplicationController
     total_score = 0
     distance_in_mi = 5
     distance_col = "(3956.0 * 2.0 * atan2( power(power(sin((lat - #{place['lat']}) * pi()/180.0),2) + cos(#{place['lat']} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{place['lng']}) * pi()/180.0),2), 0.5), power( 1.0 - power(sin((lat - #{place['lat']}) * pi()/180.0),2) + cos(#{place['lat']} * pi()/180.0) * cos(lat * pi()/180.0) * power(sin((lng - #{place['lng']}) * pi()/180.0),2) , 0.5) ))"
-    query = "select p.*, count(*) as friend_checkins, count(*)*100 + p.like_count*10 + p.checkins_count as score, "+distance_col+" as distance
+    query = "select p.*, count(*) as friend_checkins, count(*)*100 + p.like_count*10 + p.checkin_count as score, "+distance_col+" as distance
         from tagged_users a
         right join places p on p.place_id = a.place_id and p.place_id != #{params[:place_id]}
         where a.facebook_id in (select friend_id from friends where facebook_id = #{@current_user.facebook_id}) 
@@ -72,7 +72,7 @@ class PlaceController < ApplicationController
         :place_picture => loop_top_place['picture'],
         :place_friend_checkins => friend_checkins,
         :place_likes => loop_top_place['like_count'],
-        :place_checkins => loop_top_place['checkins_count'],
+        :place_checkins => loop_top_place['checkin_count'],
         :place_distance => loop_top_place['distance'],
         :score => loop_top_place['score']
       }
@@ -91,9 +91,6 @@ class PlaceController < ApplicationController
     end
     yelp = Yelp.find_by_place_id(place['place_id'])
     
-    # @facebook_api.find_page_for_page_alias(["#{place.page_parent_alias}"])
-    # place = Place.find(:all, :conditions=> "place_id = #{params[:place_id]}").first    
-
     # Calculate the distance between params[:lat] params[:lng] and place.lat place.lng
     d2r = Math::PI/180.0
     dlong = (place.lng.to_f - params[:lng].to_f) * d2r;
@@ -115,7 +112,7 @@ class PlaceController < ApplicationController
       :place_country => place['country'],
       :place_zip => place['zip'],
       :place_phone => place['phone'],
-      :place_checkins => place['checkins_count'],
+      :place_checkins => place['checkin_count'],
       :place_distance => distance,
       :place_friend_checkins => friend_checkins,
       :place_likes => place['like_count'],
@@ -219,7 +216,7 @@ class PlaceController < ApplicationController
         :place_country => row['country'],
         :place_zip => row['zip'],
         :place_phone => row['phone'],
-        :place_checkins => row['checkins_count'],
+        :place_checkins => row['checkin_count'],
         :place_distance => distance,
         :place_friend_checkins => row['friend_checkins'],
         :place_likes => row['like_count']
@@ -244,7 +241,7 @@ class PlaceController < ApplicationController
   
   ############################################################
   # Show checkin trends; sort descending popularity
-  # Popularity can be sorted by params[:sort] = "like_count", "checkins_count", "friend_checkins"
+  # Popularity can be sorted by params[:sort] = "like_count", "checkin_count", "friend_checkins"
   # Also can be filtered by distance by params[:distance] = 1 (this is in miles)
   # Also can exclude places you have been params[:exclude_places_you_been] = "true" (1 is true, 0 is false)
   # Also can limit response params[:limit] = 10
@@ -315,7 +312,7 @@ class PlaceController < ApplicationController
         :place_country => place['country'],
         :place_zip => place['zip'],
         :place_phone => place['phone'],
-        :place_checkins => place['checkins_count'],
+        :place_checkins => place['checkin_count'],
         :place_distance => distance,
         :place_friend_checkins => place['friend_checkins'],
         :place_likes => place['like_count'],
@@ -612,40 +609,6 @@ class PlaceController < ApplicationController
       format.json  { render :json => response_array }
     end
   end
-  
-  ############################################################
-  # Returns a time sorted stream of posts made to that place
-  ############################################################
-  def wall
-    Rails.logger.info request.query_parameters.inspect
-    
-    if params[:limit].nil?
-      limit_return = 20
-    else
-      limit_return = params[:limit]
-    end
-    
-    # Serializing the posts for that place
-    @facebook_api.find_place_post_for_place_id(params[:place_id])
-    
-    response_array = []
-    
-    PlacePost.find(:all, :conditions=>"place_id=#{params[:place_id]} and post_type='status'", :order => "post_created_time desc", :limit => limit_return).each do |feed|
-      response_hash = {
-        :post_created_time => feed['post_created_time'],
-        :from_id=> feed['from_id'],
-        :from => feed['from_name'],
-        :message => feed['message']
-      }
-      response_array << response_hash
-    end
-    
-    respond_to do |format|
-      format.xml  { render :xml => response_array }
-      format.json  { render :json => response_array }
-    end
-  
-  end
 
   ############################################################
   # Returns sorted timeline of friend's activity at this location
@@ -711,7 +674,7 @@ class PlaceController < ApplicationController
         :rank => rank,
         :friend_facebook_id => mysqlresult['friend_facebook_id'],
         :friend_name => mysqlresult['friend_name'],
-        :checkins_count => mysqlresult['checkins_count']
+        :checkin_count => mysqlresult['checkin_count']
       }
       response_array << refer_hash
     end

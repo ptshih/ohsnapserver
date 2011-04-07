@@ -96,7 +96,7 @@ class CheckinController < ApplicationController
     
     # Store the checkin results in the hash by checkin_id, checkin_result_hash (key,value)
     recent_checkins = Hash.new
-    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>[:tagged_users, :checkin_likes, :checkin_posts, :user, :app, :place], :conditions => query_filters, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id ", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
+    Checkin.find(:all, :select=>"checkins.*, tagged_users.facebook_id as tagged_facebook_id, tagged_users.name as 'tagged_name'", :include=>[:tagged_users, :checkin_posts, :user, :app, :place], :conditions => query_filters, :joins=>"join tagged_users on tagged_users.checkin_id = checkins.checkin_id ", :order=>'created_time desc', :limit=>limit_count).each do |checkin|
       
       if recent_checkins.has_key?(checkin['checkin_id'])
         # Store the name if it's not the author
@@ -145,7 +145,7 @@ class CheckinController < ApplicationController
           :place_country => place['country'],
           :place_zip => place['zip'],
           :place_phone => place['phone'],
-          :place_checkins => place['checkins_count'],
+          :place_checkins => place['checkin_count'],
           # :place_distance => distance,
           # :place_friend_checkins => friend_checkins,
           :place_likes => place['like_count'],
@@ -163,8 +163,6 @@ class CheckinController < ApplicationController
           :message => checkin['message'],
           :place_id => checkin['place_id'].to_s,
           :place_data => place_hash,
-          :comments_data => checkin.checkin_posts,
-          :likes_data => checkin.checkin_likes,
           :app_id => checkin_app_id,
           :app_name => checkin_app_name,
           :checkin_timestamp => checkin['created_time'].to_i
@@ -173,19 +171,6 @@ class CheckinController < ApplicationController
       end
 
     end #End loop through returned checkins+tagged user results
-
-    #TODO Return all place info in subhash
-    #TODO Return checkin comments and likes in subhash
-    # place_info = []
-    # checkin_likes = []
-    # checkin_posts = []
-    # Place.find(:all, :select=> "place_id, yelp_pid, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, category, picture, picture_url, link, website, price_range",:conditions => "place_id in (#{place_ids_array.uniq.join(",")})").each do |theplace|
-    #   place_info[theplace['place_id']] = theplace
-    # end
-    # CheckinsLike.find(:all, :conditions=> "checkin_id in (#{checkin_ids_array.join(",")})").each do |thecheckin|
-    # end
-    # CheckinsPost.find(:all, :conditions=> "checkin_id in (#{checkin_ids_array.join(",")})").each do |thecheckin|
-    # end
 
     response_array = []
     recent_checkins.each do |checkin_id, hash_response|
