@@ -21,7 +21,7 @@ create_table "gowallas", :force => true do |t|
   t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
   t.integer  "place_id",       :limit => 8,                                 :default => 0
   t.string   "name"
-  t.integer  "checkins_count"
+  t.integer  "checkin_count"
   t.decimal  "lat",                         :precision => 20, :scale => 16
   t.decimal  "lng",                         :precision => 20, :scale => 16
   t.datetime "expires_at"

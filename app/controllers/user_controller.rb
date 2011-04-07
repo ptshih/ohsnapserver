@@ -338,7 +338,7 @@ class UserController < ApplicationController
             :place_country => row['country'],
             :place_zip => row['zip'],
             :place_phone => row['phone'],
-            :place_checkins => row['checkins_count'],
+            :place_checkins => row['checkin_count'],
             :place_distance => distance,
             :place_friend_checkins => row['checkins'],
             :place_likes => row['like_count'],

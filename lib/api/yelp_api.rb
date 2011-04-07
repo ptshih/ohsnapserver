@@ -27,7 +27,6 @@ module API
        y.zip = yelp['location']['postal_code'].nil? ? nil : yelp['location']['postal_code']
        y.lat = yelp['location']['coordinate']['latitude'].nil? ? nil : yelp['location']['coordinate']['latitude']
        y.lng = yelp['location']['coordinate']['longitude'].nil? ? nil : yelp['location']['coordinate']['longitude']
-       y.raw_hash = yelp
        y.expires_at = Time.now + 1.days
        y.save
        
@@ -42,7 +41,6 @@ module API
             r.time_created = Time.at(review['time_created'])
             r.user_name = review['user']['name'].nil? ? nil : review['user']['name']
             r.user_id = review['user']['id'].nil? ? nil : review['user']['id']
-            r.raw_hash = review
             r.save
          end
 

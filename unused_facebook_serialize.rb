@@ -54,7 +54,7 @@ def serialize_place(place)
   p.country = place['location']['country']
   p.zip = place['location']['zip']
   p.phone = place['phone']
-  p.checkins_count = place['checkins'].nil? ? 0 : place['checkins']
+  p.checkin_count = place['checkins'].nil? ? 0 : place['checkins']
   p.like_count = place['likes'].nil? ? 0 : place['likes']
   p.attire = place['attire']
   p.category = place['category']
@@ -63,7 +63,6 @@ def serialize_place(place)
   p.page_parent_alias = page_parent_alias
   p.website = place['website']
   p.price_range = place['price_range']
-  p.raw_hash = place
   p.expires_at = Time.now + 1.days
   p.save
 end
@@ -101,4 +100,23 @@ def serialize_friend(friend, facebook_id, degree)
     )
   end
   return f
+end
+
+def serialize_place_post(place_post, place_id)
+  #puts "serializing comments for place :#{place_id}"
+  #puts "place_post id is this: #{place_post['id']}"
+  pp = PlacePost.find_or_initialize_by_place_post_id(place_post['id'])
+  pp.place_id = place_id
+  pp.post_type = place_post['type']
+  pp.from_id = place_post['from']['id']
+  pp.from_name = place_post['from']['name']
+  pp.message = place_post['message']
+  pp.picture = place_post['picture']
+  pp.link = place_post['link']
+  pp.name = place_post['name']
+  pp.post_created_time = Time.parse(place_post['created_time'].to_s)
+  pp.post_updated_time = Time.parse(place_post['updated_time'].to_s)
+  pp.save
+
+  return pp
 end

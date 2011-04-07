@@ -117,7 +117,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "country"
     t.string   "zip"
     t.string   "phone"
-    t.integer  "checkins_count",    :limit => 8,                                   :default => 0
+    t.integer  "checkin_count",    :limit => 8,                                   :default => 0
     t.integer  "like_count",        :limit => 8,                                   :default => 0
     t.string   "attire"
     t.string   "category",          :limit => 100

@@ -44,8 +44,6 @@ module API
     def serialize_checkin_bulk(checkins,createkupos=true)
       create_new_checkin = []
       create_new_tagged_user = []
-      create_new_checkin_comment= []
-      create_new_checkin_like = []
       create_new_app = []
       place_id_array=[]
       checkin_id_array = []
@@ -76,42 +74,17 @@ module API
             create_new_tagged_user << [checkin['id'], checkin['place']['id'], t['id'], t['name']]
           end
         end
-
-        if checkin.has_key?('likes')
-          checkin['likes']['data'].each do |t|
-            create_new_checkin_like << [checkin['id'], t['id'], t['name']]
-          end
-        end
-
-        if checkin.has_key?('comments')
-          checkin['comments']['data'].each do |t|
-            created_time = Time.parse(t['created_time'].to_s)
-            create_new_checkin_comment << [checkin['id'], t['from']['id'], t['from']['name'], t['id'], t['message'], created_time]
-          end
-        end
-
       end
 
       # Set the columns requires for import
       checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
       tagged_user_columns = [:checkin_id, :place_id, :facebook_id, :name]
-      checkin_like_columns = [:checkin_id, :facebook_id, :full_name]
-      checkin_comment_columns = [:checkin_id,  :facebook_id, :full_name, :message, :created_time]
       app_columns = [:app_id, :name]
 
       # Import the data
       Checkin.import checkin_columns, create_new_checkin, :on_duplicate_key_update => [:created_time]
       TaggedUser.import tagged_user_columns, create_new_tagged_user, :on_duplicate_key_update => [:name]
-      if !create_new_checkin_like.nil?
-        CheckinLike.import checkin_like_columns, create_new_checkin_like, :on_duplicate_key_update => [:full_name]
-      end
-      
-      # 2011/04/02 tliou
-      # commenting out checkin comment for now because not used by kupos and there is attribute error
-      # ActiveRecord::UnknownAttributeError: unknown attribute:
-      if !create_new_checkin_comment.nil?
-        #CheckinComment.import checkin_comment_columns, create_new_checkin_comment, :on_duplicate_key_update => [:message, :created_time]
-      end
+
       if !create_new_app.nil?
         App.import app_columns, create_new_app, :on_duplicate_key_update => [:name]
       end
@@ -167,16 +140,6 @@ module API
       create_new_place = []
       parsed_keys = places.keys
       parsed_keys.each do |place|
-        # puts places[place]
-        # Pull parent page alias
-        # Example: Get "24-Hour-Fitness" from "http://www.facebook.com/pages/24-Hour-Fitness"
-        page_parent_alias = ""
-        if !places[place]['link'].nil?
-          scan_result = places[place]['link'].scan(/pages\/([^\/]*)/).first
-          if !scan_result.nil?
-            page_parent_alias = scan_result.first
-          end
-        end
         # Create new place
         place_id = places[place]['id']
         name = places[place]['name']
@@ -188,7 +151,7 @@ module API
         country = places[place]['location']['country']
         zip = places[place]['location']['zip']
         phone = places[place]['phone']
-        checkins_count = places[place]['checkins'].nil? ? 0 : places[place]['checkins']
+        checkin_count = places[place]['checkins'].nil? ? 0 : places[place]['checkins']
         like_count = places[place]['likes'].nil? ? 0 : places[place]['likes']
         attire = places[place]['attire']
         category = places[place]['category']
@@ -196,49 +159,19 @@ module API
         link = places[place]['link']
         website = places[place]['website']
         price_range = places[place]['price_range']
-        raw_hash = places[place]
         expires_at = Time.now + 1.days
-        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkins_count, like_count, attire, category, picture, link, page_parent_alias, website, price_range, raw_hash, expires_at]
+        create_new_place << [place_id, name, lat, lng, street, city, state, country, zip, phone, checkin_count, like_count, attire, category, picture, link, website, price_range, expires_at]
       end
       place_columns = [:place_id, :name, :lat, :lng, :street, :city, :state, :country, :zip, :phone,
-                       :checkins_count, :like_count, :attire, :category, :picture, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
+                       :checkin_count, :like_count, :attire, :category, :picture, :link, :website, :price_range, :expires_at]
 
       # Notice we are NOT overriding the or inserting into the column picture_url
-      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkins_count, :like_count, :attire, :category, :picture, :link, :page_parent_alias, :website, :price_range, :raw_hash, :expires_at]
+      Place.import place_columns, create_new_place, :on_duplicate_key_update => [:name, :lat, :lng, :street, :city, :state, :country, :zip, :phone, :checkin_count, :like_count, :attire, :category, :picture, :link, :website, :price_range, :expires_at]
 
       puts "Serialized #{create_new_place.length} places in bulk."
     end
 
-    def serialize_page_bulk(page_array=nil)
-      create_new_pages = []
-      page_array.each do |page|
-        create_new_pages << [page['id'], page['name'], page['page_alias'], page['picture_sq_url'], page['picture'], page['link'], page['category'], page['website'], page['username'], page['company_overview'], page['products'], page, page['likes']]
-      end
-      page_columns = [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
-
-      Page.import page_columns, create_new_pages, :on_duplicate_key_update => [:facebook_id, :name, :page_alias, :picture_sq_url, :picture, :link, :category, :website_url, :username, :company_overview, :products, :raw_hash, :likes]
-    end
-
     # Create or update place in model/database
-
-    def serialize_place_post(place_post, place_id)
-      #puts "serializing comments for place :#{place_id}"
-      #puts "place_post id is this: #{place_post['id']}"
-      pp = PlacePost.find_or_initialize_by_place_post_id(place_post['id'])
-      pp.place_id = place_id
-      pp.post_type = place_post['type']
-      pp.from_id = place_post['from']['id']
-      pp.from_name = place_post['from']['name']
-      pp.message = place_post['message']
-      pp.picture = place_post['picture']
-      pp.link = place_post['link']
-      pp.name = place_post['name']
-      pp.post_created_time = Time.parse(place_post['created_time'].to_s)
-      pp.post_updated_time = Time.parse(place_post['updated_time'].to_s)
-      pp.save
-
-      return pp
-    end
 
     # Create or update user
     def serialize_user(user, access_token = nil)
@@ -723,58 +656,8 @@ module API
       # Serialize Place
       self.serialize_place_bulk([parsed_response])
 
-      # Get Place Posts
-      # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
-      # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
-      # probably don't need to pass token; get publicly accessible information for feeds
-      params_hash = Hash.new
-      params_hash['limit']=10
-      response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-      parsed_response = self.parse_json(response.body)
-
-      # check facebook response for errors
-      if not (check_facebook_response_for_errors(parsed_response))
-        return false
-      end
-
-      parsed_response['data'].map do |feed|
-        # Serialize Place posts
-        facebook_place_posts = self.serialize_place_post(feed, place_id)
-        #puts feed["id"]
-      end
-
       return true
 
-    end
-
-    def find_place_post_for_place_id(place_id = nil)
-      if place_id.nil? then place_id = 57167660895 end # cafe zoe
-
-      headers_hash = Hash.new
-      headers_hash['Accept'] = 'application/json'
-
-      puts "find place post for place id: #{place_id}"
-
-      # Get Place Posts
-      # https://graph.facebook.com/cafezoemenlopark/feed?limit=1000
-      # to get the feed/posts of the place; set limit to pull more results at once instead of having pagination
-      # probably don't need to pass token; get publicly accessible information for feeds
-      params_hash = Hash.new
-      params_hash['limit']=10
-      response = Typhoeus::Request.get("#{@@fb_host}/#{place_id}/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
-
-      parsed_response = self.check_facebook_response_for_errors(response)
-      if parsed_response.nil?
-        return false
-      end
-
-      parsed_response['data'].map do |feed|
-        # Serialize Place posts
-        facebook_place_posts = self.serialize_place_post(feed, place_id)
-        #puts feed["id"]
-      end
-
-      return true
     end
 
     # Find all places for an array of place_ids
@@ -820,94 +703,6 @@ module API
         return true
       else
         return false
-      end
-    end
-
-    ###
-    ### Pages
-    ###
-
-
-    # Find the main page for the given alias
-    # Example:
-    # The place http://graph.facebook.com/120557291328032 is a place
-    # has http://www.facebook.com/pages/Starbucks/120557291328032
-    # which has a "page_alias" that is "Starbucks"
-    # API::FacebookApi.new.find_page_for_page_alias
-    def find_page_for_page_alias(page_alias_array = nil)
-      if page_alias_array.nil? then page_alias_array = ["Starbucks"] end
-
-      puts "find page for page alias: #{page_alias_array}"
-
-      pages_array = []
-      pages_alias_array = []
-      failed_pages_alias_array = []
-      headers_hash = Hash.new
-      headers_hash['Accept'] = 'application/json'
-
-      original_page_alias_array_tostring = []
-
-      page_alias_array.each do |page_alias|
-
-        original_page_alias_array_tostring << "'"+page_alias+"'"
-
-        puts "this is page alias: #{page_alias}"
-        #main_url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}"))
-        main_url = URI.escape("#{@@fb_host}/#{page_alias}")
-        response = Typhoeus::Request.get(main_url, :headers => headers_hash, :disable_ssl_peer_verification => true)
-
-        parsed_response = self.check_facebook_response_for_errors(response)
-        if parsed_response.nil?
-          return false
-        end
-
-        # It's a place if it has "username" (ie username for "Jamba-Juice" is jambajuice)
-        # People do not have user names; just full-name, first, last
-        if parsed_response && parsed_response.has_key?("username")
-          parsed_response['page_alias'] = page_alias
-
-          # Only look for image if the place page exists
-          if !parsed_response.has_key?("error")
-            # Ex: get("graph.facebook.com/120557291328032/picture?type=square",:headers => headers_hash, :disable_ssl_peer_verification => true)
-            #url = URI.parse(URI.encode("#{@@fb_host}/#{page_alias}/picture?type=square"))
-            url = URI.escape("#{@@fb_host}/#{page_alias}/picture?type=square")
-            response_image = Typhoeus::Request.get(url, :headers => headers_hash, :disable_ssl_peer_verification => true)
-            scan_for_imageurl = response_image.headers.scan(/Location: (.*)\r/).first
-            if !scan_for_imageurl.nil?
-              parsed_response['picture_sq_url'] = scan_for_imageurl.first
-            end
-          end
-
-          pages_array << parsed_response
-          pages_alias_array << "'"+page_alias+"'"
-        else
-          failed_pages_alias_array << "'"+page_alias+"'"
-        end
-      end
-
-      # Update places if failed to find a facebook page for the place
-      # if !failed_pages_alias_array.nil?
-      #   Place.update_all("picture_url = picture", ["page_parent_alias in (?)", failed_pages_alias_array.join(",")])
-      # end
-
-      if !pages_array.empty?
-        self.serialize_page_bulk(pages_array)
-
-        # After serializing page, check to see if any images need to be updated for places
-        pages_alias_array_string = pages_alias_array.join(',')
-        queryaddimage = "update places p, pages pg
-        set p.picture_url = pg.picture_sq_url
-        where p.page_parent_alias = pg.page_alias and p.picture_url is null and pg.picture_sq_url is not null and p.page_parent_alias in (#{pages_alias_array_string})"
-        mysqlresult = ActiveRecord::Base.connection.execute(queryaddimage)
-      end
-
-      # Update remaining picture to use just as the default image
-      queryupdate = "update places set picture_url = picture where page_parent_alias in (#{original_page_alias_array_tostring.join(',')}) and picture_url is null"
-      puts queryupdate
-      begin
-        mysqlresult = ActiveRecord::Base.connection.execute(queryupdate)
-      rescue
-        puts 'fail!'
       end
     end
 
