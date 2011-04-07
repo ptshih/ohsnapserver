@@ -524,13 +524,11 @@ class UserController < ApplicationController
     # retarded lol
     if params[:since]!=nil && params[:until]==nil
     since_time = Time.at(params[:since].to_i).utc.to_s(:db)
-      time_bounds = " and in_k.created_at > ('#{since_time}')"
-      time_bounds_a = " and a.created_at > ('#{since_time}')"
+      time_bounds = " and a.created_at > ('#{since_time}')"
     # pass until, then get everything < until
     elsif params[:since]==nil && params[:until]!=nil
     until_time = Time.at(params[:until].to_i).utc.to_s(:db)
-      time_bounds = " and in_k.created_at < ('#{until_time}')"
-      time_bounds_a = " and a.created_at < ('#{until_time}')"
+      time_bounds = " and a.created_at < ('#{until_time}')"
     else
       time_bounds = ""
     end
@@ -551,7 +549,7 @@ class UserController < ApplicationController
         ) b on a.id = b.id
         join places p on p.place_id=b.place_id
         join users u on a.facebook_id = u.facebook_id
-        where a.facebook_id = u.facebook_id " + time_bounds_a + "
+        where a.facebook_id = u.facebook_id " + time_bounds + "
         order by a.created_at desc
     "
     response_hash = {}

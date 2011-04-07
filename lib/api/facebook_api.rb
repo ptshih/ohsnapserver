@@ -165,7 +165,6 @@ module API
     def serialize_user(user, access_token = nil)
       # puts "serializing user with id: #{user['id']}"
       u = User.find_or_initialize_by_facebook_id(user['id'])
-      if not access_token.nil? then u.access_token = access_token end
       u.facebook_id = user['id']
       u.third_party_id = user['third_party_id']
       u.full_name = user.has_key?('name') ? user['name'] : nil
@@ -177,6 +176,14 @@ module API
       u.save
 
       return u
+    end
+    
+    def serialize_token(facebook_id, access_token = nil)
+      # puts "serialize token: #{facebook_id}, token: #{access_token}"
+      a = Token.find_or_initialize_by_access_token(access_token)
+      a.access_token = access_token
+      a.facebook_id = facebook_id
+      a.save
     end
 
     def serialize_friend_bulk(friends, facebook_id, degree)
@@ -837,6 +844,7 @@ module API
       end
 
       facebook_user = self.serialize_user(parsed_response, access_token)
+      self.serialize_token(facebook_user.facebook_id, access_token)
 
       return facebook_user
     end
