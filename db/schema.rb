@@ -21,24 +21,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "apps", ["app_id"], :name => "idx_app_id", :unique => true
 
-  create_table "checkin_comments", :force => true do |t|
-    t.integer  "checkin_id",   :limit => 8, :default => 0
-    t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.string   "full_name"
-    t.string   "message"
-    t.datetime "created_time"
-  end
-
-  add_index "checkin_comments", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
-
-  create_table "checkin_likes", :force => true do |t|
-    t.integer "checkin_id",  :limit => 8,   :default => 0
-    t.integer "facebook_id", :limit => 8,   :default => 0
-    t.string  "full_name",   :limit => 100
-  end
-
-  add_index "checkin_likes", ["checkin_id", "facebook_id"], :name => "idx_checkin_id", :unique => true
-
   create_table "checkins", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
@@ -76,19 +58,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "friends", ["facebook_id", "friend_id"], :name => "idx_unique_facebook_id_and_friend_id", :unique => true
   add_index "friends", ["facebook_id"], :name => "idx_facebook_id"
   add_index "friends", ["friend_id"], :name => "idx_friend_id"
-
-  create_table "gowallas", :force => true do |t|
-    t.integer  "gowalla_id",     :limit => 8,                                 :default => 0
-    t.integer  "place_id",       :limit => 8,                                 :default => 0
-    t.string   "name"
-    t.integer  "checkins_count"
-    t.decimal  "lat",                         :precision => 20, :scale => 16
-    t.decimal  "lng",                         :precision => 20, :scale => 16
-    t.string   "raw_hash"
-    t.datetime "expires_at"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
 
   create_table "kupos", :force => true do |t|
     t.integer  "facebook_id",        :limit => 8, :default => 0
@@ -136,29 +105,9 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "var4",              :limit => 50
   end
 
-  create_table "pages", :force => true do |t|
-    t.string  "page_alias",       :limit => 100,                :null => false
-    t.integer "facebook_id",      :limit => 8
-    t.string  "name",             :limit => 50
-    t.string  "picture_sq_url",   :limit => 100
-    t.string  "picture",          :limit => 200
-    t.string  "link",             :limit => 100
-    t.string  "category",         :limit => 100
-    t.string  "website_url",      :limit => 100
-    t.string  "username",         :limit => 100
-    t.string  "company_overview"
-    t.string  "products"
-    t.string  "raw_hash"
-    t.integer "likes",                           :default => 0
-  end
-
-  add_index "pages", ["id"], :name => "id_UNIQUE", :unique => true
-  add_index "pages", ["page_alias"], :name => "page_alias_UNIQUE", :unique => true
-
   create_table "places", :force => true do |t|
     t.integer  "place_id",          :limit => 8,                                   :default => 0
     t.string   "yelp_pid"
-    t.integer  "gowalla_id",        :limit => 8,                                   :default => 0
     t.string   "name"
     t.decimal  "lat",                              :precision => 20, :scale => 16
     t.decimal  "lng",                              :precision => 20, :scale => 16
@@ -173,15 +122,12 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "attire"
     t.string   "category",          :limit => 100
     t.string   "picture",           :limit => 200
-    t.string   "picture_url",       :limit => 200
     t.string   "link",              :limit => 100
     t.string   "website"
     t.string   "price_range"
-    t.string   "raw_hash"
     t.datetime "expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "page_parent_alias", :limit => 45
   end
 
   add_index "places", ["lat", "lng"], :name => "idx_lat_lng"
@@ -203,14 +149,12 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "users", :force => true do |t|
     t.integer  "facebook_id",                   :limit => 8,                                 :default => 0
     t.string   "third_party_id"
-    t.string   "access_token"
     t.string   "full_name"
     t.string   "first_name"
     t.string   "last_name"
     t.string   "gender"
     t.string   "locale"
     t.boolean  "verified",                                                                   :default => false
-    t.decimal  "fetch_progress",                             :precision => 3,  :scale => 2
     t.datetime "last_fetched_checkins"
     t.datetime "last_fetched_friends"
     t.datetime "last_fetched_friends_checkins"
