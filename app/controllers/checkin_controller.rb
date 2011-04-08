@@ -246,17 +246,24 @@ class CheckinController < ApplicationController
       :comment => params[:comment],
       :photo => params[:image],
       :has_photo => params[:image].nil? ? false : true,
+      :has_video => params[:video].nil? ? false : true,
       :video => params[:video],
       :created_at => Time.now
     )
     
-    if !params[:image].nil?
-      photo_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/image.png"
+    if k.has_photo?
+      photo_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
     else
       photo_url = nil
     end
     
-    facebook_checkin_id = @facebook_api.add_checkin(params[:comment], params[:place_id], params[:lat], params[:lng], params[:tags], photo_url)
+    if k.has_video?
+      video_url = "http://s3.amazonaws.com/kupo/kupos/videos/#{k.id}/original/#{k.video_file_name}"
+    else
+      video_url = nil
+    end      
+    
+    facebook_checkin_id = @facebook_api.add_checkin(k.id, params[:place_id], params[:comment], params[:tags], photo_url, video_url)
     
     k.update_attribute(:checkin_id, facebook_checkin_id.to_i)
 

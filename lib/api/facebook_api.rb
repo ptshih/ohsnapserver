@@ -7,6 +7,7 @@ module API
     @@james_access_token = "132514440148709%257Cf09dd88ba268a8727e4f3fd5-645750651%257Ck21j0yXPGxYGbJPd0eOEMTy5ZN4"
     @@tom_access_token = "132514440148709|ddfc7b74179c6fd2f6e081ff-4804606|9SUyWXArEX9LFCAuY3DoFDvhgl0"
     @@moone_access_token = "132514440148709|22ebfa70b9a561d421c076fe-100002025298734|dJd8XJJg4p67Jh_lRFkkgEHX4Go"
+    @@moseven_access_token = "mmMkvl-BKP5IBuW_Tyz3v213LJuYnogIPJP0EE0cvOY.eyJpdiI6IkNMdmF4dVhUSHEyTVFUbUMyamNBeVEifQ.zfvNH4V4mdy9aC8-eACKTVdpUMTN8EpHy-7ehBJmion65onca6xJ6GOvkf5X3PTzlB_sMAnfxp6sDmamlum2WtfMDnX3hbDQR3MFlr9-Uc5kW0T-EBXguC_Bn_4L4W2weSkhQjmxfdnpURgjg8JIZw"
 
     @@fb_host = 'https://graph.facebook.com'
     @@fb_app_id = '132514440148709'
@@ -23,7 +24,7 @@ module API
     attr_accessor :access_token, :hydra
 
     def initialize(access_token = nil)
-      if access_token.nil? then access_token = @@peter_access_token end
+      if access_token.nil? then access_token = @@moseven_access_token end
       self.access_token = access_token
 
       self.hydra = Typhoeus::Hydra.new
@@ -273,6 +274,8 @@ module API
     #       "message": "Error validating access token."
     #    }
     # }
+    
+    # {"error":{"type":"OAuthException","message":"(#1) You are too far away to check in to this place.  Move closer to this place, then try again."}}
 
     # IF we get throttled, spawn a delayed_job and send it off after 10 minutes
     def check_facebook_response_for_errors(response = nil)
@@ -862,25 +865,49 @@ module API
     # http://developers.facebook.com/docs/reference/api/checkin/
     # API::FacebookApi.new.add_checkin('hello',152493598101444,37.387650594323, -122.08289289721, '4804606,645750651')
     # adds a checkin without creating kupos
-    def add_checkin(message=nil, place=nil, lat=nil, lng=nil, tags=nil, photo_url=nil)
+    #
+    # Because facebook is stupid and checks lat/lng distance and doesn't allow checkin,
+    # We are just gonna hard code the user's lat/lng to that of the place so it never ever fails lol...
+    def add_checkin(kupo_id=nil,place_id=nil, message=nil, tags=nil, photo_url=nil, video_url=nil)
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
       
-      puts "attaching a photo: #{photo_url}"
+      # puts "attaching a photo: #{photo_url}"
+          
+      p = Place.find_by_place_id(place_id)
 
       params_hash = Hash.new
       params_hash['access_token'] = self.access_token
       params_hash['message'] = message
-      params_hash['place'] = place
-      params_hash['coordinates'] = {"latitude"=>"#{lat}","longitude"=>"#{lng}"}
+      params_hash['place'] = place_id
+      params_hash['coordinates'] = {"latitude"=>"#{p.lat}","longitude"=>"#{p.lng}"}
       params_hash['tags'] = tags
-      params_hash['link'] = photo_url
-      params_hash['picture'] = photo_url
-      params_hash['name'] = "Attached Photo"
-      params_hash['caption'] = "Shared a photo via Moogle"
+      
+      if !video_url.nil?
+        params_hash['name'] ="Kupo!"
+        params_hash['picture'] = photo_url
+        params_hash['caption'] = "Shared a video via Moogle"
+        params_hash['description'] = message
+        params_hash['link'] = "http://moogleme.com"
+      elsif !photo_url.nil?
+        params_hash['name'] = "Kupo!"
+        params_hash['picture'] = photo_url
+        params_hash['caption'] = "Shared a photo via Moogle"
+        params_hash['description'] = message
+        params_hash['link'] = "http://moogleme.com"
+      end
+      
+      # params_hash['link'] = photo_url
+      # params_hash['picture'] = photo_url
+      # params_hash['name'] = "Attached Photo"
+      # params_hash['caption'] = "Shared a photo via Moogle"
     
       response = Typhoeus::Request.post("#{@@fb_host}/me/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
       parsed_response = self.check_facebook_response_for_errors(response)
+      
+      Rails.logger.info "Checked in to facebook with response: #{parsed_response}"
+      
       if parsed_response.nil?
         return nil
       else
