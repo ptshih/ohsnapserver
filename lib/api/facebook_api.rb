@@ -267,12 +267,18 @@ module API
     # WE NEED TO HANDLE ERRORS
     # {"error"=>{"type"=>"OAuthException", "message"=>"(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds."}}
     # {"error_code":1,"error_msg":"An unknown error occurred"}
+    # {
+    #    "error": {
+    #       "type": "OAuthException",
+    #       "message": "Error validating access token."
+    #    }
+    # }
 
     # IF we get throttled, spawn a delayed_job and send it off after 10 minutes
     def check_facebook_response_for_errors(response = nil)
       # If the response is nil, we error out
       if response.body.nil?
-        puts "\n\n======\n\nEmpty Response From Facebook\n\n=======\n\n"
+        Rails.logger.info "\n\n======\n\nEmpty Response From Facebook\n\n=======\n\n"
         return nil
       end
 
@@ -283,7 +289,7 @@ module API
       
       # read generic error
       if (!parsed_response["error_code"].nil?) || (!parsed_response["error_msg"].nil?)
-        puts "\n\n======\n\nFacebook Generic Error Code: #{parsed_response["error_code"]}, Message: #{parsed_response["error_msg"]}\n\n=======\n\n"
+        Rails.logger.info "\n\n======\n\nFacebook Generic Error Code: #{parsed_response["error_code"]}, Message: #{parsed_response["error_msg"]}\n\n=======\n\n"
         return nil
       end
 
@@ -295,9 +301,11 @@ module API
         # We got throttled, respond with error
         # Maybe in the future we can queue the request in a delayed job?
         if (error_type == "OAuthException" && error_message == "(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds.")
-          puts "\n\n======\n\nWe got THROTTLED by Facebook!!!\n\n=======\n\n"
+          Rails.logger.info "\n\n======\n\nWe got THROTTLED by Facebook!!!\n\n=======\n\n"
+        elsif (error_type == "OAuthException" && error_message == "Error validating access token.")
+          Rails.logger.info "\n\n======\n\nWe got an invalid token: #{self.access_token}!!!\n\n=======\n\n"
         else
-          puts "\n\n======\n\nFacebook Error Caught: #{parsed_response["error"]}\n\n=======\n\n"
+          Rails.logger.info "\n\n======\n\nFacebook Error Caught: #{parsed_response["error"]}\n\n=======\n\n"
         end
         return nil
       end
