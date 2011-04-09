@@ -934,7 +934,7 @@ module API
       params_hash['access_token'] = @@fb_app_access_token
       params_hash['object'] = 'user'
       params_hash['fields'] = 'checkins'
-      params_hash['callback_url'] = "http://www.moogleme.com/moogle/fbcallback"
+      params_hash['callback_url'] = "http://www.moogleme.com/v1/moogle/fbcallback"
       params_hash['verify_token'] = 'omgwtfbbq'
 
       response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
