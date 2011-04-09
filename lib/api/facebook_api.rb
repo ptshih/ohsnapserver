@@ -276,6 +276,8 @@ module API
     # }
     
     # {"error":{"type":"OAuthException","message":"(#1) You are too far away to check in to this place.  Move closer to this place, then try again."}}
+    
+    # {"error":{"type":"OAuthException","message":"(#2200) callback verification failed: Operation timed out after 6001 milliseconds with 0 bytes received"}}
 
     # IF we get throttled, spawn a delayed_job and send it off after 10 minutes
     def check_facebook_response_for_errors(response = nil)
@@ -932,11 +934,13 @@ module API
       params_hash['access_token'] = @@fb_app_access_token
       params_hash['object'] = 'user'
       params_hash['fields'] = 'checkins'
-      params_hash['callback_url'] = "http://moogle.heroku.com/fbcallback"
+      params_hash['callback_url'] = "http://www.moogleme.com/moogle/fbcallback"
       params_hash['verify_token'] = 'omgwtfbbq'
 
       response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
+      puts "raw response: #{response.body}"
+      
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
         return nil
