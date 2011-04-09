@@ -2,22 +2,42 @@ class MoogleController < ApplicationController
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
-    controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
+    # controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
   # Facebook Real Time Updates callback
+  # Parameters: {"object"=>"user", "entry"=>[{"uid"=>"100002030219173", "id"=>"100002030219173", "time"=>1302328061, "changed_fields"=>["checkins"]}], "version"=>"v1"}
   def fbcallback
     Rails.logger.info request.query_parameters.inspect
     
     # Check for GET
-    if request.get? && params[:hub_mode] == 'subscribe' && params[:hub_verify_token] == 'omgwtfbbq'
+    if request.get? && params['hub.mode'] == 'subscribe' && params['hub.verify_token'] == 'omgwtfbbq'
       # Is a GET verification request
-      render :text => params[:hub_challenge]
+      render :text => params['hub.challenge']
     else
       # Is a POST subscription request
-      parsed_json = JSON.parse(response.body)
-      puts "fb response: #{parsed_json}"
-      render :text => parsed_json
+      changed = []
+      fb_response = params['entry']
+      fb_response.each do |r|
+        if r['changed_fields'].include?('checkins')
+          fb_response_hash = {}
+          fb_response_hash['uid'] = r['uid']
+          fb_response_hash['time'] = r['time']
+          changed << fb_response_hash
+        end
+      end
+      
+      puts "changed uids: #{changed}"
+      
+      changed.each do |c|
+        t = Token.find(:all, :conditions => "facebook_id = #{c['uid']}").last
+        puts "found access_token for user: #{c['uid']}, token: #{t.access_token}"
+        facebook_api = API::FacebookApi.new(t.access_token)
+        facebook_api.find_checkins_for_facebook_id(c['uid'], c['time'] - 180) # minus 3 min
+      end
+      
+      Rails.logger.info "Facebook real-time updates for #{changed}"
+      # render :text => changed
     end
   end
 

@@ -24,7 +24,7 @@ module API
     attr_accessor :access_token, :hydra
 
     def initialize(access_token = nil)
-      if access_token.nil? then access_token = @@moseven_access_token end
+      if access_token.nil? then access_token = @@moone_access_token end
       self.access_token = access_token
 
       self.hydra = Typhoeus::Hydra.new
@@ -414,8 +414,10 @@ module API
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
-
+      
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+puts response.body;
 
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
@@ -935,20 +937,24 @@ module API
       params_hash['object'] = 'user'
       params_hash['fields'] = 'checkins'
       params_hash['callback_url'] = "http://www.moogleme.com/v1/moogle/fbcallback"
+      # params_hash['callback_url'] = "http://99.162.150.93:3000/v1/moogle/fbcallback"
       params_hash['verify_token'] = 'omgwtfbbq'
 
       response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
       puts "raw response: #{response.body}"
       
-      parsed_response = self.check_facebook_response_for_errors(response)
-      if parsed_response.nil?
-        return nil
-      end
-      
-      puts "sub response: #{parsed_response}"
-      
     end
+    def get_subscription_for_user_checkins      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
 
+      params_hash = Hash.new
+      params_hash['access_token'] = @@fb_app_access_token
+      
+      response = Typhoeus::Request.get("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+      puts "raw response: #{response.body}"
+    end
   end
 end
