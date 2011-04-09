@@ -68,6 +68,6 @@ Moogle::Application.routes.draw do
   match ':version/checkins/new', :controller => 'checkin', :action =>'new', :via => :post # CREATE: create a new checkin
   
   # Moogle
-  match 'moogle/fbcallback', :controller => 'moogle', :action => 'fbcallback'
+  match ':version/moogle/fbcallback', :controller => 'moogle', :action => 'fbcallback'
 
 end

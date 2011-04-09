@@ -12,11 +12,12 @@ class MoogleController < ApplicationController
     # Check for GET
     if request.get? && params[:hub_mode] == 'subscribe' && params[:hub_verify_token] == 'omgwtfbbq'
       # Is a GET verification request
-      return params[:hub_challenge]
+      render :text => params[:hub_challenge]
     else
       # Is a POST subscription request
       parsed_json = JSON.parse(response.body)
       puts "fb response: #{parsed_json}"
+      render :text => parsed_json
     end
   end
 
