@@ -594,9 +594,12 @@ class UserController < ApplicationController
 
 # temporary for debugging
 LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,response_hash[:count],response_hash[:total],params[:until].to_i,last_time_hit)
-
+    
+    # for web user
+    @response = response_hash
     
     respond_to do |format|
+      format.html
       format.xml  { render :xml => response_hash }
       format.json  { render :json => response_hash }
     end
