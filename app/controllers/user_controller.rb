@@ -42,7 +42,7 @@ class UserController < ApplicationController
     # Fire off a background job to get all friend checkins
     sliced_friend_id_array.each_with_index do |slice, index|
       slice.each do |s|
-        queued_checkins = QueuedCheckins.new(@current_user.access_token, @current_user.facebook_id, s, last_fetched_friends_checkins)
+        queued_checkins = QueuedCheckins.new(@facebook_access_token, @current_user.facebook_id, s, last_fetched_friends_checkins)
         delayed_time = (index+1) * 1
         queued_checkins.delay(:run_at => delayed_time.minutes.from_now).get_friends_checkins_async
       end

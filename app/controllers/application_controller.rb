@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
       params[:access_token] = "dW73Evxj1pOcaOkGXF-8rhYg-fIv_-9h1dZqOFHsmwM.eyJpdiI6Ik0yVGN1VXdMSWFoTlgtZ2JtWC1qMGcifQ.UCmt1pNhjgCQ_f-W3R-n7pdl6wuA8aaN2JmfnyD_r9wRN6JAB2CjFJfGLmfkPW8IgSiY2QMNC5GdsSv98FzIYmRhT2hs-psInPaSAPNCXS9OI_k2ILoE6fXeH-Jk0eV9" # jessa
     end
     @facebook_api = API::FacebookApi.new(params[:access_token])
+    @facebook_access_token = params[:access_token]
   end
   
   # Reads the fb access_token param from requests and stores the current user object
