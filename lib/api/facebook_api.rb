@@ -922,6 +922,7 @@ puts response.body;
         self.find_checkin_for_checkin_id(parsed_response['id'],false)
       end
 
+      # return Checkin.find_by_checkin_id(parsed_response['id'])
       return parsed_response['id']
       # puts "Should have checked-in to Facebook with returns id #{parsed_response['id']}"
       

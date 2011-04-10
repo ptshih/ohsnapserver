@@ -248,6 +248,7 @@ class CheckinController < ApplicationController
       :has_photo => params[:image].nil? ? false : true,
       :has_video => params[:video].nil? ? false : true,
       :video => params[:video],
+      :app_name = "Kupo!",
       :created_at => Time.now
     )
     
@@ -266,6 +267,7 @@ class CheckinController < ApplicationController
     facebook_checkin_id = @facebook_api.add_checkin(k.id, params[:place_id], params[:comment], params[:tags], photo_url, video_url)
     
     k.update_attribute(:checkin_id, facebook_checkin_id.to_i)
+    # k.update_attribute(:app_name, facebook_checkin
 
     # k = Kupo.find(:conditions => "checkin_id = #{facebook_checkin_id}").first
     # if !params[:image].nil?  
