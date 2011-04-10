@@ -21,13 +21,13 @@ module API
     @@peter_latitude = 37.765223405331
     @@peter_longitude = -122.45003812016
 
-    attr_accessor :access_token, :hydra
+    # attr_accessor :access_token, :hydra
 
     def initialize(access_token = nil)
       if access_token.nil? then access_token = @@moone_access_token end
-      self.access_token = access_token
+      @access_token = access_token
 
-      self.hydra = Typhoeus::Hydra.new
+      @hydra = Typhoeus::Hydra.new
     end
 
     # Just some notes here
@@ -311,7 +311,7 @@ module API
         if (error_type == "OAuthException" && error_message == "(#613) Calls to checkin_fql have exceeded the rate of 600 calls per 600 seconds.")
           Rails.logger.info "\n\n======\n\nWe got THROTTLED by Facebook!!!\n\n=======\n\n"
         elsif (error_type == "OAuthException" && error_message == "Error validating access token.")
-          Rails.logger.info "\n\n======\n\nWe got an invalid token: #{self.access_token}!!!\n\n=======\n\n"
+          Rails.logger.info "\n\n======\n\nWe got an invalid token: #{@access_token}!!!\n\n=======\n\n"
         else
           Rails.logger.info "\n\n======\n\nFacebook Error Caught: #{parsed_response["error"]}\n\n=======\n\n"
         end
@@ -331,7 +331,7 @@ module API
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       response = Typhoeus::Request.get("#{@@fb_host}/#{checkin_id}", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
       parsed_response = self.check_facebook_response_for_errors(response)
@@ -363,7 +363,7 @@ module API
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['type'] = 'checkin'
       params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['limit'] = 1000 # set this to a really high limit to get all results in one call
@@ -411,7 +411,7 @@ module API
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
       if !since.nil? then
@@ -464,7 +464,7 @@ puts response.body;
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['ids'] = facebook_id_array.join(',')
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
@@ -476,7 +476,7 @@ puts response.body;
       
       # Run this block when the request completes
       r.on_complete do |response|
-        puts "START async find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+        puts "START async find checkins for facebook_id_array: #{facebook_id_array} with token: #{@access_token}"
         
         # check for fb errors
         parsed_response = self.check_facebook_response_for_errors(response)
@@ -513,10 +513,10 @@ puts response.body;
         # Update last_fetched_friends_checkins timestamp for user
         self.update_last_fetched_friends_checkins(facebook_id)
 
-        puts "END async find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+        puts "END async find checkins for facebook_id_array: #{facebook_id_array} with token: #{@access_token}"
       end
 
-      self.hydra.queue r # add the request to the queue
+      @hydra.queue r # add the request to the queue
     end
 
     # Finds all checkins for an array of user ids
@@ -533,14 +533,14 @@ puts response.body;
         facebook_id = @@peter_id
       end
 
-      puts "START find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+      puts "START find checkins for facebook_id_array: #{facebook_id_array} with token: #{@access_token}"
 
       # OLD STYLE BATCHED
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'id,from,tags,place,message,likes,comments,application,created_time'
       params_hash['ids'] = facebook_id_array.join(',')
       params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
@@ -587,7 +587,7 @@ puts response.body;
       # Update last_fetched_friends_checkins timestamp for user
       self.update_last_fetched_friends_checkins(facebook_id)
 
-      puts "END find checkins for facebook_id_array: #{facebook_id_array} with token: #{self.access_token}"
+      puts "END find checkins for facebook_id_array: #{facebook_id_array} with token: #{@access_token}"
       
       return true
     end
@@ -610,7 +610,7 @@ puts response.body;
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['type'] = 'place'
       params_hash['fields'] = 'id'
       params_hash['center'] = "#{lat},#{lng}"
@@ -664,7 +664,7 @@ puts response.body;
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      #params_hash['access_token'] = self.access_token
+      #params_hash['access_token'] = @access_token
       # params_hash['fields'] = 'feed,photos,notes,checkins'
 
       # Get Place
@@ -690,7 +690,7 @@ puts response.body;
         place_id_array = [121328401214612,57167660895] # cafe zoe
       end
 
-      puts "find places for place_id_array: #{place_id_array} with token: #{self.access_token}"
+      puts "find places for place_id_array: #{place_id_array} with token: #{@access_token}"
 
       place_id_exist_array = Array.new
       puts "Attempt to add #{place_id_array.length} to DB"
@@ -706,7 +706,7 @@ puts response.body;
         headers_hash = Hash.new
         headers_hash['Accept'] = 'application/json'
         params_hash = Hash.new
-        params_hash['access_token'] = self.access_token
+        params_hash['access_token'] = @access_token
         params_hash['ids'] = place_id_array.join(',')
         params_hash['limit'] = 2000 # set this to a really high limit to get all results in one call
 
@@ -720,7 +720,7 @@ puts response.body;
         # Batch places
         self.serialize_place_bulk(parsed_response)
 
-        puts "find places for place_id_array: #{place_id_array} with token: #{self.access_token}"
+        puts "find places for place_id_array: #{place_id_array} with token: #{@access_token}"
       
         return true
       else
@@ -744,7 +744,7 @@ puts response.body;
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
 
       if !since.nil? then
@@ -788,7 +788,7 @@ puts response.body;
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale'
       params_hash['ids'] = facebook_id_array.join(',')
       if !since.nil? then
@@ -825,7 +825,7 @@ puts response.body;
       # By default, use a token and require these specific fields
       params_hash = Hash.new
       if disable_token.nil?
-        params_hash['access_token'] = self.access_token
+        params_hash['access_token'] = @access_token
         params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale,verified'
       else
 
@@ -845,13 +845,13 @@ puts response.body;
     end
 
     def find_user_for_facebook_access_token
-      puts "find user for access_token: #{self.access_token}"
+      puts "find user for access_token: #{@access_token}"
 
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['fields'] = 'third_party_id,first_name,last_name,name,gender,locale,verified'
 
       response = Typhoeus::Request.get("#{@@fb_host}/me", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
@@ -861,8 +861,8 @@ puts response.body;
         return nil
       end
 
-      facebook_user = self.serialize_user(parsed_response, self.access_token)
-      self.serialize_token(facebook_user.facebook_id, self.access_token)
+      facebook_user = self.serialize_user(parsed_response, @access_token)
+      self.serialize_token(facebook_user.facebook_id, @access_token)
 
       return facebook_user
     end
@@ -884,7 +884,7 @@ puts response.body;
       p = Place.find_by_place_id(place_id)
 
       params_hash = Hash.new
-      params_hash['access_token'] = self.access_token
+      params_hash['access_token'] = @access_token
       params_hash['message'] = message
       params_hash['place'] = place_id
       params_hash['coordinates'] = {"latitude"=>"#{p.lat}","longitude"=>"#{p.lng}"}
