@@ -590,10 +590,10 @@ class UserController < ApplicationController
     
     api_call_duration = Time.now.to_f - api_call_start
     
-    #LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,response_hash[:count],response_hash[:total])
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,api_call_duration,response_hash[:count],response_hash[:total])
 
 # temporary for debugging
-LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,response_hash[:count],response_hash[:total],params[:until].to_i,last_time_hit)
+# LOGGING::Logging.logfunction(request,@current_user.facebook_id,'home',nil,nil,response_hash[:count],response_hash[:total],params[:until].to_i,last_time_hit)
     
     # for web user
     @response = response_hash
