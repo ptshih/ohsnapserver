@@ -3,7 +3,7 @@ class KupoController < ApplicationController
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
-    controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
+    # controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
   ###
@@ -18,12 +18,30 @@ class KupoController < ApplicationController
   end
   
   def show
+    k = Kupo.find_by_id(params[:kupo_id])
+    
+    @media_type = nil
+    @media_url = nil
+    if k.has_video?
+      @media_type = "video"
+      @media_url = "http://s3.amazonaws.com/kupo/kupos/videos/#{k.id}/original/#{k.video_file_name}"
+    elsif k.has_photo?
+      @media_type = "photo"
+      @media_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
+    else
+      @media_url = nil
+    end
+    
+    respond_to do |format|
+      format.html # template
+    end
   end
   
   def search
   end
   
   def new
+    self.authenticate_token
     
     Rails.logger.info request.query_parameters.inspect
     puts "params: #{params}"

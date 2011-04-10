@@ -895,13 +895,13 @@ puts response.body;
         params_hash['picture'] = photo_url
         params_hash['caption'] = "Shared a video via Kupo!"
         params_hash['description'] = message
-        params_hash['link'] = "http://kupoapp.com"
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
       elsif !photo_url.nil?
         params_hash['name'] = "Kupo!"
         params_hash['picture'] = photo_url
         params_hash['caption'] = "Shared a photo via Kupo!"
         params_hash['description'] = message
-        params_hash['link'] = "http://kupoapp.com"
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
       end
       
       # params_hash['link'] = photo_url

@@ -54,7 +54,7 @@ Moogle::Application.routes.draw do
   # match ':version/kupos/search', :controller => 'kupo', :action => 'search', :via => :get # LIST: search for a kupo with query
   # Actions
   match ':version/kupos/new', :controller => 'kupo', :action =>'new', :via => :post # CREATE: create a new kupo
-  # match ':version/kupos/:kupo_id', :controller => 'kupo', :action =>'show', :via => :get # SINGLE: get detail for kupo with ID
+  match ':version/kupos/:kupo_id', :controller => 'kupo', :action =>'show', :via => :get # SINGLE: get detail for kupo with ID
   
   # Checkins
   # match ':version/checkins', :controller => 'checkin', :action => 'index', :via => :get # LIST: get all checkins in the database
