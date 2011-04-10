@@ -861,8 +861,8 @@ puts response.body;
         return nil
       end
 
-      facebook_user = self.serialize_user(parsed_response, access_token)
-      self.serialize_token(facebook_user.facebook_id, access_token)
+      facebook_user = self.serialize_user(parsed_response, self.access_token)
+      self.serialize_token(facebook_user.facebook_id, self.access_token)
 
       return facebook_user
     end
