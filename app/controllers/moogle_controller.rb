@@ -9,7 +9,7 @@ class MoogleController < ApplicationController
   # Parameters: {"object"=>"user", "entry"=>[{"uid"=>"100002030219173", "id"=>"100002030219173", "time"=>1302328061, "changed_fields"=>["checkins"]}], "version"=>"v1"}
   def fbcallback
     Rails.logger.info request.query_parameters.inspect
-    
+    call_start = Time.now.to_f
     # Check for GET
     if request.get? && params['hub.mode'] == 'subscribe' && params['hub.verify_token'] == 'omgwtfbbq'
       # Is a GET verification request
@@ -37,6 +37,10 @@ class MoogleController < ApplicationController
       end
       
       Rails.logger.info "Facebook real-time updates for #{changed}"
+      
+      call_duration = Time.now.to_f - call_start
+      LOGGING::Logging.logfunction(request,nil,'fbcallback',nil,nil,call_duration,changed.size,nil)
+      
       # render :text => changed
     end
   end
