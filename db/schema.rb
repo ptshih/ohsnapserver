@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "place_id",     :limit => 8, :default => 0
     t.integer  "app_id",       :limit => 8, :default => 0
+    t.string   "app_name"
     t.string   "message"
     t.datetime "created_time"
     t.datetime "created_at"
@@ -64,6 +65,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "place_id",           :limit => 8, :default => 0
     t.integer  "checkin_id",         :limit => 8
     t.integer  "kupo_type"
+    t.string   "app_name"
     t.string   "comment"
     t.string   "photo_file_name"
     t.string   "photo_content_type"

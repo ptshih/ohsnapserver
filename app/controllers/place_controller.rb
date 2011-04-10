@@ -410,7 +410,7 @@ class PlaceController < ApplicationController
       time_bounds = ""
     end
     
-    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.kupo_type, a.comment, a.has_photo, a.has_video, a.photo_file_name, a.video_file_name, a.created_at, b.full_name
+    query = " select a.id, a.facebook_id, a.place_id, a.checkin_id, a.app_name, a.kupo_type, a.comment, a.has_photo, a.has_video, a.photo_file_name, a.video_file_name, a.created_at, b.full_name
     from kupos a
     join users b on a.facebook_id = b.facebook_id
     where (a.facebook_id in (select friend_id from friends where facebook_id=#{@current_user.facebook_id})
@@ -436,6 +436,7 @@ class PlaceController < ApplicationController
           :place_id => row['place_id'].to_s,
           :author_id => row['facebook_id'].to_s,
           :author_name => row['full_name'],
+          :app_name => row['app_name'],
           :kupo_type => row['kupo_type'],
           :friend_list => friend_list,
           :comment => row['comment'],
