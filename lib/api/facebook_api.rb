@@ -24,7 +24,7 @@ module API
     attr_accessor :access_token, :hydra
 
     def initialize(access_token = nil)
-      if access_token.nil? then access_token = @@moseven_access_token end
+      if access_token.nil? then access_token = @@moone_access_token end
       self.access_token = access_token
 
       self.hydra = Typhoeus::Hydra.new
@@ -56,13 +56,16 @@ module API
         facebook_id = checkin['from']['id']
         place_id = checkin['place']['id']
         app_id = checkin.has_key?('application') ? (checkin['application'].nil? ? nil : checkin['application']['id']) : nil
+        app_name = checkin.has_key?('application') ? (checkin['application'].nil? ? nil : checkin['application']['name']) : nil
         message = checkin.has_key?('message') ? checkin['message'] : nil
         created_time = Time.parse(checkin['created_time'].to_s)
 
         place_id_array << place_id
         checkin_id_array << checkin_id
         
-        create_new_checkin << [checkin_id, facebook_id, place_id, app_id, message, created_time]
+        create_new_checkin << [checkin_id, facebook_id, place_id, app_id, app_name, message, created_time]
+        
+        # Create app
         if checkin.has_key?('application') && !checkin['application'].nil? then
           create_new_app << [checkin['application']['id'], checkin['application']['name']]
         end
@@ -78,7 +81,7 @@ module API
       end
 
       # Set the columns requires for import
-      checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :message, :created_time]
+      checkin_columns = [:checkin_id, :facebook_id, :place_id, :app_id, :app_name, :message, :created_time]
       tagged_user_columns = [:checkin_id, :place_id, :facebook_id, :name]
       app_columns = [:app_id, :name]
 
@@ -111,8 +114,8 @@ module API
       # kupo_type=0 is a checkin
       checkins_id_string = checkin_id_array.join(',')
       query = "insert into kupos
-              (facebook_id, place_id, checkin_id, kupo_type, comment, created_at, updated_at)
-              select facebook_id, place_id, checkin_id, 0, message, created_time, updated_at
+              (facebook_id, place_id, checkin_id, app_name, kupo_type, comment, created_at, updated_at)
+              select facebook_id, place_id, checkin_id, app_name, 0, message, created_time, updated_at
               from checkins
               where kupo_id =0 and checkin_id in (#{checkins_id_string})"
       mysqlresult = ActiveRecord::Base.connection.execute(query)
@@ -414,8 +417,10 @@ module API
       if !since.nil? then
         params_hash['since'] = since.to_i
       end
-
+      
       response = Typhoeus::Request.get("#{@@fb_host}/#{facebook_id}/checkins", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+puts response.body;
 
       parsed_response = self.check_facebook_response_for_errors(response)
       if parsed_response.nil?
@@ -888,15 +893,15 @@ module API
       if !video_url.nil?
         params_hash['name'] ="Kupo!"
         params_hash['picture'] = photo_url
-        params_hash['caption'] = "Shared a video via Moogle"
+        params_hash['caption'] = "Shared a video via Kupo!"
         params_hash['description'] = message
-        params_hash['link'] = "http://moogleme.com"
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
       elsif !photo_url.nil?
         params_hash['name'] = "Kupo!"
         params_hash['picture'] = photo_url
-        params_hash['caption'] = "Shared a photo via Moogle"
+        params_hash['caption'] = "Shared a photo via Kupo!"
         params_hash['description'] = message
-        params_hash['link'] = "http://moogleme.com"
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
       end
       
       # params_hash['link'] = photo_url
@@ -934,21 +939,25 @@ module API
       params_hash['access_token'] = @@fb_app_access_token
       params_hash['object'] = 'user'
       params_hash['fields'] = 'checkins'
-      params_hash['callback_url'] = "http://www.moogleme.com/v1/moogle/fbcallback"
+      params_hash['callback_url'] = "http://www.kupoapp.com/v1/moogle/fbcallback"
+      # params_hash['callback_url'] = "http://99.162.150.93:3000/v1/moogle/fbcallback"
       params_hash['verify_token'] = 'omgwtfbbq'
 
       response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
       puts "raw response: #{response.body}"
       
-      parsed_response = self.check_facebook_response_for_errors(response)
-      if parsed_response.nil?
-        return nil
-      end
-      
-      puts "sub response: #{parsed_response}"
-      
     end
+    def get_subscription_for_user_checkins      
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
 
+      params_hash = Hash.new
+      params_hash['access_token'] = @@fb_app_access_token
+      
+      response = Typhoeus::Request.get("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+      puts "raw response: #{response.body}"
+    end
   end
 end
