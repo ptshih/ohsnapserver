@@ -18,6 +18,9 @@ gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'newrelic_rpm'
 # gem 'apn_on_rails'
 
+# gem 'eventmachine'
+# gem 'em-http-request'
+
 # Unused Gems
 # gem 'rails', '3.0.5'
 # gem 'json'

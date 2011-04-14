@@ -1,6 +1,6 @@
 class Kupo < ActiveRecord::Base
-  belongs_to :user, :foreign_key => 'facebook_id', :primary_key => 'facebook_id', :inverse_of => :kupos
-  has_one :place, :foreign_key => 'place_id', :primary_key => 'place_id'
+  belongs_to :event, :inverse_of => :kupos
+  has_one :place
   before_create :randomize_file_name
 
   has_attached_file :photo,
