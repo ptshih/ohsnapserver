@@ -1,6 +1,7 @@
 # require 'pp'
 # require 'yelp_scraper'
 class Place < ActiveRecord::Base
+  belongs_to :kupo, :inverse_of => :place
   
   def scrape_yelp
     result = YelpScraper.new.yelpResults({'lat'=>self['lat'],'long'=>self['lng'],'query'=>self['name']})

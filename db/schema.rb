@@ -74,13 +74,13 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   
   add_index "events", ["tag"], :name => "idx_tag"
   
-  create_table "users_events", :force => true do |t|
+  create_table "events_users", :id => false, :force => true do |t|
     t.integer "user_id", :limit => 8, :default => 0
     t.integer "event_id",   :limit => 8, :default => 0
     t.boolean "is_active", :default => true
   end
   
-  add_index "user_events", ["user_id", "event_id"], :name => "idx_unique_user_id_and_event_id", :unique => true
+  add_index "events_users", ["user_id", "event_id"], :name => "idx_unique_user_id_and_event_id", :unique => true
 
   create_table "kupos", :force => true do |t|
     t.string   "source"
@@ -113,7 +113,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "checkins", :force => true do |t|
     t.integer  "checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
-    t.integer  "facebook_place_id",           :limit => 8
+    t.integer  "facebook_place_id",           :limit => 8, :default => 0
     t.string   "facebook_app_name"
     t.string   "tagged_facebook_names"
     t.string   "tagged_facebook_ids"
@@ -122,7 +122,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
-  add_index "checkins", ["place_id"], :name => "idx_place_id"
+  add_index "checkins", ["facebook_place_id"], :name => "idx_facebook_place_id"
 
   create_table "places", :force => true do |t|
     t.integer  "facebook_place_id",          :limit => 8,                                   :default => 0
@@ -149,7 +149,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "places", ["lat", "lng"], :name => "idx_lat_lng"
-  add_index "places", ["place_id"], :name => "idx_place_id", :unique => true
+  add_index "places", ["facebook_place_id"], :name => "idx_facebook_place_id", :unique => true
   
   create_table "logs", :force => true do |t|
     t.datetime "event_timestamp",                                                 :null => false

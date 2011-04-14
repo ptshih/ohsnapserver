@@ -1,6 +1,8 @@
 class Kupo < ActiveRecord::Base
   belongs_to :event, :inverse_of => :kupos
-  has_one :place
+  belongs_to :user, :inverse_of => :kupos
+  has_one :place, :inverse_of => :kupo
+  has_one :checkin, :inverse_of => :kupo
   before_create :randomize_file_name
 
   has_attached_file :photo,
