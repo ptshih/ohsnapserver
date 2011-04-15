@@ -77,6 +77,11 @@ class LoginController < ApplicationController
     @facebook_api = API::FacebookApi.new(params[:facebook_access_token])
     @current_user = @facebook_api.find_user_for_facebook_access_token
     
+    # Generate a random token for this user if this is the first time
+    if @current_user.access_token.nil?
+      @current_user.update_attribute('access_token', SecureRandom.hex(64))
+    end
+    
     # Setting the join time of the user
     @facebook_api.set_joined_at(@current_user.facebook_id)
     
