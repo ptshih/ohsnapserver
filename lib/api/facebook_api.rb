@@ -166,15 +166,15 @@ module API
     # Create or update place in model/database
 
     # Create or update user
-    def serialize_user(user, access_token = nil)
+    def serialize_user(user, facebook_access_token = nil)
       # puts "serializing user with id: #{user['id']}"
       u = User.find_or_initialize_by_facebook_id(user['id'])
       u.facebook_id = user['id']
+      u.facebook_access_token = facebook_access_token
       u.third_party_id = user['third_party_id']
-      u.full_name = user.has_key?('name') ? user['name'] : nil
+      u.name = user.has_key?('name') ? user['name'] : nil
       u.first_name = user.has_key?('first_name') ? user['first_name'] : nil
       u.last_name = user.has_key?('last_name') ? user['last_name'] : nil
-      u.gender = user.has_key?('gender') ? user['gender'] : nil
       u.locale = user.has_key?('locale') ? user['locale'] : nil
       u.verified = user.has_key?('verified') ? user['verified'] : nil
       u.save
@@ -199,40 +199,31 @@ module API
         # Create new user
         user_facebook_id = friend['id']
         third_party_id = friend['third_party_id']
-        full_name = friend.has_key?('name') ? friend['name'] : nil
+        name = friend.has_key?('name') ? friend['name'] : nil
         first_name = friend.has_key?('first_name') ? friend['first_name'] : nil
         last_name = friend.has_key?('last_name') ? friend['last_name'] : nil
-        gender = friend.has_key?('gender') ? friend['gender'] : nil
         locale = friend.has_key?('locale') ? friend['locale'] : nil
         verified = friend.has_key?('verified') ? friend['verified'] : nil
 
-        create_new_user << [user_facebook_id, third_party_id, full_name, first_name, last_name, gender, locale, verified]
-        create_new_friend << [facebook_id, friend['id'], degree]
+        create_new_user << [user_facebook_id, third_party_id, name, first_name, last_name, locale, verified]
+        create_new_friend << [facebook_id, friend['id'], friend['name']]
         friend_id_array << friend['id']
       end
 
-      user_columns = [:facebook_id, :third_party_id, :full_name, :first_name, :last_name, :gender, :locale, :verified]
-      friend_columns = [:facebook_id, :friend_id, :degree]
+      user_columns = [:facebook_id, :third_party_id, :name, :first_name, :last_name, :locale, :verified]
+      friend_columns = [:facebook_id, :friend_id, :friend_name]
 
-      User.import user_columns, create_new_user, :on_duplicate_key_update => [:full_name]
-      Friend.import friend_columns, create_new_friend, :on_duplicate_key_update => [:degree]
+      User.import user_columns, create_new_user, :on_duplicate_key_update => [:name]
+      Friend.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
 
       return friend_id_array
     end
 
-    def update_last_fetched_checkins(facebook_id)
-      puts "updating #{facebook_id} last fetched checkins"
-      u = User.find_by_facebook_id(facebook_id)
+    def last_fetched_feed(user_id)
+      puts "updating #{user_id} last fetched feed"
+      u = User.find_by_id(user_id)
       if not u.nil?
-        u.update_attribute('last_fetched_checkins', Time.now)
-      end
-    end
-    
-    def update_last_fetched_friends_checkins(facebook_id)
-      puts "updating #{facebook_id} last fetched friends checkins"
-      u = User.find_by_facebook_id(facebook_id)
-      if not u.nil?
-        u.update_attribute('last_fetched_friends_checkins', Time.now)
+        u.update_attribute('last_fetched_feed', Time.now)
       end
     end
 
@@ -862,7 +853,6 @@ puts response.body;
       end
 
       facebook_user = self.serialize_user(parsed_response, @access_token)
-      self.serialize_token(facebook_user.facebook_id, @access_token)
 
       return facebook_user
     end
@@ -930,7 +920,7 @@ puts response.body;
     
     # broken because facebook is retarded
     # Facebook Error Caught: {"type"=>"OAuthException", "message"=>"(#10) Apps must have at least 100 users to use this API"}
-    def add_subscription_for_user_checkins
+    def add_subscriptions
       # https://graph.facebook.com/oauth/access_token?client_id=<app-id>&client_secret=<app-secret>&grant_type=client_credentials
       
       headers_hash = Hash.new
@@ -939,9 +929,10 @@ puts response.body;
       params_hash = Hash.new
       params_hash['access_token'] = @@fb_app_access_token
       params_hash['object'] = 'user'
-      params_hash['fields'] = 'checkins'
-      params_hash['callback_url'] = "http://www.kupoapp.com/v1/moogle/fbcallback"
+      params_hash['fields'] = 'feed'
+      # params_hash['callback_url'] = "http://www.kupoapp.com/v1/moogle/fbcallback"
       # params_hash['callback_url'] = "http://99.162.150.93:3000/v1/moogle/fbcallback"
+      params_hash['callback_url'] = "http://amigo.no.de/fbcallback"
       params_hash['verify_token'] = 'omgwtfbbq'
 
       response = Typhoeus::Request.post("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
@@ -949,7 +940,8 @@ puts response.body;
       puts "raw response: #{response.body}"
       
     end
-    def get_subscription_for_user_checkins      
+    
+    def get_subscriptions
       headers_hash = Hash.new
       headers_hash['Accept'] = 'application/json'
 
@@ -957,6 +949,18 @@ puts response.body;
       params_hash['access_token'] = @@fb_app_access_token
       
       response = Typhoeus::Request.get("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+
+      puts "raw response: #{response.body}"
+    end
+    
+    def delete_subscriptions
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+
+      params_hash = Hash.new
+      params_hash['access_token'] = @@fb_app_access_token
+      
+      response = Typhoeus::Request.delete("#{@@fb_host}/#{@@fb_app_id}/subscriptions", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
 
       puts "raw response: #{response.body}"
     end

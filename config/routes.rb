@@ -9,6 +9,14 @@ Moogle::Application.routes.draw do
   # This is sorta how the FB graph api and foursquare venues api works
   
   ###
+  # Login Endpoints
+  ###
+  
+  # Actions
+  match ':version/login/register', :controller => 'login', :action => 'register', :via => :post # CREATE: Register new user with access_token
+  match ':version/login/session', :controller => 'login', :action => 'session', :via => :post # SESSION: Start a new session for the current user
+  
+  ###
   # User Specific Endpoints
   ###
   
@@ -17,10 +25,7 @@ Moogle::Application.routes.draw do
   # General
   # match ':version/users', :controller => 'user', :action => 'index', :via => :get # LIST: get all users in the database
   # match ':version/users/:user_id', :controller => 'user', :action => 'show', :via => :get # SINGLE: Single User with ID
-  # match ':version/users/search', :controller => 'user', :action => 'search', :via => :get # LIST: get all users in the database
-  # Actions
-  match ':version/users/register', :controller => 'user', :action => 'register', :via => :post # CREATE: Register new user with access_token
-  match ':version/users/session', :controller => 'user', :action => 'session', :via => :post # SESSION: Start a new session for the current user
+  # match ':version/users/search', :controller => 'user', :action => 'search', :via => :get # LIST: get all users in the databas
   # Connections
   match ':version/users/:user_id/profile', :controller => 'user', :action => 'profile', :via => :get # SINGLE: Me/Profile details for user with ID
   match ':version/users/:user_id/places', :controller => 'user', :action => 'places', :via => :get # LIST: get all places a user participated at

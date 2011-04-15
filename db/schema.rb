@@ -40,7 +40,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "locale"
     t.boolean  "verified",                                                                   :default => false
     t.datetime "last_fetched_friends"
-    t.datetime "last_fetched_followers"
+    t.datetime "last_fetched_feed"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "joined_at"
