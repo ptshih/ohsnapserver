@@ -541,10 +541,15 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       row_hash = {
+        :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
+        :author_id => row[''],
+        :author_name => row[''],
+        :last_activity => row[''], # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
+        :friend_list => friend_list_of_place[row['place_id'].to_s],
         :is_private => row['is_private'],
-        :updated_at => row['updated_at']
+        :timestamp => row['updated_at'].to_i
       }
       response_array << row_hash
     end
@@ -605,10 +610,15 @@ class UserController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       row_hash = {
+        :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
+        :author_id => row[''],
+        :author_name => row[''],
+        :last_activity => row[''], # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
+        :friend_list => friend_list_of_place[row['place_id'].to_s],
         :is_private => row['is_private'],
-        :updated_at => row['updated_at']
+        :timestamp => row['updated_at'].to_i
       }
       response_array << row_hash
     end
