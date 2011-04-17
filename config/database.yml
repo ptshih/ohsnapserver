@@ -18,6 +18,11 @@ development:
   password:  Lik3aG6
   host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
   port: 3306
+  
+# Engine Yard
+# ec2-50-17-115-76.compute-1.amazonaws.com
+# username: deploy
+# password: gTSjMxHynG
     
 # development:
 #   adapter: sqlite3
