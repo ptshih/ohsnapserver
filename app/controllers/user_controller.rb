@@ -580,7 +580,7 @@ class UserController < ApplicationController
                     k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
             from events e
             join events_users eu on eu.event_id = e.id
-            join kupos k on k.event_id = e.id
+            join kupos k on k.id = e.last_kupo_id
             join users u on u.id = k.user_id
             where eu.user_id = #{@current_user.id}
             "
@@ -641,45 +641,101 @@ class UserController < ApplicationController
       limit_count =  params[:count].to_i
     end
     
-    # mysql query
-    # query for events 1st degree friends are participating in
-    # (exclude events user is already following)
-    query = "
-            select e.*
-            from events e
-            join events_users eu on eu.event_id = e.id
+    ##
+    # getting event participants
+    ##
+    friend_list_of_event = {}
+    query = "select eu.event_id, u.id, u.name, u.first_name
+            from events_users eu
+            join users u on eu.user_id = u.id
             join friendships f on eu.user_id = f.friend_id and f.user_id= #{@current_user.id}
             where eu.event_id not in
               ( select event_id
                 from events_users
                 where user_id =  #{@current_user.id}
                 )
-            group by e.id
-            order by e.updated_at desc
+            "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !friend_list_of_event.has_key?(row['event_id'].to_s)
+        friend_list_of_event[row['event_id'].to_s] = []
+        friend_hash = {
+          :user_id => row['id'],
+          :full_name => row['name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_event[row['event_id'].to_s] << friend_hash
+      else
+        friend_hash = {
+          :user_id => row['id'],
+          :full_name => row['name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_event[row['event_id'].to_s] << friend_hash
+      end
+    end
+    
+    # mysql query
+    # query for events 1st degree friends are participating in
+    # (exclude events user is already following)
+    query = "
+          select  e.id, e.tag, e.name,
+                    u.id as author_id, u.name as author_name,
+                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
+          from events e
+          join events_users eu on eu.event_id = e.id
+          join friendships f on eu.user_id = f.friend_id and f.user_id= #{@current_user.id}
+          join kupos k on k.id = e.last_kupo_id
+          join users u on u.id = k.user_id
+          where eu.event_id not in
+            ( select event_id
+              from events_users
+              where user_id =  #{@current_user.id}
+            )  
+          group by e.id
+          order by e.updated_at desc
     "
     
     query_unfiltered = "
-          select e.*
-          from events e
-          join events_users eu on eu.event_id = e.id
-          where eu.user_id in
-            ( select friend_id from friendships
-              where user_id = #{@current_user.id} or friend_id = #{@current_user.id})
-          group by e.id
-          order by e.updated_at desc
+              select  e.id, e.tag, e.name,
+                        u.id as author_id, u.name as author_name,
+                        k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
+              from events e
+              join events_users eu on eu.event_id = e.id
+              join kupos k on k.id = e.last_kupo_id
+              join users u on u.id = k.user_id
+              where eu.user_id in
+                ( select friend_id from friendships
+                  where user_id = #{@current_user.id} or friend_id = #{@current_user.id}
+                  )
+              group by e.id
+              order by e.updated_at desc
     "
     
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
+      
+      # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
+      last_activity_string = ""
+      if !row['video_file_name'].nil?
+        last_activity_string = row['author_name'].to_s + " posted a video"
+      elsif !row['photo_file_name'].nil?
+        last_activity_string = row['author_name'].to_s + " posted a photo"
+      elsif !row['facebook_checkin_id'].nil?
+        last_activity_string = row['author_name'].to_s + " checked-in"
+      else
+        last_activity_string = row['author_name'].to_s + " made a comment"
+      end
+      
       row_hash = {
         :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
-        :author_id => row[''],
-        :author_name => row[''],
-        :last_activity => row[''], # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
-        :friend_list => friend_list_of_place[row['place_id'].to_s],
+        :author_id => row['author_id'],
+        :author_name => row['author_name'],
+        :last_activity => last_activity_string,
+        :friend_list => friend_list_of_event[row['id'].to_s],
         :photo_count => 0,
         :message_count => 0,
         :checkin_count => 0,
