@@ -546,7 +546,7 @@ class UserController < ApplicationController
     # getting event participants
     ##
     friend_list_of_event = {}
-    query = "select eu.event_id, u.id, u.name, u.first_name
+    query = "select eu.event_id, u.id, u.facebook_id, u.name, u.first_name
             from events_users eu
             join users u on eu.user_id = u.id
             where eu.event_id in (select event_id from events_users where user_id = #{@current_user.id})
@@ -557,6 +557,7 @@ class UserController < ApplicationController
         friend_list_of_event[row['event_id'].to_s] = []
         friend_hash = {
           :user_id => row['id'],
+          :facebook_id => row['facebook_id'],
           :full_name => row['name'],
           :first_name => row['first_name']
         }
@@ -564,6 +565,7 @@ class UserController < ApplicationController
       else
         friend_hash = {
           :user_id => row['id'],
+          :facebook_id => row['facebook_id'],
           :full_name => row['name'],
           :first_name => row['first_name']
         }
@@ -657,7 +659,7 @@ class UserController < ApplicationController
                 where user_id =  #{@current_user.id}
                 )
             "
-    query_unfiltered = " select eu.event_id, u.id, u.name, u.first_name
+    query_unfiltered = " select eu.event_id, u.id, u.facebook_id, u.name, u.first_name
                         from events_users eu
                         join users u on eu.user_id = u.id
                         where eu.event_id in (
@@ -673,14 +675,16 @@ class UserController < ApplicationController
         friend_list_of_event[row['event_id'].to_s] = []
         friend_hash = {
           :user_id => row['id'],
-          :full_name => row['name'],
+          :facebook_id => row['facebook_id'],
+          :name => row['name'],
           :first_name => row['first_name']
         }
         friend_list_of_event[row['event_id'].to_s] << friend_hash
       else
         friend_hash = {
           :user_id => row['id'],
-          :full_name => row['name'],
+          :facebook_id => row['facebook_id'],
+          :name => row['name'],
           :first_name => row['first_name']
         }
         friend_list_of_event[row['event_id'].to_s] << friend_hash
