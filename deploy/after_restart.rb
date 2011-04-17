@@ -1,1 +1,1 @@
-sudo "monit -g dj_Moogle restart all"
+sudo "monit -g dj_scrapboard restart all"
