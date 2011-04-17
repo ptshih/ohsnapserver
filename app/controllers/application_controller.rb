@@ -29,7 +29,6 @@ class ApplicationController < ActionController::Base
       render :json => error_response, :status => :unauthorized 
     end
   end
-
   
   def default_geocoordinates
     # latitude +37.401955, longitude -121.922429

@@ -14,10 +14,10 @@
 development:
   adapter:   mysql2
   database:  scrapboard
-  username:  azeroth
-  password:  like-a-g6
-  host: ec2-204-236-233-174.compute-1.amazonaws.com
-  port: 3032
+  username:  friendmash
+  password:  Lik3aG6
+  host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
+  port: 3306
     
 # development:
 #   adapter: sqlite3
