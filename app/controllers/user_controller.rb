@@ -537,11 +537,24 @@ class UserController < ApplicationController
             where eu.user_id = #{@current_user.id}
             "
 
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      row_hash = {
+        :tag => row['tag'],
+        :name => row['name'],
+        :is_private => row['is_private'],
+        :updated_at => row['updated_at']
+      }
+      response_array << row_hash
+    end
+
     # Api call logging
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.id,'events',nil,nil,api_call_duration,nil,nil)
+    LOGGING::Logging.logfunction(request,@current_user.id,'followed',nil,nil,api_call_duration,nil,nil)
 
     response_hash = {}
+    response_hash[:data] = response_array
 
     respond_to do |format|
       format.xml  { render :xml => response_hash }
