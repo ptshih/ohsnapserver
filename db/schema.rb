@@ -106,8 +106,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
 
   add_index "kupos", ["user_id"], :name => "idx_user_id"
   add_index "kupos", ["event_id"], :name => "idx_event_id"
-  add_index "kupos", ["checkin_id"], :name => "idx_checkin_id"
-  add_index "kupos", ["place_id"], :name => "idx_place_id"
+  add_index "kupos", ["facebook_checkin_id"], :name => "idx_facebook_checkin_id"
+  add_index "kupos", ["facebook_place_id"], :name => "idx_facebook_place_id"
   add_index "kupos", ["has_photo"], :name => "idx_has_photo"
   add_index "kupos", ["has_video"], :name => "idx_has_video"
   
@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_time"
   end
 
-  add_index "checkins", ["facebook_checkin_id"], :name => "idx_checkin_id", :unique => true
+  add_index "checkins", ["facebook_checkin_id"], :name => "idx_facebook_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
   add_index "checkins", ["facebook_place_id"], :name => "idx_facebook_place_id"
 
