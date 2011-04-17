@@ -33,7 +33,7 @@ module LOGGING
         :system_name => request.env["HTTP_X_SYSTEM_NAME"].nil? ? nil: request.env["HTTP_X_SYSTEM_NAME"],
         :system_version => request.env["HTTP_X_SYSTEM_VERSION"].nil? ? nil: request.env["HTTP_X_SYSTEM_VERSION"],
         :app_version => request.env["HTTP_X_APP_VERSION"].nil? ? nil: request.env["HTTP_X_APP_VERSION"],
-        :facebook_id => facebook_id.nil? ? nil: facebook_id,
+        :user_id => facebook_id.nil? ? nil: facebook_id,
         :connection_type => request.env["HTTP_X_CONNECTION_TYPE"].nil? ? nil: request.env["HTTP_X_CONNECTION_TYPE"],
         :language => request.env["HTTP_X_USER_LANGUAGE"].nil? ? nil: request.env["HTTP_X_USER_LANGUAGE"],
         :locale => request.env["HTTP_X_USER_LOCALE"].nil? ? nil: request.env["HTTP_X_USER_LOCALE"],

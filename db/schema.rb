@@ -53,13 +53,13 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "users", ["facebook_id"], :name => "idx_facebook_id", :unique => true
 
   create_table "friendships", :force => true do |t|
-    t.integer "facebook_id", :limit => 8, :default => 0
+    t.integer "user_id", :limit => 8, :default => 0
     t.integer "friend_id",   :limit => 8, :default => 0
     t.string  "friend_name"
   end
 
-  add_index "friendships", ["facebook_id", "friend_id"], :name => "idx_unique_facebook_id_and_friend_id", :unique => true
-  add_index "friendships", ["facebook_id"], :name => "idx_facebook_id"
+  add_index "friendships", ["user_id", "friend_id"], :name => "idx_unique_user_id_and_friend_id", :unique => true
+  add_index "friendships", ["user_id"], :name => "idx_user_id"
   add_index "friendships", ["friend_id"], :name => "idx_friend_id"
   
   create_table "events", :force => true do |t|

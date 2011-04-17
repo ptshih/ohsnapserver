@@ -90,7 +90,7 @@ class LoginController < ApplicationController
     find_feed_for_current_user
     
     # We want to send the entire friendslist hash of id, name to the client
-    friend_array = Friendship.find(:all, :select=>"friend_id, friend_name", :conditions=>"facebook_id = #{@current_user.facebook_id}").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.friend_name}}
+    friend_array = Friendship.find(:all, :select=>"friend_id, friend_name", :conditions=>"user_id = #{@current_user.id}").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.friend_name}}
     friend_id_array = friend_array.map  do |f| f[:friend_id] end
     
     # The response should include the current user ID and name for the client to cache
@@ -120,7 +120,7 @@ class LoginController < ApplicationController
     
     # return new friends
     # We want to send the entire friendslist hash of id, name to the client
-    friend_array = Friendship.find(:all, :select=>"friend_id, friend_name", :conditions=>"facebook_id = #{@current_user.facebook_id}").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.friend_name}}
+    friend_array = Friendship.find(:all, :select=>"friend_id, friend_name", :conditions=>"user_id = #{@current_user.id}").map {|f| {:friend_id=>f.friend_id.to_i, :friend_name=>f.friend_name}}
     friend_id_array = friend_array.map  do |f| f[:friend_id] end
       
     # The response should include the current user ID and name for the client to cache

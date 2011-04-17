@@ -28,7 +28,7 @@ Moogle::Application.routes.draw do
   # match ':version/users/search', :controller => 'user', :action => 'search', :via => :get # LIST: get all users in the databas
   # Connections
   match ':version/users/:user_id/profile', :controller => 'user', :action => 'profile', :via => :get # SINGLE: Me/Profile details for user with ID
-  match ':version/users/:user_id/places', :controller => 'user', :action => 'places', :via => :get # LIST: get all places a user participated at
+  match ':version/users/:user_id/events', :controller => 'user', :action => 'events', :via => :get # LIST: get all places a user participated at
   match ':version/users/:user_id/friends', :controller => 'user', :action => 'friends', :via => :get # LIST: get friends of a user
   
   # Connections that are Resources

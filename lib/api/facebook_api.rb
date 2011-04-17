@@ -214,7 +214,17 @@ module API
       friend_columns = [:facebook_id, :friend_id, :friend_name]
 
       User.import user_columns, create_new_user, :on_duplicate_key_update => [:name]
-      Friendship.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
+      # Friendship.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
+
+      friend_id_array_string = friend_id_array.join(',') 
+      query = " insert into friendships
+                (user_id, friend_id, friend_name)
+                select a.id, b.id, b.name
+                from users a
+                join users b on b.facebook_id in (#{friend_id_array_string})
+                where a.facebook_id = #{facebook_id}
+              "
+      mysqlresult = ActiveRecord::Base.connection.execute(query)
 
       return friend_id_array
     end

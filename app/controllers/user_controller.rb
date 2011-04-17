@@ -529,20 +529,13 @@ class UserController < ApplicationController
     end
 
     # mysql query
+    # query to return events a user is participating in
     query = "
-      select e.*
+            select e.*
             from events e
-            join 
-      select b.facebook_id, b.full_name, b.first_name, a.joined_at,
-            k.id, k.kupo_type, k.comment, k.place_id, k.checkin_id,
-            p.name as place_name
-            from friends a
-            join users b on a.friend_id = b.facebook_id
-            left join kupos k on c.id = b.last_kupo
-            left join places p on p.place_id = c.place_id
-      where a.facebook_id = #{@current_user.facebook_id}
-      order by joined_at desc, b.first_name
-    "
+            join events_users eu on eu.event_id = e.id
+            where eu.user_id = #{@current_user.id}
+            "
 
     # Api call logging
     api_call_duration = Time.now.to_f - api_call_start
@@ -566,12 +559,42 @@ class UserController < ApplicationController
     if !params[:count].nil?
       limit_count =  params[:count].to_i
     end
-
+    
+    # mysql query
+    # query for events 1st degree friends are participating in
+    # (exclude events user is already following)
+    query = "
+            select e.*
+            from events e
+            join events_users eu on eu.event_id = e.id
+            join friendships f on eu.user_id = f.friend_id and f.user_id= #{@current_user.id}
+            where eu.event_id not in
+              ( select event_id
+                from events_users
+                where user_id =  #{@current_user.id}
+                )
+            group by e.id
+            order by e.updated_at desc
+    "
+    
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      row_hash = {
+        :tag => row['tag'],
+        :name => row['name'],
+        :is_private => row['is_private'],
+        :updated_at => row['updated_at']
+      }
+      response_array << row_hash
+    end
+    
     # Api call logging
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'events',nil,nil,api_call_duration,nil,nil)
 
     response_hash = {}
+    response_hash[:data] = response_array
 
     respond_to do |format|
       format.xml  { render :xml => response_hash }
