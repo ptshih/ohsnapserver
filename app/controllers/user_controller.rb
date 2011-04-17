@@ -646,6 +646,7 @@ class UserController < ApplicationController
     # getting event participants
     ##
     friend_list_of_event = {}
+    # filered query not working;
     query = "select eu.event_id, u.id, u.name, u.first_name
             from events_users eu
             join users u on eu.user_id = u.id
@@ -656,7 +657,17 @@ class UserController < ApplicationController
                 where user_id =  #{@current_user.id}
                 )
             "
-    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    query_unfiltered = " select eu.event_id, u.id, u.name, u.first_name
+                        from events_users eu
+                        join users u on eu.user_id = u.id
+                        where eu.event_id in (
+                          select event_id
+                          from events_users sub_e
+                          join friendships f on (sub_e.user_id = f.friend_id and f.user_id= #{@current_user.id})
+                          or f.friend_id=#{@current_user.id}
+                      )
+            "
+    mysqlresults = ActiveRecord::Base.connection.execute(query_unfiltered)
     mysqlresults.each(:as => :hash) do |row|
       if !friend_list_of_event.has_key?(row['event_id'].to_s)
         friend_list_of_event[row['event_id'].to_s] = []
