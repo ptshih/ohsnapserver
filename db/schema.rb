@@ -65,6 +65,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "events", :force => true do |t|
     t.string   "tag"
     t.string   "name"
+    t.boolean  "is_private", :default => false
     t.integer  "last_kupo_id"
     t.decimal  "last_loc_lat",                               :precision => 20, :scale => 16
     t.decimal  "last_loc_lng",                               :precision => 20, :scale => 16
@@ -111,7 +112,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   add_index "kupos", ["has_video"], :name => "idx_has_video"
   
   create_table "checkins", :force => true do |t|
-    t.integer  "checkin_id",   :limit => 8, :default => 0
+    t.integer  "facebook_checkin_id",   :limit => 8, :default => 0
     t.integer  "facebook_id",  :limit => 8, :default => 0
     t.integer  "facebook_place_id",           :limit => 8, :default => 0
     t.string   "facebook_app_name"
