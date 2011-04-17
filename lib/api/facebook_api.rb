@@ -214,7 +214,7 @@ module API
       friend_columns = [:facebook_id, :friend_id, :friend_name]
 
       User.import user_columns, create_new_user, :on_duplicate_key_update => [:name]
-      Friend.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
+      Friendship.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
 
       return friend_id_array
     end
