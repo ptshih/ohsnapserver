@@ -590,6 +590,17 @@ class UserController < ApplicationController
             order by e.updated_at desc
     "
     
+    query_unfiltered = "
+          select e.*
+          from events e
+          join events_users eu on eu.event_id = e.id
+          where eu.user_id in
+            ( select friend_id from friendships
+              where user_id = #{@current_user.id} or friend_id = #{@current_user.id})
+          group by e.id
+          order by e.updated_at desc
+    "
+    
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
