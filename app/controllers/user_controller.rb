@@ -594,13 +594,13 @@ class UserController < ApplicationController
       
       last_activity_string = ""
       if !row['video_file_name'].nil?
-        last_activity_string = row['author_name'].to_s + " posted a video"
+        last_activity_string = row['author_name'].to_s + " shared a video"
       elsif !row['photo_file_name'].nil?
-        last_activity_string = row['author_name'].to_s + " posted a photo"
+        last_activity_string = row['author_name'].to_s + " shared a photo"
       elsif !row['facebook_checkin_id'].nil?
         last_activity_string = row['author_name'].to_s + " checked-in"
       else
-        last_activity_string = row['author_name'].to_s + " made a comment"
+        last_activity_string = row['author_name'].to_s + " wrote a message"
       end
        
       row_hash = {
@@ -738,13 +738,13 @@ class UserController < ApplicationController
       # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
       last_activity_string = ""
       if !row['video_file_name'].nil?
-        last_activity_string = row['author_name'].to_s + " posted a video"
+        last_activity_string = row['author_name'].to_s + " shared a video"
       elsif !row['photo_file_name'].nil?
-        last_activity_string = row['author_name'].to_s + " posted a photo"
+        last_activity_string = row['author_name'].to_s + " shared a photo"
       elsif !row['facebook_checkin_id'].nil?
         last_activity_string = row['author_name'].to_s + " checked-in"
       else
-        last_activity_string = row['author_name'].to_s + " made a comment"
+        last_activity_string = row['author_name'].to_s + " wrote a message"
       end
       
       row_hash = {
