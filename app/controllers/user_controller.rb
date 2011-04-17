@@ -578,7 +578,7 @@ class UserController < ApplicationController
     ##
     query = "
             select  e.id, e.tag, e.name,
-                    u.id as author_id, u.name as author_name,
+                    u.id as author_id, u.name as author_name, u.facebook_id as author_facebook_id,
                     k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
                     k.updated_at
             from events e
@@ -609,6 +609,7 @@ class UserController < ApplicationController
         :name => row['name'],
         :author_id => row['author_id'].to_s,
         :author_name => row['author_name'],
+        :author_facebook_id => row['author_facebook_id'].to_s,
         :last_activity => last_activity_string,
         :friend_list => friend_list_of_event[row['id'].to_s],
         :photo_count => 0,
@@ -715,7 +716,7 @@ class UserController < ApplicationController
     
     query_unfiltered = "
               select  e.id, e.tag, e.name,
-                        u.id as author_id, u.name as author_name,
+                        u.id as author_id, u.name as author_name, u.facebook_id as author_facebook_id,
                         k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
                         k.updated_at
               from events e
@@ -752,6 +753,7 @@ class UserController < ApplicationController
         :name => row['name'],
         :author_id => row['author_id'].to_s,
         :author_name => row['author_name'],
+        :author_facebook_id => row['author_facebook_id'].to_s,
         :last_activity => last_activity_string,
         :friend_list => friend_list_of_event[row['id'].to_s],
         :photo_count => 0,
