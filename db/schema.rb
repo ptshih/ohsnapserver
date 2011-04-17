@@ -87,8 +87,8 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "source"
     t.integer  "event_id",           :limit => 8, :default => 0
     t.integer  "user_id",           :limit => 8, :default => 0
-    t.integer  "place_id",           :limit => 8
-    t.integer  "checkin_id",         :limit => 8
+    t.integer  "facebook_place_id",           :limit => 8
+    t.integer  "facebook_checkin_id",         :limit => 8
     t.string   "message"
     t.string   "photo_file_name"
     t.string   "photo_content_type"
@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.datetime "created_time"
   end
 
-  add_index "checkins", ["checkin_id"], :name => "idx_checkin_id", :unique => true
+  add_index "checkins", ["facebook_checkin_id"], :name => "idx_checkin_id", :unique => true
   add_index "checkins", ["facebook_id"], :name => "idx_facebook_id"
   add_index "checkins", ["facebook_place_id"], :name => "idx_facebook_place_id"
 
