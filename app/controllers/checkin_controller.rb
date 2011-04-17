@@ -248,7 +248,6 @@ class CheckinController < ApplicationController
       :has_photo => params[:image].nil? ? false : true,
       :has_video => params[:video].nil? ? false : true,
       :video => params[:video],
-      :app_name = "Kupo!",
       :created_at => Time.now
     )
     
