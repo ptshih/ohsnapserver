@@ -577,7 +577,8 @@ class UserController < ApplicationController
     query = "
             select  e.id, e.tag, e.name,
                     u.id as author_id, u.name as author_name,
-                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
+                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
+                    k.updated_at
             from events e
             join events_users eu on eu.event_id = e.id
             join kupos k on k.id = e.last_kupo_id
@@ -681,7 +682,8 @@ class UserController < ApplicationController
     query = "
           select  e.id, e.tag, e.name,
                     u.id as author_id, u.name as author_name,
-                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
+                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
+                    k.updated_at
           from events e
           join events_users eu on eu.event_id = e.id
           join friendships f on eu.user_id = f.friend_id and f.user_id= #{@current_user.id}
@@ -699,7 +701,8 @@ class UserController < ApplicationController
     query_unfiltered = "
               select  e.id, e.tag, e.name,
                         u.id as author_id, u.name as author_name,
-                        k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
+                        k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
+                        k.updated_at
               from events e
               join events_users eu on eu.event_id = e.id
               join kupos k on k.id = e.last_kupo_id
