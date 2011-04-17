@@ -697,7 +697,7 @@ class UserController < ApplicationController
     # (exclude events user is already following)
     query = "
           select  e.id, e.tag, e.name,
-                    u.id as author_id, u.name as author_name,
+                    u.id as author_id, u.name as author_name, u.facebook_id as author_facebook_id,
                     k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name,
                     k.updated_at
           from events e
