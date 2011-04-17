@@ -527,33 +527,96 @@ class UserController < ApplicationController
     if !params[:count].nil?
       limit_count =  params[:count].to_i
     end
-
-    # mysql query
-    # query to return events a user is participating in
+    
+    contentcount_of_event = {}
     query = "
-            select e.*
+              select e.id,
+                  sum(case when k.facebook_checkin_id is not null then 1 else 0 end) as checkin_count,
+                    sum(case when k.message is not null then 1 else 0 end) as message_count,
+                    sum(case when k.photo_file_name is not null then 1 else 0 end) as photo_count
+              from events e
+              join events_users eu on e.id = eu.event_id
+              join kupos k on e.id = k.event_id
+              where eu.user_id = #{@current_user.id}
+              group by 1
+            "
+    #mysqlresults = ActiveRecord::Base.connection.execute(query)
+
+    ##
+    # getting event participants
+    ##
+    friend_list_of_event = {}
+    query = "select eu.event_id, u.id, u.name, u.first_name
+            from events_users eu
+            join users u on eu.user_id = u.id
+            where eu.event_id in (select event_id from events_users where user_id = #{@current_user.id})
+            "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !friend_list_of_event.has_key?(row['event_id'].to_s)
+        friend_list_of_event[row['event_id'].to_s] = []
+        friend_hash = {
+          :user_id => row['id'],
+          :full_name => row['name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_event[row['event_id'].to_s] << friend_hash
+      else
+        friend_hash = {
+          :user_id => row['id'],
+          :full_name => row['name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_event[row['event_id'].to_s] << friend_hash
+      end
+    end
+
+    ##
+    # query to return events a user is participating in
+    ##
+    query = "
+            select  e.id, e.tag, e.name,
+                    u.id as author_id, u.name as author_name,
+                    k.facebook_checkin_id, k.message, k.photo_file_name, k.video_file_name
             from events e
             join events_users eu on eu.event_id = e.id
+            join kupos k on k.event_id = e.id
+            join users u on u.id = k.user_id
             where eu.user_id = #{@current_user.id}
             "
 
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
+      
+      last_activity_string = ""
+      if !row['video_file_name'].nil?
+        last_activity_string = row['author_name'].to_s + " posted a video"
+      elsif !row['photo_file_name'].nil?
+        last_activity_string = row['author_name'].to_s + " posted a photo"
+      elsif !row['facebook_checkin_id'].nil?
+        last_activity_string = row['author_name'].to_s + " checked-in"
+      else
+        last_activity_string = row['author_name'].to_s + " made a comment"
+      end
+       
       row_hash = {
         :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
-        :author_id => row[''],
-        :author_name => row[''],
-        :last_activity => row[''], # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
-        :friend_list => friend_list_of_place[row['place_id'].to_s],
+        :author_id => row['author_id'],
+        :author_name => row['author_name'],
+        :last_activity => last_activity_string,
+        :friend_list => friend_list_of_event[row['id'].to_s],
+        :photo_count => 0,
+        :message_count => 0,
+        :checkin_count => 0,
         :is_private => row['is_private'],
         :timestamp => row['updated_at'].to_i
       }
       response_array << row_hash
     end
-
+    
     # Api call logging
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'followed',nil,nil,api_call_duration,nil,nil)
@@ -617,6 +680,9 @@ class UserController < ApplicationController
         :author_name => row[''],
         :last_activity => row[''], # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
         :friend_list => friend_list_of_place[row['place_id'].to_s],
+        :photo_count => 0,
+        :message_count => 0,
+        :checkin_count => 0,
         :is_private => row['is_private'],
         :timestamp => row['updated_at'].to_i
       }

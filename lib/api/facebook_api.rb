@@ -217,12 +217,13 @@ module API
       # Friendship.import friend_columns, create_new_friend, :on_duplicate_key_update => [:friend_name]
 
       friend_id_array_string = friend_id_array.join(',') 
-      query = " insert into friendships
+      query = " insert ignore into friendships
                 (user_id, friend_id, friend_name)
                 select a.id, b.id, b.name
                 from users a
                 join users b on b.facebook_id in (#{friend_id_array_string})
                 where a.facebook_id = #{facebook_id}
+                ON DUPLICATE KEY UPDATE c=c+1;
               "
       mysqlresult = ActiveRecord::Base.connection.execute(query)
 
