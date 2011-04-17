@@ -604,7 +604,7 @@ class UserController < ApplicationController
         :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
-        :author_id => row['author_id'],
+        :author_id => row['author_id'].to_s,
         :author_name => row['author_name'],
         :last_activity => last_activity_string,
         :friend_list => friend_list_of_event[row['id'].to_s],
@@ -713,7 +713,7 @@ class UserController < ApplicationController
     "
     
     response_array = []
-    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults = ActiveRecord::Base.connection.execute(query_unfiltered)
     mysqlresults.each(:as => :hash) do |row|
       
       # last_activity example: "shared a photo" or "shared a video" or "wrote a comment"
@@ -732,7 +732,7 @@ class UserController < ApplicationController
         :id => row['id'].to_s,
         :tag => row['tag'],
         :name => row['name'],
-        :author_id => row['author_id'],
+        :author_id => row['author_id'].to_s,
         :author_name => row['author_name'],
         :last_activity => last_activity_string,
         :friend_list => friend_list_of_event[row['id'].to_s],

@@ -223,7 +223,6 @@ module API
                 from users a
                 join users b on b.facebook_id in (#{friend_id_array_string})
                 where a.facebook_id = #{facebook_id}
-                ON DUPLICATE KEY UPDATE c=c+1;
               "
       mysqlresult = ActiveRecord::Base.connection.execute(query)
 
