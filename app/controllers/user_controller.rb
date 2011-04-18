@@ -864,7 +864,7 @@ class UserController < ApplicationController
     
     # Api call logging
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.id,'events',nil,nil,api_call_duration,nil,nil)
+    LOGGING::Logging.logfunction(request,@current_user.id,'user#events',nil,nil,api_call_duration,nil,nil)
 
     @response_hash = {}
     @response_hash[:data] = response_array

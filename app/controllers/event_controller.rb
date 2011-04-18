@@ -2,9 +2,10 @@ class EventController < ApplicationController
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
-    controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
+    # controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
   
+  # Show all kupos related to an event
   def kupos
     # logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
     Rails.logger.info request.query_parameters.inspect
@@ -42,7 +43,7 @@ class EventController < ApplicationController
     @response_hash[:data] = response_array
     
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupos',nil,nil,api_call_duration,params[:event_id],nil,nil)
+    LOGGING::Logging.logfunction(request,nil,'event#kupos',nil,nil,api_call_duration,params[:event_id],nil,nil)
     
     respond_to do |format|
       format.html
@@ -51,29 +52,45 @@ class EventController < ApplicationController
     end
   end
   
+  # Create a new event along with the first kupo associated to it
   def new
+    self.authenticate_token
+    
     Rails.logger.info request.query_parameters.inspect
-    puts "params: #{params}"
     api_call_start = Time.now.to_f
+    
+    e = Event.create(
+      :tag = params[:tag],
+      :name = params[:name]
+    )
+    
     k = Kupo.create(
-      :facebook_id => @current_user.facebook_id,
-      :kupo_type => params[:kupo_type].to_i,
-      :place_id => params[:place_id],
-      :comment => params[:comment],
+      :source => params[:source],
+      :user_id => @current_user.id,
+      :facebook_place_id => params[:facebook_place_id],
+      :facebook_checkin_id => params[:facebook_checkin_id],
+      :message => params[:message],
       :photo => params[:image],
+      :video => params[:video],
       :has_photo => params[:image].nil? ? false : true,
       :has_video => params[:video].nil? ? false : true,
-      :video => params[:video],
-      :created_at => Time.now
+      :lat => params[:lat].nil? ? params[:lat] : nil,
+      :lng => params[:lng].nil? ? params[:lng] : nil
     )
-    api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,api_call_duration,k.id,k.kupo_type,k.place_id)
-    response = {:success => "true"}
     
+    e.kupos << k
+    
+    e.update_attribute(:last_kupo_id, k.id)
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'event#new',nil,nil,api_call_duration,k.id,k.event_id,k.user_id)
+    
+    response = {:success => "true"}
     respond_to do |format|
       format.xml  { render :xml => response }
       format.json  { render :json => response }
     end
+    
   end
   
 end
