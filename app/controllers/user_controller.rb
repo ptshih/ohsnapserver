@@ -647,6 +647,101 @@ class UserController < ApplicationController
       limit_count =  params[:count].to_i
     end
     
+    
+    # Events I am part of
+    my_events = @current_user.events
+    
+    # Events my friends are part of
+    friends_events = []
+    @current_user.friends.each do |f|
+      friends_events += f.events
+    end
+    
+    # combine all events
+    all_events = my_events + friends_events
+    
+    # unique all events
+    all_events.uniq!
+    
+    response_array = []
+    all_events.each do |e|
+      # last kupo info
+      author_id = e.last_kupo.user.id
+      author_facebook_id = e.last_kupo.user.facebook_id
+      author_name = e.last_kupo.user.name
+      last_kupo = e.last_kupo
+      
+      # list of participants in this event
+      kupos = e.kupos
+      participant_array = []
+      kupos.each do |k|
+        participant_hash = {
+          :id => k.user.id.to_s,
+          :facebook_id => k.user.facebook_id.to_s,
+          :name => k.user.name,
+          :first_name => k.user.first_name
+        }
+        participant_array << participant_hash
+      end
+      
+      # unique the participants array
+      participant_array.uniq!
+      
+      # last acvitity_string
+      last_activity = ""
+      
+      if !last_kupo.has_video.nil?
+        last_activity = "#{author_name} shared a video"
+      elsif !last_kupo.has_photo.nil?
+        last_activity = "#{author_name} shared a photo"
+      elsif !last_kupo.facebook_checkin_id.nil?
+        last_activity = "#{author_name} checked-in here"
+      else
+        last_activity = "#{author_name} posted a comment"
+      end
+      
+      row_hash = {
+        :id => e.id.to_s,
+        :tag => e.tag,
+        :name => e.name,
+        :author_id => author_id.to_s,
+        :author_name => author_name,
+        :author_facebook_id => author_facebook_id.to_s,
+        :last_activity => last_activity,
+        :participants => participant_array,
+        :photo_count => 0,
+        :message_count => 0,
+        :checkin_count => 0,
+        :is_private => e.is_private,
+        :timestamp => e.updated_at.to_i
+      }
+      response_array << row_hash
+    end
+    
+    # Api call logging
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'events',nil,nil,api_call_duration,nil,nil)
+
+    @response_hash = {}
+    @response_hash[:data] = response_array
+
+    respond_to do |format|
+      format.html # template
+      format.xml  { render :xml => @response_hash }
+      format.json  { render :json => @response_hash }
+    end
+  end
+  
+  def theirevents
+    # Api call logging
+    api_call_start = Time.now.to_f
+
+    # We should limit results to 50 if no count is specified
+    limit_count = 50
+    if !params[:count].nil?
+      limit_count =  params[:count].to_i
+    end
+    
     ##
     # getting event participants
     ##

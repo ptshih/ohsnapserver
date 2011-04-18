@@ -78,7 +78,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   create_table "events_users", :id => false, :force => true do |t|
     t.integer "user_id", :limit => 8, :default => 0
     t.integer "event_id",   :limit => 8, :default => 0
-    t.boolean "is_active", :default => true
   end
   
   add_index "events_users", ["user_id", "event_id"], :name => "idx_unique_user_id_and_event_id", :unique => true

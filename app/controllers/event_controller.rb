@@ -24,15 +24,15 @@ class EventController < ApplicationController
       row_hash = {
         :id => k.id.to_s,
         :event_id => k.event_id.to_s,
-        :author_id => k.user.id,
-        :author_facebook_id => k.user.facebook_id,
+        :author_id => k.user.id.to_s,
+        :author_facebook_id => k.user.facebook_id.to_s,
         :author_name => k.user.name,
         :message => k.message,
         :has_photo => k.has_photo,
         :has_video => k.has_video,
         :photo_file_name => k.photo_file_name,
         :video_file_name => k.video_file_name,
-        :timestamp => k.created_at.to_i
+        :timestamp => k.updated_at.to_i
       }
       response_array << row_hash
     end
