@@ -24,10 +24,10 @@ class KupoController < ApplicationController
     @media_url = nil
     if k.has_video?
       @media_type = "video"
-      @media_url = "http://s3.amazonaws.com/kupo/kupos/videos/#{k.id}/original/#{k.video_file_name}"
+      @media_url = "http://s3.amazonaws.com/scrapboard/kupos/videos/#{k.id}/original/#{k.video_file_name}"
     elsif k.has_photo?
       @media_type = "photo"
-      @media_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
+      @media_url = "http://s3.amazonaws.com/scrapboard/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
     else
       @media_url = nil
     end
@@ -44,23 +44,27 @@ class KupoController < ApplicationController
     self.authenticate_token
     
     Rails.logger.info request.query_parameters.inspect
-    puts "params: #{params}"
     api_call_start = Time.now.to_f
+    
     k = Kupo.create(
-      :facebook_id => @current_user.facebook_id,
-      :kupo_type => params[:kupo_type].to_i,
-      :place_id => params[:place_id],
-      :comment => params[:comment],
+      :source => params[:source],
+      :event_id => params[:event_id],
+      :user_id => @current_user.id,
+      :facebook_place_id => params[:facebook_place_id],
+      :facebook_checkin_id => params[:facebook_checkin_id],
+      :message => params[:message],
       :photo => params[:image],
+      :video => params[:video],
       :has_photo => params[:image].nil? ? false : true,
       :has_video => params[:video].nil? ? false : true,
-      :video => params[:video],
-      :created_at => Time.now
+      :lat => params[:lat].nil? ? params[:lat] : nil,
+      :lng => params[:lng].nil? ? params[:lng] : nil
     )
-    api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,api_call_duration,k.id,k.kupo_type,k.place_id)
-    response = {:success => "true"}
     
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupo#new',nil,nil,api_call_duration,k.id,k.event_id,k.user_id)
+    
+    response = {:success => "true"}
     respond_to do |format|
       format.xml  { render :xml => response }
       format.json  { render :json => response }

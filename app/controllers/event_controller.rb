@@ -49,6 +49,31 @@ class EventController < ApplicationController
       format.xml  { render :xml => @response_hash }
       format.json  { render :json => @response_hash }
     end
-  
   end
+  
+  def new
+    Rails.logger.info request.query_parameters.inspect
+    puts "params: #{params}"
+    api_call_start = Time.now.to_f
+    k = Kupo.create(
+      :facebook_id => @current_user.facebook_id,
+      :kupo_type => params[:kupo_type].to_i,
+      :place_id => params[:place_id],
+      :comment => params[:comment],
+      :photo => params[:image],
+      :has_photo => params[:image].nil? ? false : true,
+      :has_video => params[:video].nil? ? false : true,
+      :video => params[:video],
+      :created_at => Time.now
+    )
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'addkupos',nil,nil,api_call_duration,k.id,k.kupo_type,k.place_id)
+    response = {:success => "true"}
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+  end
+  
 end

@@ -252,13 +252,13 @@ class CheckinController < ApplicationController
     )
     
     if k.has_photo?
-      photo_url = "http://s3.amazonaws.com/kupo/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
+      photo_url = "http://s3.amazonaws.com/scrapboard/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
     else
       photo_url = nil
     end
     
     if k.has_video?
-      video_url = "http://s3.amazonaws.com/kupo/kupos/videos/#{k.id}/original/#{k.video_file_name}"
+      video_url = "http://s3.amazonaws.com/scrapboard/kupos/videos/#{k.id}/original/#{k.video_file_name}"
     else
       video_url = nil
     end      
