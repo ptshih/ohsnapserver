@@ -625,16 +625,18 @@ class UserController < ApplicationController
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'followed',nil,nil,api_call_duration,nil,nil)
 
-    response_hash = {}
-    response_hash[:data] = response_array
+    @response_hash = {}
+    @response_hash[:data] = response_array
 
     respond_to do |format|
-      format.xml  { render :xml => response_hash }
-      format.json  { render :json => response_hash }
+      format.html
+      format.xml  { render :xml => @response_hash }
+      format.json  { render :json => @response_hash }
     end
   end
 
   # Gets a list of events that the user or the user's friends participated in
+  # http://localhost:3000/v1/users/me/events?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
   def events
     # Api call logging
     api_call_start = Time.now.to_f
@@ -769,12 +771,13 @@ class UserController < ApplicationController
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'events',nil,nil,api_call_duration,nil,nil)
 
-    response_hash = {}
-    response_hash[:data] = response_array
+    @response_hash = {}
+    @response_hash[:data] = response_array
 
     respond_to do |format|
-      format.xml  { render :xml => response_hash }
-      format.json  { render :json => response_hash }
+      format.html # template
+      format.xml  { render :xml => @response_hash }
+      format.json  { render :json => @response_hash }
     end
   end
 
