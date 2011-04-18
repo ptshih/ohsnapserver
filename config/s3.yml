@@ -1,20 +1,20 @@
 development:
-  bucket: kupo
+  bucket: scrapboard
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
 
 test:
-  bucket: kupo
+  bucket: scrapboard
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
 
 production:
-  bucket: kupo
+  bucket: scrapboard
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
   
 staging:
-  bucket: kupo
+  bucket: scrapboard
   access_key_id: AKIAJRFSK3RWQ7XLGNFA
   secret_access_key: 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
   
