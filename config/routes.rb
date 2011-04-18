@@ -41,6 +41,11 @@ Moogle::Application.routes.draw do
   # Non-User Specific Endpoints
   ###
   
+  # Events
+  # Connections
+  match ':version/events/:event_id/kupos', :controller => 'event', :action => 'kupos', :via => :get # LIST: get all kupos for a single place with ID, param allows filter by @current_user
+  match ':version/events/:event_id/photos', :controller => 'event', :action => 'photos', :via => :get # LIST: get all photos associated with a kupo for a single place with ID
+  
   # Places
   # General
   match ':version/places', :controller => 'place', :action => 'index', :via => :get # LIST: get all places in the database, optional param to filter by @current_user
