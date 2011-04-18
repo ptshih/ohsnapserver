@@ -675,7 +675,7 @@ class UserController < ApplicationController
       kupos = e.kupos
       participant_array = []
       kupos.each do |k|
-        puts "\n\nfound kupo #{k}\n\n"
+        puts "\n\nfound kupo #{k.user.inspect}\n\n"
         participant_hash = {
           :id => k.user.id.to_s,
           :facebook_id => k.user.facebook_id.to_s,
