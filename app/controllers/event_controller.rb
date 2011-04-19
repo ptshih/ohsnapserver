@@ -60,8 +60,8 @@ class EventController < ApplicationController
     api_call_start = Time.now.to_f
     
     e = Event.create(
-      :tag = params[:tag],
-      :name = params[:name]
+      :tag => params[:tag],
+      :name => params[:name]
     )
     
     k = Kupo.create(

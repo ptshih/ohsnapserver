@@ -61,6 +61,8 @@ class KupoController < ApplicationController
       :lng => params[:lng].nil? ? params[:lng] : nil
     )
     
+    k.event.update_attribute(:last_kupo_id, k.id)
+    
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'kupo#new',nil,nil,api_call_duration,k.id,k.event_id,k.user_id)
     
