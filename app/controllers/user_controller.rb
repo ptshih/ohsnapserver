@@ -566,22 +566,14 @@ class UserController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       if !participants.has_key?(row['event_id'].to_s)
         participants[row['event_id'].to_s] = []
-        friend_hash = {
-          :user_id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :name => row['name'],
-          :first_name => row['first_name']
-        }
-        participants[row['event_id'].to_s] << friend_hash
-      else
-        friend_hash = {
-          :user_id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :name => row['name'],
-          :first_name => row['first_name']
-        }
-        participants[row['event_id'].to_s] << friend_hash
       end
+      friend_hash = {
+        :user_id => row['id'],
+        :facebook_id => row['facebook_id'],
+        :name => row['name'],
+        :first_name => row['first_name']
+      }
+      participants[row['event_id'].to_s] << friend_hash
     end
 
     ##
@@ -687,22 +679,14 @@ class UserController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       if !participants.has_key?(row['event_id'].to_s)
         participants[row['event_id'].to_s] = []
-        friend_hash = {
-          :id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :name => row['name'],
-          :first_name => row['first_name']
-        }
-        participants[row['event_id'].to_s] << friend_hash
-      else
-        friend_hash = {
-          :id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :name => row['name'],
-          :first_name => row['first_name']
-        }
-        participants[row['event_id'].to_s] << friend_hash
       end
+      friend_hash = {
+        :id => row['id'],
+        :facebook_id => row['facebook_id'],
+        :name => row['name'],
+        :first_name => row['first_name']
+      }
+      participants[row['event_id'].to_s] << friend_hash
     end
     
     # mysql query
