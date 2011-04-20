@@ -38,12 +38,12 @@ class EventController < ApplicationController
     query = "select k.*, u.facebook_id, u.name
               from kupos k
               join users u on k.user_id = u.id
-            where " + set_conditions + content_type_conditions + "
+            where " + event_condition + content_type_conditions + "
             order by k.created_at desc
             " + limit_count
     response_array = []
-    kupos = ActiveRecord::Base.connection.execute(query)
-    kupos.each do |k|
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |k|
       row_hash = {
         :id => k['id'],
         :event_id => k['event_id'],
@@ -99,10 +99,7 @@ class EventController < ApplicationController
       # video OR photo
       set_conditions = "event_id = #{params[:event_id]} AND has_photo+has_video>0"
     end
-    
-    response_array = []
-    mysqlresults = ActiveRecord::Base.connection.execute(query)
-    
+
     kupos = Kupo.find(:all, :conditions => set_conditions, :order => 'created_at DESC', :limit => limit_count)
     
     response_array = []
