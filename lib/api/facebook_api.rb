@@ -928,6 +928,54 @@ puts response.body;
       
     end
     
+    # Adding a post to Facebook
+    # Message, picture, link, source (video)
+    # http://developers.facebook.com/docs/reference/api/post/
+    #
+    def add_post(kupo_id=nil, message=nil, link=nil, source=nil, tags=nil, photo_url=nil, video_url=nil)
+      headers_hash = Hash.new
+      headers_hash['Accept'] = 'application/json'
+      
+      params_hash = Hash.new
+      params_hash['access_token'] = @access_token
+      params_hash['message'] = message
+      params_hash['link'] = link
+      params_hash['tags'] = tags
+      
+      if !source.nil?
+        params_hash['name'] ="Kupo!"
+        params_hash['picture'] = photo_url
+        params_hash['caption'] = "Shared a video via Kupo!"
+        params_hash['description'] = message
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
+      elsif !photo_url.nil?
+        params_hash['name'] = "Kupo!"
+        params_hash['picture'] = photo_url
+        params_hash['caption'] = "Shared a photo via Kupo!"
+        params_hash['description'] = message
+        params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
+      elsif !
+      end
+    
+      response = Typhoeus::Request.post("#{@@fb_host}/me/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)
+            
+      parsed_response = self.check_facebook_response_for_errors(response)
+                  
+      Rails.logger.info "Checked in to facebook with response: #{parsed_response}"
+      
+      if parsed_response.nil?
+        return nil
+      else
+        # Facebook returns the checkin id
+        self.find_checkin_for_checkin_id(parsed_response['id'],false)
+      end
+
+      # return Checkin.find_by_checkin_id(parsed_response['id'])
+      return parsed_response['id']
+      # puts "Should have checked-in to Facebook with returns id #{parsed_response['id']}"
+      
+    end
+    
     # broken because facebook is retarded
     # Facebook Error Caught: {"type"=>"OAuthException", "message"=>"(#10) Apps must have at least 100 users to use this API"}
     def add_subscriptions
