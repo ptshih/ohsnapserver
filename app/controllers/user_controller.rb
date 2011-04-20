@@ -540,8 +540,19 @@ class UserController < ApplicationController
               where eu.user_id = #{@current_user.id}
               group by 1
             "
-    #mysqlresults = ActiveRecord::Base.connection.execute(query)
-
+      mysqlresults = ActiveRecord::Base.connection.execute(query)
+      mysqlresults.each(:as => :hash) do |row|
+        if !contentcount_of_event.has_key?(row['event_id'].to_s)
+          contentcount_of_event[row['event_id'].to_s] = []
+        end
+          count_hash = {
+            :checkin_count => row['checkin_count'],
+            :message_count => row['message_count'],
+            :photo_count => row['photo_count']
+          }
+          contentcount_of_event[row['event_id'].to_s] << count_hash
+      end
+    
     ##
     # getting event participants
     ##
@@ -555,22 +566,15 @@ class UserController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       if !friend_list_of_event.has_key?(row['event_id'].to_s)
         friend_list_of_event[row['event_id'].to_s] = []
-        friend_hash = {
-          :user_id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :full_name => row['name'],
-          :first_name => row['first_name']
-        }
-        friend_list_of_event[row['event_id'].to_s] << friend_hash
-      else
-        friend_hash = {
-          :user_id => row['id'],
-          :facebook_id => row['facebook_id'],
-          :full_name => row['name'],
-          :first_name => row['first_name']
-        }
-        friend_list_of_event[row['event_id'].to_s] << friend_hash
       end
+        friend_hash = {
+          :user_id => row['id'],
+          :facebook_id => row['facebook_id'],
+          :full_name => row['name'],
+          :first_name => row['first_name']
+        }
+        friend_list_of_event[row['event_id'].to_s] << friend_hash
+
     end
 
     ##
@@ -646,7 +650,6 @@ class UserController < ApplicationController
     if !params[:count].nil?
       limit_count =  params[:count].to_i
     end
-    
     
     # Events I am part of
     my_events = @current_user.events
