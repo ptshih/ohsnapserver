@@ -45,10 +45,10 @@ class EventController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |k|
       row_hash = {
-        :id => k['id'],
-        :event_id => k['event_id'],
-        :author_id => k['user_id'],
-        :author_facebook_id => k['facebook_id'],
+        :id => k['id'].to_s,
+        :event_id => k['event_id'].to_s,
+        :author_id => k['user_id'].to_s,
+        :author_facebook_id => k['facebook_id'].to_s,
         :author_name => k['name'],
         :message => k['message'],
         :has_photo => k['has_photo'],
@@ -141,8 +141,14 @@ class EventController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     api_call_start = Time.now.to_f
     
+    # Should we create the event tag on the server side? (probably)
+    tag = "#" + params[:name].gsub(/[^0-9A-Za-z]/, '')
+    tag.downcase!
+    tag_count = Event.count(:conditions => "tag LIKE '%#{tag}.%'")
+    tag = tag + ".#{tag_count + 1}"
+    
     e = Event.create(
-      :tag => params[:tag],
+      :tag => tag,
       :name => params[:name]
     )
     
@@ -163,6 +169,8 @@ class EventController < ApplicationController
     e.kupos << k
     
     e.update_attribute(:last_kupo_id, k.id)
+    
+    @current_user.events << e
     
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.facebook_id,'event#new',nil,nil,api_call_duration,k.id,k.event_id,k.user_id)
