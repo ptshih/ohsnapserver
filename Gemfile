@@ -16,6 +16,7 @@ gem 'delayed_job'
 gem 'aws-s3', :require => 'aws/s3'
 gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'newrelic_rpm'
+# gem 'ruby-debug19'
 # gem 'apn_on_rails'
 
 # gem 'eventmachine'

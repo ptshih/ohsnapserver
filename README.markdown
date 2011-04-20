@@ -9,7 +9,7 @@ Gems required and any special precautions
 ---
 * unicorn (for EY)
 * delayed_job
-* mysql2
+* mysql2 (requires ruby 1.9.2)
 * activerecord-import
 * yajl-ruby
 * paperclip
@@ -17,6 +17,7 @@ Gems required and any special precautions
 * typhoeus
 * nokogiri (yelp)
 * httpclient (yelp)
+* newrelic_rpm
 
 Deploying on localhost
 ---
@@ -56,11 +57,10 @@ Foursquare Consumer
 * CLIENT ID: 2CPOOTGBGYH53Q2LV3AORUF1JO0XV0FZLU1ZSZ5VO0GSKELO
 * CLIENT SECRET: W45013QS5ADELZMVZYIIH3KX44TZQXDN0KQN5XVRN1JPJVGB
 
-* Example API Request:
+Example API Request:
     curl "https://api.foursquare.com/v2/venues/search?ll=40.7,-74&client_id=2CPOOTGBGYH53Q2LV3AORUF1JO0XV0FZLU1ZSZ5VO0GSKELO&client_secret=W45013QS5ADELZMVZYIIH3KX44TZQXDN0KQN5XVRN1JPJVGB"
 
-* Venus API Docs:
-http://developer.foursquare.com/venues/
+* Venus API Docs: http://developer.foursquare.com/venues/
 
 Joyent Proxy
 ---
@@ -71,8 +71,8 @@ Script Path: /home/jill/web/public/index.php
 
 Heroku Quirks
 ---
-* In order to use the mysql2 gem with RDS, needed to manually type this into the console:
-heroku config:add DATABASE_URL=mysql2://friendmash:Lik3aG6@friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com/moogle?encoding=utf8
+In order to use the mysql2 gem with RDS, needed to manually type this into the console:
+    heroku config:add DATABASE_URL=mysql2://friendmash:Lik3aG6@friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com/moogle?encoding=utf8
 
 Facebook API Errors
 ---
@@ -85,29 +85,23 @@ Console Commands
 
 How to use Git
 ---
-* check status of repo
-
-git status
+check status of repo
+    git status
   
-* add all files to be committed
+add all files to be committed
+    git add .
 
-git add .
-
-* commit all files
-
-git commit -am "your commit message"
+commit all files
+    git commit -am "your commit message"
   
-* get most recent changes from origin/master
-
-git pull
+get most recent changes from origin/master
+    git pull
   
-* push all locally committed changes to origin/master
-
-git push
+push all locally committed changes to origin/master
+    git push
   
-* in case your shit is all fucked up, this will reset it (careful to not lose local stuff that isn't committed yet)
-
-git reset HEAD --hard
+in case your shit is all fucked up, this will reset it (careful to not lose local stuff that isn't committed yet)
+    git reset HEAD --hard
   
 Cool Git .profile Stuff
 ---

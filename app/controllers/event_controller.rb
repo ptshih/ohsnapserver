@@ -6,6 +6,7 @@ class EventController < ApplicationController
   end
   
   # Show all kupos related to an event without using AR
+  # http://localhost:3000/v1/events/5/kupos.json?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991&since=1303272472#
   def kupos
     # logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
     Rails.logger.info request.query_parameters.inspect
