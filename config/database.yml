@@ -10,14 +10,26 @@
 #   socket: /tmp/mysql.sock
 #   encoding: utf8
 #   collation: utf8_general_ci
-  
+
+# RUN THIS COMMAND BEFORE USING DEVELOPMENT DB
+# ssh -f deploy@ec2-50-17-115-76.compute-1.amazonaws.com -L 10008:127.0.0.1:3306 -N
+# mysql -h127.0.0.1 -P10008 -udeploy -pgTSjMxHynG
+
 development:
   adapter:   mysql2
   database:  scrapboard
-  username:  friendmash
-  password:  Lik3aG6
-  host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
-  port: 3306
+  username:  deploy
+  password:  gTSjMxHynG
+  host: 127.0.0.1
+  port: 10008
+  
+# development:
+#   adapter:   mysql2
+#   database:  scrapboard
+#   username:  friendmash
+#   password:  Lik3aG6
+#   host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
+#   port: 3306
   
 # Engine Yard
 # ec2-50-17-115-76.compute-1.amazonaws.com

@@ -1,1 +1,33 @@
-<%= @response_hash %>
+<% if notice %> 
+<p id="notice"><%= notice %></p> 
+<% end %>
+<div class="entry">
+  <% @response_hash[:data].each do |t| %>
+  <div class="entryrow">
+    <div class="entryimg">
+      
+    </div>
+    <div class="entrycontent">
+      <div class="entrytitle">
+        <div class="entrytag">
+          <%= link_to "#{t[:tag]}", '#', :class => 'entrylinks' %>
+        </div>
+        <div class="entrycomment">
+          <%= link_to t[:timestamp], '#', :class => 'entrylinks' %>
+        </div>
+      </div>
+      <div class="entryname">
+        <%= link_to "#{t[:name]}", '#', :class => 'entrylinks' %>
+      </div>
+      <div class="entrybody">
+        <%= link_to "#{t[:last_activity]}", '#', :class => 'entrylinks' %>
+      </div>
+      <div class="entryparticipants">
+	    <% t[:participants].each do |e| %>
+        <%= link_to "#{e[:first_name]}", '#', :class => 'entrylinks' %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>

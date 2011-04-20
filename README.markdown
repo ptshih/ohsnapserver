@@ -83,6 +83,42 @@ Console Commands
 ---
     alias mcurlpost='curl -i -H "Accept: application/json" -F "access_token=m0z4AO5qSOtB9Uguk80S2D05eEmng2DfrpAnNGMTJh4.eyJpdiI6IkZ2cFVNbHBSaHByVkswZURhZHF3aFEifQ.F4IKIBxFkQqQQkgEyG5SEeaFVBsPT_d_XGwf88o8j8yQrBX-FliW9ELnioMLEg_8quMqc5rQZvOoiszxnXx6M4kfrWON748kVzQE4CS-Vg5Nuqjfg_IAMt3d4P_judBKoG_xAlGFXWQg-tiXwT_UDA"'
 
+How to use Git
+---
+* check status of repo
+    git status
+  
+* add all files to be committed
+    git add .
+
+* commit all files
+    git commit -am "your commit message"
+  
+* get most recent changes from origin/master
+    git pull
+  
+* push all locally committed changes to origin/master
+    git push
+  
+* in case your shit is all fucked up, this will reset it (careful to not lose local stuff that isn't committed yet)
+    git reset HEAD --hard
+  
+Cool Git .profile Stuff
+---
+    # Set git autocompletion and PS1 integration
+    if [ -f /usr/local/git/contrib/completion/git-completion.bash ]; then
+      . /usr/local/git/contrib/completion/git-completion.bash
+    fi
+    GIT_PS1_SHOWDIRTYSTATE=true
+
+    if [ -f /opt/local/etc/bash_completion ]; then
+        . /opt/local/etc/bash_completion
+    fi
+
+    PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[34m\]\w\[\033[31m\]$(__git_ps1)\[\033[00m\]\$ '
+
+    export CLICOLOR=1
+    export LSCOLORS=ExFxCxDxBxegedabagacad
 
 Code Snippets
 ---

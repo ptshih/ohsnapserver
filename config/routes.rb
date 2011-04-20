@@ -32,6 +32,8 @@ Moogle::Application.routes.draw do
   match ':version/users/:user_id/followed', :controller => 'user', :action => 'followed', :via => :get # LIST: get all places a user participated at
   match ':version/users/:user_id/friends', :controller => 'user', :action => 'friends', :via => :get # LIST: get friends of a user
   
+  match ':version/users/:user_id/arevents', :controller => 'user', :action => 'arevents', :via => :get # LIST: get all places a user participated at
+  
   # Connections that are Resources
   # match ':version/users/:user_id/friends', :controller => 'user', :action => 'friends', :via => :get # LIST: get all friends for a user (param for degree: 1 or 2)
   # match ':version/users/:user_id/kupos', :controller => 'user', :action => 'kupos', :via => :get # LIST: get all kupos the user has created
