@@ -1,0 +1,28 @@
+<% if notice %> 
+<p id="notice"><%= notice %></p> 
+<% end %>
+<div class="entry">
+  <% @response_hash[:data].each do |t| %>
+  <div class="entryrow">
+    <div class="entryimg">
+      <img src= "http://s3.amazonaws.com/kupo/kupos/photos/<%= "#{t[:id]}" %>/original/<%= "#{t[:photo_file_name]}"%>"/>
+    </div>
+    <div class="entrycontent">
+      <div class="entrytitle">
+        <div class="entrytag">
+          <%= link_to "#{t[:id]}", '#', :class => 'entrylinks' %>
+        </div>
+        <div class="entrycomment">
+          <%= link_to "#{t[:timestamp]}", '#', :class => 'entrylinks' %>
+        </div>
+      </div>
+      <div class="entryname">
+        <%= link_to "#{t[:author_name]}", '#', :class => 'entrylinks' %>
+      </div>
+      <div class="entrybody">
+        <%= link_to "#{t[:message]}", '#', :class => 'entrylinks' %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>

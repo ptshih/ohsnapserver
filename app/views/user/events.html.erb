@@ -3,6 +3,7 @@
 <% end %>
 <div class="entry">
   <% @response_hash[:data].each do |t| %>
+
   <div class="entryrow">
     <div class="entryimg">
       
@@ -10,7 +11,7 @@
     <div class="entrycontent">
       <div class="entrytitle">
         <div class="entrytag">
-          <%= link_to "#{t[:tag]}", '#', :class => 'entrylinks' %>
+          <%= link_to "#{t[:tag]}", '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}", :class => 'entrylinks' %>
         </div>
         <div class="entrycomment">
           <%= link_to t[:timestamp], '#', :class => 'entrylinks' %>
@@ -29,5 +30,6 @@
       </div>
     </div>
   </div>
+
   <% end %>
 </div>
