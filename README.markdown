@@ -85,19 +85,24 @@ Console Commands
 
 How to use Git
 ---
-* git status
-  check status of repo
-* git add .
-  add all files to be committed
-git commit -am "your commit message"
-  commit all files
-git pull
-  get most recent changes from origin/master
-git push
-  push all locally committed changes to origin/master
-git reset HEAD --hard
-  in case your shit is all fucked up, this will reset it (careful to not lose local stuff that isn't committed yet)
+* check status of repo
+    git status
+  
+* add all files to be committed
+    git add .
 
+* commit all files
+    git commit -am "your commit message"
+  
+* get most recent changes from origin/master
+    git pull
+  
+* push all locally committed changes to origin/master
+    git push
+  
+* in case your shit is all fucked up, this will reset it (careful to not lose local stuff that isn't committed yet)
+    git reset HEAD --hard
+  
 Cool Git .profile Stuff
 ---
     # Set git autocompletion and PS1 integration
