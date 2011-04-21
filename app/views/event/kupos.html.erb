@@ -5,7 +5,6 @@
   <% @response_hash[:data].each do |t| %>
   <div class="entryrow">
     <div class="entryimg">
-      <img src= "http://s3.amazonaws.com/scrapboard/kupos/photos/<%= "#{t[:id]}" %>/original/<%= "#{t[:photo_file_name]}"%>"/>
     </div>
     <div class="entrycontent">
       <div class="entrytitle">
@@ -21,6 +20,7 @@
       </div>
       <div class="entrybody">
         <%= link_to "#{t[:message]}", '#', :class => 'entrylinks' %>
+		<br><img src= "http://s3.amazonaws.com/scrapboard/kupos/photos/<%= "#{t[:id]}" %>/square/<%= "#{t[:photo_file_name]}"%>"/>
       </div>
     </div>
   </div>
