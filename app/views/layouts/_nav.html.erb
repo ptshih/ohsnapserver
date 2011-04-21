@@ -1,6 +1,6 @@
 <div class="nav">
   <ul>
-    <li><%= link_to "My Events", '#', :class => 'links' %> |
-    <li><%= link_to "Friends Events", '#', :class => 'links' %>
+    <li><%= link_to "My Events", '/v1/users/me/followed?access_token='+"#{params[:access_token]}", :class => 'links' %> |
+    <li><%= link_to "Friends Events",'/v1/users/me/events?access_token='+"#{params[:access_token]}", :class => 'links' %>
   </ul>
 </div>

@@ -17,6 +17,7 @@ class KupoController < ApplicationController
   def index
   end
   
+  # http://localhost:3000/v1/kupo/16/kupos.json?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
   def show
     k = Kupo.find_by_id(params[:kupo_id])
     
@@ -29,7 +30,7 @@ class KupoController < ApplicationController
       @media_type = "photo"
       @media_url = "http://s3.amazonaws.com/scrapboard/kupos/photos/#{k.id}/original/#{k.photo_file_name}"
     else
-      @media_url = nil
+      @media_url = "#{k.message}"
     end
     
     respond_to do |format|

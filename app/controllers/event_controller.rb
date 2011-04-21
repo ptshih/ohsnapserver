@@ -6,7 +6,7 @@ class EventController < ApplicationController
   end
   
   # Show all kupos related to an event without using AR
-  # http://localhost:3000/v1/events/16/kupos.json?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
+  # http://localhost:3000/v1/kupos/16?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
   def kupos
     # logging(request, actiontype, lat=nil, lng=nil, var1=nil, var2=nil)
     Rails.logger.info request.query_parameters.inspect
@@ -68,7 +68,7 @@ class EventController < ApplicationController
     LOGGING::Logging.logfunction(request,nil,'event#kupos',nil,nil,api_call_duration,params[:event_id],nil,nil)
     
     respond_to do |format|
-      format.html # template
+      format.html # event/kupos.html.erb template
       format.xml  { render :xml => @response_hash }
       format.json  { render :json => @response_hash }
     end
