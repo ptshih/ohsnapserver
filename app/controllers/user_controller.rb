@@ -568,7 +568,7 @@ class UserController < ApplicationController
         participants[row['event_id'].to_s] = []
       end
       friend_hash = {
-        :user_id => row['id'],
+        :id => row['id'],
         :facebook_id => row['facebook_id'],
         :name => row['name'],
         :first_name => row['first_name']
@@ -621,6 +621,7 @@ class UserController < ApplicationController
         :message_count => 0,
         :checkin_count => 0,
         :is_private => row['is_private'],
+        :is_followed => true,
         :timestamp => row['updated_at'].to_i
       }
       response_array << row_hash
