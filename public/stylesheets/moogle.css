@@ -1,3 +1,5 @@
+/* @override http://localhost:3000/stylesheets/moogle.css?1303284249 */
+
 /* @override http://localhost:3000/stylesheets/moogle.css?1303033751 */
 
 /* Style for main page */
@@ -124,7 +126,7 @@ img#banner {
 }
 
 .entrycontent {
-  padding-left: 60px;
+  padding: 10px 0px 10px 60px;
 }
 
 .entryimg {
@@ -261,7 +263,7 @@ a.entrylinks:hover {
   margin-top: 0px;
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 0px;
+  margin-bottom: 50px;
   background-color: #000000;
   padding-left: 0px;
   padding-right: 0px;

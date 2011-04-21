@@ -5,7 +5,6 @@
   <% @response_hash[:data].each do |t| %>
   <div class="entryrow">
     <div class="entryimg">
-      
     </div>
     <div class="entrycontent">
       <div class="entrytitle">
@@ -17,7 +16,7 @@
         </div>
       </div>
       <div class="entryname">
-        <%= link_to "#{t[:name]}", '#', :class => 'entrylinks' %>
+        <%= link_to "#{t[:name]}", '#kupos.html.erb', :class => 'entrylinks' %>
       </div>
       <div class="entrybody">
         <%= link_to "#{t[:last_activity]}", '#', :class => 'entrylinks' %>
