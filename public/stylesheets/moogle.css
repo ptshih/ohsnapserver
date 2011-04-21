@@ -277,3 +277,18 @@ a.entrylinks:hover {
 .contentborder {
 	padding: 30px 30px 30px 30px;
 }
+
+#logoutdiv, #logindiv{
+	float:right;
+	text-align:right;
+}
+
+#blueBar {
+	background-color:#3B5998;
+	height:41px;
+	left:0;
+	margin-top:20px;
+	position:absolute;
+	width:100%;
+	z-index:-1;
+}

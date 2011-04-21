@@ -11,9 +11,54 @@
     <!--[if lt IE 8]><%= stylesheet_link_tag "scaffold/ie" %><![endif]-->
     <%= javascript_include_tag :defaults %>
     <%= csrf_meta_tag %>
+
+	<%= javascript_tag "var AUTH_TOKEN = #{form_authenticity_token.inspect};" if protect_against_forgery? %>
   </head>
 
   <body>
+		<div id="blueBar" class = ""></div>
+	  	<div id="fb-root"></div>
+	
+      <script src="http://connect.facebook.net/en_US/all.js"></script>
+      <script>
+         FB.init({ 
+            appId:'132514440148709', cookie:true, 
+            status:true, xfbml:true 
+         });
+		FB.getLoginStatus(function(response) {
+		  if (response.session) {
+		    // logged in and connected user, someone you know
+			login_div = document.getElementById("logindiv");
+			login_div.style.display = "none"; //to hide it
+			logout_div = document.getElementById("logoutdiv");
+			logout_div.style.visibility = "block"; //to show it
+			
+			var access_token = response.session.access_token;
+			alert('fb access token: ' + access_token);
+			
+			
+			
+		  } else {
+		    // no user session available, someone you dont know
+			login_div = document.getElementById("logindiv");
+			login_div.style.visibility = "block";
+			logout_div = document.getElementById("logoutdiv");
+			logout_div.style.display = "none";
+		  }
+		});
+		FB.logout(function(response) {
+		    //window.location.reload(true);
+		});
+		FB.login(function(response) {
+		    // window.location.reload(true);
+			//<fb:login-button>Login with Facebook</fb:login-button>
+		});
+      </script>
+      <div id="logindiv"><a href="#" onclick="FB.login();">
+			<img src="http://static.ak.fbcdn.net/rsrc.php/zB6N8/hash/4li2k73z.gif"></a></div>
+      <div id="logoutdiv"><a href="#" onclick="FB.logout();">
+			<img src="http://static.ak.fbcdn.net/rsrc.php/z2Y31/hash/cxrz4k7j.gif"></a></div>
+
     <div class="container">
       <%= render 'layouts/header' %>
       <div id="content" class="contentround">
