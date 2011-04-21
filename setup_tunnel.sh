@@ -1,0 +1,1 @@
+ssh -f deploy@ec2-50-17-115-76.compute-1.amazonaws.com -L 10008:127.0.0.1:3306 -N

@@ -954,7 +954,7 @@ puts response.body;
         params_hash['caption'] = "Shared a photo via Kupo!"
         params_hash['description'] = message
         params_hash['link'] = "http://kupoapp.com/v1/kupos/#{kupo_id}"
-      elsif !
+      else
       end
     
       response = Typhoeus::Request.post("#{@@fb_host}/me/feed", :params => params_hash, :headers => headers_hash, :disable_ssl_peer_verification => true)

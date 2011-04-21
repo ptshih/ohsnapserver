@@ -518,6 +518,7 @@ class UserController < ApplicationController
   end
 
   # Gets a list of events that the user is following
+  # http://localhost:3000/v1/users/me/followed?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
   def followed
     # Api call logging
     api_call_start = Time.now.to_f
@@ -634,7 +635,7 @@ class UserController < ApplicationController
     @response_hash[:data] = response_array
 
     respond_to do |format|
-      format.html
+      format.html {render :action => 'events.html.erb'}
       format.xml  { render :xml => @response_hash }
       format.json  { render :json => @response_hash }
     end
