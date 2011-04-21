@@ -8,7 +8,7 @@
     <div class="entryimg">
     </div>
     <div class="entrycontent">
-	  <%= link_to '', '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}" %>
+	  <%= link_to '', '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}", :class => 'rowlink' %>
 	  <div class="entrytime">
 	    <%= t[:timestamp] %>
       </div>

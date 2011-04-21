@@ -108,6 +108,11 @@ img#banner {
 
 .events {
 	display: block;
+	cursor: pointer;
+}
+
+.kupos {
+	display: block;
 }
 
 .entryrow {
@@ -117,9 +122,8 @@ img#banner {
     overflow:hidden;
     background-color: #ebebeb;
     position: relative;
-    min-height: 60px;
+    height: auto;
     text-align: left;
-    cursor: pointer;
 }
 
 .entrycontent {
@@ -128,13 +132,6 @@ img#banner {
 
 .entrycontent em {
 	font-style: normal;
-}
-
-.entryrow a {
-	height: 100%;
-	width: 100%;
-	position: absolute;
-	display: inline;
 }
 
 .entryimg {
@@ -177,6 +174,13 @@ a.links:visited {
 a.links:hover {
   color: #06c;
   text-decoration: none;
+}
+
+a.rowlink {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	display: inline;
 }
 
 a.entrylinks {
@@ -259,7 +263,7 @@ a.entrylinks:hover {
 }
 
 #blueBar {
-	background-color:#3B5998;
+	background-color:#ffffff;
 	height:41px;
 	left:0;
 	margin-top:20px;
