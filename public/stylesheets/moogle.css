@@ -1,3 +1,5 @@
+/* @override http://localhost:3000/stylesheets/moogle.css?1303369647 */
+
 /* @override http://localhost:3000/stylesheets/moogle.css?1303284249 */
 
 /* @override http://localhost:3000/stylesheets/moogle.css?1303033751 */
@@ -110,23 +112,35 @@ img#banner {
 
 /* place entry */
 
-.entry {
-    border-top: 1px solid #cccccc;
-    border-bottom: 1px solid #cccccc;
-    padding: 10px 0px 10px 0px;
-    overflow:hidden;
-    background-color: #ebebeb;
-    position: relative;
-    min-height: 30px;
-    text-align: left;
+.events {
+	display: block;
 }
 
 .entryrow {
+    border-top: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+    padding: 5px 0px 5px 0px;
+    overflow:hidden;
+    background-color: #ebebeb;
+    position: relative;
+    min-height: 60px;
+    text-align: left;
     cursor: pointer;
 }
 
 .entrycontent {
   padding: 10px 0px 10px 60px;
+}
+
+.entrycontent em {
+	font-style: normal;
+}
+
+.entryrow a {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	display: inline;
 }
 
 .entryimg {
@@ -142,44 +156,7 @@ img#banner {
   width: 50px;
 }
 
-.entrytitle {
-  height: 20px;
-  clear: right;
-}
-
-.entrytag {
-  width: 100%;
-  height: 20px;
-  text-align: left;
-  font-size: 14px;
-  font-weight: bold;
-  color: black;
-  float: left;
-}
-
-.entryname {
-  text-align: left;
-  font-size: 14px;
-  color: #666;
-}
-
-.entrybody {
-  text-align: left;
-  font-size: 14px;
-  color: #666;
-}
-
-.entryparticipants {
-  text-align: left;
-  font-size: 12px;
-  color: #666;
-}
-
-.entryspan {
-  white-space: pre-wrap;
-}
-
-.entrycomment {
+.entrytime {
   padding-right: 5px;
   text-align: right;
   font-size: 14px;
@@ -209,18 +186,20 @@ a.links:hover {
 }
 
 a.entrylinks {
-   color: #4c4c4c;
+   font-weight: bold;
+   font-size: 14px;
+   color: #000000;
    cursor: pointer;
    text-decoration: none;
 }
 
 a.entrylinks:visited {
-  color: #4c4c4c;
+  color: #000000;
   text-decoration: none;
 }
 
 a.entrylinks:hover {
-  color: #4c4c4c;
+  color: #000000;
   text-decoration: none;
 }
 

@@ -1,34 +1,30 @@
 <% if notice %> 
 <p id="notice"><%= notice %></p> 
 <% end %>
-<div class="entry">
+<div class="events">
   <% @response_hash[:data].each do |t| %>
 
   <div class="entryrow">
     <div class="entryimg">
     </div>
     <div class="entrycontent">
-      <div class="entrytitle">
-        <div class="entrytag">
-          <%= link_to "#{t[:tag]}", '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}", :class => 'entrylinks' %>
-        </div>
-        <div class="entrycomment">
-          <%= link_to t[:timestamp], '#', :class => 'entrylinks' %>
-        </div>
+	  <%= link_to '', '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}" %>
+	  <div class="entrytime">
+	    <%= t[:timestamp] %>
       </div>
-      <div class="entryname">
-        <%= link_to "#{t[:name]}", '#kupos.html.erb', :class => 'entrylinks' %>
-      </div>
-      <div class="entrybody">
-        <%= link_to "#{t[:last_activity]}", '#', :class => 'entrylinks' %>
-      </div>
-      <div class="entryparticipants">
-	    <% t[:participants].each do |e| %>
-        <%= link_to "#{e[:first_name]}", '#', :class => 'entrylinks' %>
-        <% end %>
-      </div>
+
+
+
+	  <%= link_to "#{t[:tag]}", '/v1/events/'+"#{t[:id]}"+'/kupos?access_token='+"#{params[:access_token]}", :class => 'entrylinks'  %>
+      <br>
+      <em><%= t[:name] %></em>
+      <br>
+      <em><%= t[:last_activity] %></em>
+      <br>
+	  <% t[:participants].each do |e| %>
+      <em><%= e[:first_name] %></em>
+      <% end %>
     </div>
   </div>
-
   <% end %>
 </div>

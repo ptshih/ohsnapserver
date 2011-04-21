@@ -68,7 +68,7 @@ class EventController < ApplicationController
     LOGGING::Logging.logfunction(request,nil,'event#kupos',nil,nil,api_call_duration,params[:event_id],nil,nil)
     
     respond_to do |format|
-      format.html # template
+      format.html # event/kupos.html.erb template
       format.xml  { render :xml => @response_hash }
       format.json  { render :json => @response_hash }
     end
