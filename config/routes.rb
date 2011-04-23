@@ -1,27 +1,43 @@
 Moogle::Application.routes.draw do
   
   # Routes will always pass a version (v1)
-  #
-  # !!! NOTE !!!
-  # I commented out all the endpoints that are not currently in use
-  #
-  # I split up all our API ENDPOINTS into two categories, one is USER oriented, one is NON-USER (GLOBAL) oriented
-  # This is sorta how the FB graph api and foursquare venues api works
+  # All routes expect a parameter: access_token
+  # All routes assume @current_user except for login#register
   
   ###
   # Login Endpoints
   ###
   
+  # scope :protocol => 'https://', :constraints => { :protocol => 'https://' } do
+  #   match 'mash/token/:id' => 'mash#token', :via => :post, :constraints => { :protocol => 'https' }
+  # end
+  
+  # 
   # Actions
-  match ':version/login/register', :controller => 'login', :action => 'register', :via => :post # CREATE: Register new user with access_token
-  match ':version/login/session', :controller => 'login', :action => 'session', :via => :post # SESSION: Start a new session for the current user
+  match ':version/login/register', :to => 'login#register', :via => :post # CREATE: Register new user with access_token
+  match ':version/login/session', :to => 'login#session', :via => :post # SESSION: Start a new session for the current user
   
   ###
   # Album
   ###
-  match ':version/albums', :controller => 'album', :action => 'index', :via => :get # LIST: get all albums for a user (authenticated user)
-  match ':version/albums/new', :controller => 'album', :action =>'new', :via => :post # CREATE: create a new album
-  match ':version/albums/:album_id/snaps', :controller => 'album', :action => 'snaps', :via => :get # LIST: get all snaps for an album (public)
-  match ':version/albums/:album_id/newsnap', :controller => 'album', :action => 'newsnap', :via => :post # CREATE: create a new snap for current album
+  match ':version/albums', :to => 'album#index', :via => :get
+  match ':version/albums/new', :to => 'album#create', :via => :post
+  match ':version/albums/destroy/:album_id', :to => 'album#destroy', :via => [:post, :delete]
+  match ':version/albums/:album_id/snaps', :to => 'album#snaps', :via => :get
+  
+  ###
+  # Snaps
+  ###
+  match ':version/snaps/new', :to => 'snap#create', :via => :post
+  match ':version/snaps/destroy/:snap_id', :to => 'snap#destroy', :via => [:post, :delete]
+
+  match ':version/snaps/comment/:snap_id', :to => 'snap#comment', :via => :post
+  match ':version/snaps/like/:snap_id', :to => 'snap#like', :via => :post
+  
+  ###
+  # Friendships
+  ###
+  match ':version/friendships', :controller => 'friendship', :action => 'index', :via => :get
+  match ':version/friendships', :controller => 'friendship', :action => 'create', :via => :post
 
 end
