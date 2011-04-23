@@ -1,0 +1,2 @@
+class SnapController < ApplicationController
+end
