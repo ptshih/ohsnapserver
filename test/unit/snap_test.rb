@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PlaceControllerTest < ActionController::TestCase
+class SnapTest < ActiveSupport::TestCase
   # Replace this with your real tests.
   test "the truth" do
     assert true

@@ -1,4 +1,4 @@
-class KupoController < ApplicationController
+class SnapController < ApplicationController
   before_filter :default_geocoordinates
   before_filter do |controller|
     # This will set the @version variable

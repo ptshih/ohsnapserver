@@ -1,9 +1,9 @@
-class Kupo < ActiveRecord::Base
-  belongs_to :event, :inverse_of => :kupos
-  belongs_to :user, :inverse_of => :kupos
-  has_one :place, :inverse_of => :kupo
-  has_one :checkin, :inverse_of => :kupo
+class Snap < ActiveRecord::Base
   before_create :randomize_file_name
+  belongs_to :album, :inverse_of => :snaps
+  belongs_to :user, :inverse_of => :snaps
+  has_many :comments, :inverse_of => :snap
+  has_many :likes, :inverse_of => :snap
 
   has_attached_file :photo,
     :storage => :s3,

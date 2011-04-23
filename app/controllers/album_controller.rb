@@ -1,9 +1,10 @@
-class EventController < ApplicationController
+class AlbumController < ApplicationController
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
     # controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
   end
+  
   
   # Show all kupos related to an event without using AR
   # http://localhost:3000/v1/kupos/16?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991

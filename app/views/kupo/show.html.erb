@@ -1,9 +1,0 @@
-<% if @media_type == "photo" %>
-  <%= image_tag @media_url %>
-<% elsif @media_type == "video" %>
-  <%= video_tag @media_url %>
-<% else %>
-	<br><br><br>
-	<%= @media_url %>
-	<br><br><br>
-<% end %>
