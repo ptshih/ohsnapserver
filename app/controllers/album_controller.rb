@@ -2,9 +2,137 @@ class AlbumController < ApplicationController
   before_filter do |controller|
     # This will set the @version variable
     controller.load_version(["v1","v2","v3"])
-    # controller.authenticate_token # sets the @current_user var based on passed in access_token (FB)
+    # controller.authenticate_token # sets the @current_user var based on passed in access_token
   end
   
+  # Show a list of albums for the authenticated user (or optionally any user if public)
+  # @param REQUIRED access_token
+  # @param OPTIONAL user_id
+  # Authentication required
+  def index
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    ########
+    # NOTE #
+    ########
+    # All response_hash objects should follow this format...
+    # object_hash is a hash with a key called :data
+    # object_hash[:data] has an array of hashes that represent a single object (response_array contains many row_hash)
+    # object_hash[:paging] is optional and has a key :since and key :until
+    # :since is the :timestamp of the first object in response_array
+    # :until is the :timestamp of the last object in response_array
+    #
+    # A subhash inside row_hash (i.e. participants_hash) will have the same format, just no :paging
+    
+    # Prepare Query
+    query = ""
+    
+    # Fetch Results
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      # Each response hash consists of album id, name, and last_snap details flattened
+      row_hash = {
+        :id => row['id'], # album id
+        :name => row['name'], # album name
+        :author_id => row['author_id'], # last_snap author id
+        :author_name => row['author_name'], # last_snap author id
+        :message => row['message'], # last_snap message
+        :type => row['type'], # last_snap type
+        :lat => row['lat'],
+        :lng => row['lng'],
+        :participants => participants_hash, # list of participants for this album
+        :timestamp => row['updated_at'].to_i # album updated_at
+      }
+      response_array << row_hash
+    end
+    
+    # Paging
+    paging_hash = {}
+    paging_hash[:since] = response_array.first[:timestamp]
+    paging_hash[:until] = response_array.last[:timestamp]
+    
+    # Construct Response
+    @response_hash = {}
+    @response_hash[:data] = response_array
+    @response_hash[:paging] = paging_hash
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'album#index',nil,nil,api_call_duration,nil,nil,nil)
+    
+    respond_to do |format|
+      format.html # event/kupos.html.erb template
+      format.xml  { render :xml => @response_hash }
+      format.json  { render :json => @response_hash }
+    end
+  end
+  
+  # Create a new album along with the first snap associated to it
+  # @param REQUIRED access_token
+  # Authentication required
+  def create
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    # Should we create the event tag on the server side? (probably)
+    # tag = "#" + params[:name].gsub(/[^0-9A-Za-z]/, '')
+    # tag.downcase!
+    # tag_count = Event.count(:conditions => "tag LIKE '%#{tag}.%'")
+    # tag = tag + ".#{tag_count + 1}"
+    
+    # 1. Create a new Album
+    # 2. Fill Album with POST data
+    # 3. Create a new Snap
+    # 4. Fill Snap with POST data, set :album_id to newly created Album
+    # 5. Set Album last_snap_id to newly created Snap
+    # 6. Set albums_users join table entry for newly created Album
+        
+    # e = Event.create(
+    #   :tag => tag,
+    #   :name => params[:name]
+    # )
+    # 
+    # k = Kupo.create(
+    #   :source => params[:source],
+    #   :user_id => @current_user.id,
+    #   :facebook_place_id => params[:facebook_place_id],
+    #   :facebook_checkin_id => params[:facebook_checkin_id],
+    #   :message => params[:message],
+    #   :photo => params[:image],
+    #   :video => params[:video],
+    #   :has_photo => params[:image].nil? ? false : true,
+    #   :has_video => params[:video].nil? ? false : true,
+    #   :lat => params[:lat].nil? ? params[:lat] : nil,
+    #   :lng => params[:lng].nil? ? params[:lng] : nil
+    # )
+    # 
+    # e.kupos << k
+    # 
+    # e.update_attribute(:last_kupo_id, k.id)
+    # 
+    # @current_user.events << e
+  
+    response = {:success => "true"}
+      
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'album#create',nil,nil,api_call_duration,nil,nil,nil)
+  
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+    
+  end
+  
+  
+  ###
+  ### OLD APIs, for more see the scrapboard repo
+  ###
   
   # Show all kupos related to an event without using AR
   # http://localhost:3000/v1/kupos/16?access_token=17fa35a520ac7cc293c083680028b25198feb72033704f1a30bbc4298217065ed310c0d9efae7d05f55c9154601ab767511203e68f02610180ea3990b22ff991
@@ -133,55 +261,6 @@ class AlbumController < ApplicationController
       format.xml  { render :xml => @response_hash }
       format.json  { render :json => @response_hash }
     end
-  end
-  
-  # Create a new event along with the first kupo associated to it
-  def new
-    self.authenticate_token
-    
-    Rails.logger.info request.query_parameters.inspect
-    api_call_start = Time.now.to_f
-    
-    # Should we create the event tag on the server side? (probably)
-    tag = "#" + params[:name].gsub(/[^0-9A-Za-z]/, '')
-    tag.downcase!
-    tag_count = Event.count(:conditions => "tag LIKE '%#{tag}.%'")
-    tag = tag + ".#{tag_count + 1}"
-    
-    e = Event.create(
-      :tag => tag,
-      :name => params[:name]
-    )
-    
-    k = Kupo.create(
-      :source => params[:source],
-      :user_id => @current_user.id,
-      :facebook_place_id => params[:facebook_place_id],
-      :facebook_checkin_id => params[:facebook_checkin_id],
-      :message => params[:message],
-      :photo => params[:image],
-      :video => params[:video],
-      :has_photo => params[:image].nil? ? false : true,
-      :has_video => params[:video].nil? ? false : true,
-      :lat => params[:lat].nil? ? params[:lat] : nil,
-      :lng => params[:lng].nil? ? params[:lng] : nil
-    )
-    
-    e.kupos << k
-    
-    e.update_attribute(:last_kupo_id, k.id)
-    
-    @current_user.events << e
-    
-    api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.facebook_id,'event#new',nil,nil,api_call_duration,k.id,k.event_id,k.user_id)
-    
-    response = {:success => "true"}
-    respond_to do |format|
-      format.xml  { render :xml => response }
-      format.json  { render :json => response }
-    end
-    
   end
   
 end

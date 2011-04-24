@@ -1,2 +1,169 @@
 class SnapController < ApplicationController
+  before_filter do |controller|
+    # This will set the @version variable
+    controller.load_version(["v1","v2","v3"])
+    # controller.authenticate_token # sets the @current_user var based on passed in access_token
+  end
+  
+  # Show a list of snaps for an album
+  # @param REQUIRED album_id
+  # Authentication not required
+  def index
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    ########
+    # NOTE #
+    ########
+    # All response_hash objects should follow this format...
+    # object_hash is a hash with a key called :data
+    # object_hash[:data] has an array of hashes that represent a single object (response_array contains many row_hash)
+    # object_hash[:paging] is optional and has a key :since and key :until
+    # :since is the :timestamp of the first object in response_array
+    # :until is the :timestamp of the last object in response_array
+    #
+    # A subhash inside row_hash (i.e. participants_hash) will have the same format, just no :paging
+    
+    # Prepare Query
+    query = ""
+    
+    # Fetch Results
+    response_array = []
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      # Each response hash consists of album id, name, and last_snap details flattened
+      row_hash = {
+        :id => row['id'], # snap id
+        :album_id => row['album_id'], # album id
+        :author_id => row['author_id'], # snap author id
+        :author_name => row['author_name'], # last_snap author id
+        :message => row['message'], # last_snap message
+        :type => row['type'], # last_snap type
+        :photo_file_name => row['photo_file_name'], # photo file name or nil
+        :video_file_name => row['video_file_name'], # video file name or nil
+        :lat => row['lat'],
+        :lng => row['lng'],
+        :comments => comments_hash,
+        :likes => likes_hash,
+        :timestamp => row['updated_at'].to_i # snap updated_at
+      }
+      response_array << row_hash
+    end
+    
+    # Paging
+    paging_hash = {}
+    paging_hash[:since] = response_array.first[:timestamp]
+    paging_hash[:until] = response_array.last[:timestamp]
+    
+    # Construct Response
+    @response_hash = {}
+    @response_hash[:data] = response_array
+    @response_hash[:paging] = paging_hash
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'snap#index',nil,nil,api_call_duration,nil,nil,nil)
+    
+    respond_to do |format|
+      format.html # event/kupos.html.erb template
+      format.xml  { render :xml => @response_hash }
+      format.json  { render :json => @response_hash }
+    end
+  end
+  
+  # Create a new snap
+  # @param REQUIRED album_id
+  # @param REQUIRED access_token
+  # Authentication required
+  def create
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    # 1. Create a new Snap for request param album_id
+    # 2. Fill Snap with POST data, set :album_id to request param album_id
+    # 5. Set Album (from request param) last_snap_id to newly created Snap
+    # 6. Set albums_users join table entry for Album
+
+    response = {:success => "true"}
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'snap#create',nil,nil,api_call_duration,nil,nil,nil)
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+  end
+  
+  # Delete a snap
+  # @param REQUIRED snap_id
+  # @param REQUIRED access_token
+  # Authentication required
+  def destroy
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    # 1. Check to make sure author of snap is current_user
+    # 2. Delete Snap with snap_id in params
+    
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'snap#destroy',nil,nil,api_call_duration,nil,nil,nil)
+    
+    response = {:success => "true"}
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+  end
+  
+  # Comment on a Snap
+  # @param REQUIRED snap_id
+  # @param REQUIRED access_token
+  # Authentication required
+  def comment
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    # 1. Create a new comment and associate it with the snap_id in params. CHECK FOR DUPES
+
+    response = {:success => "true"}
+        
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'snap#comment',nil,nil,api_call_duration,nil,nil,nil)
+
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+  end
+
+  # Comment on a Snap
+  # @param REQUIRED snap_id
+  # @param REQUIRED access_token
+  # Authentication required
+  def like
+    self.authenticate_token
+    
+    Rails.logger.info request.query_parameters.inspect
+    api_call_start = Time.now.to_f
+    
+    # 1. Create a new like and associate it with the snap_id in params.
+    # LIKES are unique, only one LIKE per authenticated user
+    
+    response = {:success => "true"}
+        
+    api_call_duration = Time.now.to_f - api_call_start
+    LOGGING::Logging.logfunction(request,@current_user.id,'snap#like',nil,nil,api_call_duration,nil,nil,nil)
+    
+    respond_to do |format|
+      format.xml  { render :xml => response }
+      format.json  { render :json => response }
+    end
+  end
+  
 end

@@ -20,19 +20,19 @@ Moogle::Application.routes.draw do
   ###
   # Album
   ###
-  match ':version/albums', :to => 'album#index', :via => :get
-  match ':version/albums/new', :to => 'album#create', :via => :post
-  match ':version/albums/destroy/:album_id', :to => 'album#destroy', :via => [:post, :delete]
-  match ':version/albums/:album_id/snaps', :to => 'album#snaps', :via => :get
+  match ':version/albums', :to => 'album#index', :via => :get # Auth Required
+  match ':version/albums', :to => 'album#create', :via => :post # Auth Required
+  # match ':version/albums/:album_id', :to => 'album#destroy', :via => [:post, :delete]
   
   ###
   # Snaps
   ###
-  match ':version/snaps/new', :to => 'snap#create', :via => :post
-  match ':version/snaps/destroy/:snap_id', :to => 'snap#destroy', :via => [:post, :delete]
+  match ':version/snaps', :to => 'snap#index', :via => :get # Auth Optional
+  match ':version/snaps', :to => 'snap#create', :via => :post # Auth Required
+  match ':version/snaps/:snap_id', :to => 'snap#destroy', :via => :delete # Auth Required
 
-  match ':version/snaps/comment/:snap_id', :to => 'snap#comment', :via => :post
-  match ':version/snaps/like/:snap_id', :to => 'snap#like', :via => :post
+  match ':version/snaps/comment/:snap_id', :to => 'snap#comment', :via => :post # Auth Required
+  match ':version/snaps/like/:snap_id', :to => 'snap#like', :via => :post # Auth Required
   
   ###
   # Friendships
