@@ -27,6 +27,32 @@ class AlbumController < ApplicationController
     #
     # A subhash inside row_hash (i.e. participants_hash) will have the same format, just no :paging
     
+    ###
+    # Getting participants
+    ###
+    participants_hash = {}
+    
+    # Prepare Query
+    query = ""
+
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !participants_hash.has_key?(row['album_id'].to_s)
+        participants_hash[row['album_id'].to_s] = []
+      end
+      participant_hash = {
+        :id => row['id'],
+        :name => row['name'],
+        :first_name => row['first_name'],
+        :picture_url => row['picture_url']
+      }
+      participants_hash[row['album_id'].to_s] << participant_hash
+    end
+    
+    ###
+    # Getting albums
+    ###
+    
     # Prepare Query
     query = ""
     
@@ -38,8 +64,9 @@ class AlbumController < ApplicationController
       row_hash = {
         :id => row['id'], # album id
         :name => row['name'], # album name
-        :author_id => row['author_id'], # last_snap author id
-        :author_name => row['author_name'], # last_snap author id
+        :user_id => row['user_id'], # last_snap user id
+        :user_name => row['user_name'], # last_snap user name
+        :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
         :type => row['type'], # last_snap type
         :lat => row['lat'],

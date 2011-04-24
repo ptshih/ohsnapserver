@@ -35,8 +35,9 @@ class SnapController < ApplicationController
       row_hash = {
         :id => row['id'], # snap id
         :album_id => row['album_id'], # album id
-        :author_id => row['author_id'], # snap author id
-        :author_name => row['author_name'], # last_snap author id
+        :user_id => row['user_id'], # snap user id
+        :user_name => row['user_name'], # last_snap user name
+        :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
         :type => row['type'], # last_snap type
         :photo_file_name => row['photo_file_name'], # photo file name or nil

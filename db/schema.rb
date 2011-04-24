@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.string   "access_token"
     t.string   "facebook_access_token"
     t.string   "google_access_token"
+    t.string   "picture_url"
     t.string   "email"
     t.string   "name"
     t.string   "first_name"
