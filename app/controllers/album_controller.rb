@@ -9,7 +9,7 @@ class AlbumController < ApplicationController
   # @param REQUIRED access_token
   # @param OPTIONAL user_id
   # Authentication required
-  def index
+  def index    
     self.authenticate_token
     
     Rails.logger.info request.query_parameters.inspect
@@ -68,6 +68,7 @@ class AlbumController < ApplicationController
         :user_name => row['user_name'], # last_snap user name
         :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
+        :last_activity => last_activity,
         :type => row['type'], # last_snap type
         :lat => row['lat'],
         :lng => row['lng'],
@@ -290,4 +291,67 @@ class AlbumController < ApplicationController
     end
   end
   
+  def test
+    test_response = %{
+      {
+      	"data" : [
+      		{
+      			"id" : "1",
+            "name" : "Poker Night 3",
+            "user_id" : "1",
+            "user_name" : "Peter Shih",
+            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "message" : "Lost $20 in one hand...",
+      			"type" : "photo",
+            "lat" : "37.7805",
+            "lng" : "-122.4100",
+      			"timestamp" : 1300930808
+      		},
+      		{
+      			"id" : "2",
+            "name" : "Girls Girls Girls!",
+            "user_id" : "2",
+            "user_name" : "James Liu",
+            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "message" : "Look at them booty!",
+            "type" : "photo",
+            "lat" : "37.7815",
+            "lng" : "-122.4101",
+      			"timestamp" : 1290150808
+      		},
+          {
+            "id" : "3",
+            "name" : "Nice Cars, etc...",
+            "user_id" : "3",
+            "user_name" : "Nathan Bohannon",
+            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "message" : "R8 in front of verde",
+            "type" : "photo",
+            "lat" : "37.7825",
+            "lng" : "-122.4102",
+            "timestamp" : 1290140802
+          },
+          {
+             "id" : "4",
+             "name" : "Verde Tea",
+             "user_id" : "3",
+             "user_name" : "Thomas Liou",
+             "user_picture_url" : "http://localhost:3000/tmp.png",
+             "message" : "Hotties!",
+             "type" : "photo",
+             "lat" : "37.7825",
+             "lng" : "-122.4102",
+             "timestamp" : 1290130802
+           }
+      	],
+      	"paging" : {
+          "since" : 1300930808,
+          "until" : 1290130802
+        }
+      }
+    }
+    
+    render :json => test_response
+    return
+  end
 end

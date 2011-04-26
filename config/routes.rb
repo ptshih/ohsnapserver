@@ -12,6 +12,10 @@ Moogle::Application.routes.draw do
   #   match 'mash/token/:id' => 'mash#token', :via => :post, :constraints => { :protocol => 'https' }
   # end
   
+  # Test APIs
+  match ':version/albums_test', :to => 'album#test', :via => :get # Auth Not Requred
+  match ':version/snaps_test', :to => 'snap#test', :via => :get # Auth Not Requred
+  
   # 
   # Actions
   match ':version/login/register', :to => 'login#register', :via => :post # CREATE: Register new user with access_token
