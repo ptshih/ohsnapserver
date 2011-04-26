@@ -147,6 +147,7 @@ class SnapController < ApplicationController
     # 2. Fill Snap with POST data, set :album_id to request param album_id
     # 5. Set Album (from request param) last_snap_id to newly created Snap
     # 6. Set albums_users join table entry for Album
+    
 
     response = {:success => "true"}
     
@@ -183,7 +184,9 @@ class SnapController < ApplicationController
   end
   
   # Comment on a Snap
+  # @param REQUIRED album_id
   # @param REQUIRED snap_id
+  # @param REQUIRED message
   # @param REQUIRED access_token
   # Authentication required
   def comment
@@ -192,7 +195,14 @@ class SnapController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     api_call_start = Time.now.to_f
     
-    # 1. Create a new comment and associate it with the snap_id in params. CHECK FOR DUPES
+    # 1. Create a new comment and associate it with the snap_id in params.
+    # 2. CHECK FOR DUPES
+    c = Comment.create(
+      :album_id => params[:album_id],
+      :snap_id => params[:snap_id],
+      :user_id => @current_user.id,
+      :message => params[:message]
+    )
 
     response = {:success => "true"}
         
@@ -206,6 +216,7 @@ class SnapController < ApplicationController
   end
 
   # Comment on a Snap
+  # @param REQUIRED album_id
   # @param REQUIRED snap_id
   # @param REQUIRED access_token
   # Authentication required
@@ -216,7 +227,13 @@ class SnapController < ApplicationController
     api_call_start = Time.now.to_f
     
     # 1. Create a new like and associate it with the snap_id in params.
-    # LIKES are unique, only one LIKE per authenticated user
+    # 2. LIKES are unique, only one LIKE per authenticated user
+    # (add unique index on album, snap, user composite)
+    c = Like.create(
+      :album_id => params[:album_id],
+      :snap_id => params[:snap_id],
+      :user_id => @current_user.id
+    )
     
     response = {:success => "true"}
         
