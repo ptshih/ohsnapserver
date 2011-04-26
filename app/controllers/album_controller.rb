@@ -33,8 +33,11 @@ class AlbumController < ApplicationController
     participants_hash = {}
     
     # Prepare Query
-    query = ""
-
+    query = "
+      select au.album_id, u.id, u.name, u.first_name, u.picture_url
+      from albums_users au
+      join users u on au.user_id = u.id
+    "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       if !participants_hash.has_key?(row['album_id'].to_s)
@@ -54,7 +57,14 @@ class AlbumController < ApplicationController
     ###
     
     # Prepare Query
-    query = ""
+    query = "
+      select
+        a.id, a.name, s.user_id, u.name as 'user_name', u.picture_url,
+        s.message, s.type, s.lat, s.lng, a.updated_at
+      from albums a
+      join snaps s on a.last_snap_id = s.id
+      join users u on u.id = s.user_id
+    "
     
     # Fetch Results
     response_array = []
@@ -72,7 +82,7 @@ class AlbumController < ApplicationController
         :type => row['type'], # last_snap type
         :lat => row['lat'],
         :lng => row['lng'],
-        :participants => participants_hash, # list of participants for this album
+        :participants => participants_hash[row['album_id'].to_s], # list of participants for this album
         :timestamp => row['updated_at'].to_i # album updated_at
       }
       response_array << row_hash
