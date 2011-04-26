@@ -24,8 +24,69 @@ class SnapController < ApplicationController
     #
     # A subhash inside row_hash (i.e. participants_hash) will have the same format, just no :paging
     
-    # Prepare Query
-    query = ""
+    comments_hash_array ={}
+    likes_hash_array = {}
+    
+    # Prepare Comment Query
+    query = "
+      select c.snap_id, c.user_id, u.name as 'user_name', c.message
+      from snap_comments c
+      join users u on c.user_id = u.id
+      where c.album_id = #{params[:album_id]}
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !comments_hash_array.has_key?(row['snap_id'].to_s)
+        comments_hash_array[row['snap_id'].to_s] = []
+      end
+      sub_hash = {
+        :snap_id => row['snap_id'],
+        :user_id => row['user_id'],
+        :user_name => row['user_name'],
+        :message => row['message']
+      }
+      comments_hash_array[row['snap_id'].to_s] << sub_hash
+    end
+    
+    # Prepare Likes Query
+    query = "
+      select l.snap_id, l.user_id, u.name as 'user_name'
+      from snap_likes l
+      join users u on l.user_id = u.id
+      where album_id = #{params[:album_id]}
+    "
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      if !likes_hash_array.has_key?(row['snap_id'].to_s)
+        likes_hash_array[row['snap_id'].to_s] = []
+      end
+      sub_hash = {
+        :snap_id => row['snap_id'],
+        :user_id => row['user_id'],
+        :user_name => row['user_name']
+      }
+      likes_hash_array[row['snap_id'].to_s] << sub_hash
+    end
+    
+    # Prepare Snap Query
+    query = "
+      select
+        s.id,
+        s.album_id,
+        s.user_id,
+        u.name as 'user_name',
+        u.picture_url as 'user_picture_url',
+        s.message,
+        s.type,
+        s.photo_file_name,
+        s.video_file_name,
+        s.lat,
+        s.lng,
+        s.updated_at
+      from snaps s
+      join users u on s.user_id = u.id
+      where s.album_id = #{params[:album_id]}
+    "
     
     # Fetch Results
     response_array = []
@@ -44,8 +105,8 @@ class SnapController < ApplicationController
         :video_file_name => row['video_file_name'], # video file name or nil
         :lat => row['lat'],
         :lng => row['lng'],
-        :comments => comments_hash,
-        :likes => likes_hash,
+        :comments => comments_hash_array[row['id'].to_s],
+        :likes => likes_hash_array[row['id'].to_s],
         :timestamp => row['updated_at'].to_i # snap updated_at
       }
       response_array << row_hash
