@@ -165,7 +165,7 @@ class SnapController < ApplicationController
     end
   end
 
-  # Delete a snap
+  # Delete a snap (maybe we should be just hiding it instead of actually delete)
   # @param REQUIRED snap_id
   # @param REQUIRED access_token
   # Authentication required
@@ -177,6 +177,15 @@ class SnapController < ApplicationController
 
     # 1. Check to make sure author of snap is current_user
     # 2. Delete Snap with snap_id in params
+    # 3. Delete all associated comments and likes
+    s = Snap.find(:first, :conditions=> "id = #{params[:snap_id]} and user_id = #{@current_user.id}")
+    if s.destroy
+      Comment.delete_all(:conditions=> "id = #{params[:snap_id]}" )
+      Like.delete_all(:conditions=> "id = #{params[:snap_id]}" )      
+    end
+    
+    # This straight up deletes
+    # Snap.delete_all(:conditions => "id = #{params[:snap_id]} and user_id = #{@current_user.id}")
 
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'snap#destroy',nil,nil,api_call_duration,nil,nil,nil)
