@@ -135,6 +135,9 @@ class SnapController < ApplicationController
   
   # Create a new snap
   # @param REQUIRED album_id
+  # @param REQUIRED snap_type
+  # @param REQUIRED snap_media
+  # @param OPTIONAL message
   # @param REQUIRED access_token
   # Authentication required
   def create
@@ -145,8 +148,9 @@ class SnapController < ApplicationController
     
     # 1. Create a new Snap for request param album_id
     # 2. Fill Snap with POST data, set :album_id to request param album_id
-    # 5. Set Album (from request param) last_snap_id to newly created Snap
-    # 6. Set albums_users join table entry for Album
+    # 3. Update Album (from request param) last_snap_id to newly created Snap
+    # 4. Update user last_snap_id to newly created Snap
+    # 5. Set albums_users join table entry for Album
     
 
     response = {:success => "true"}
@@ -172,6 +176,7 @@ class SnapController < ApplicationController
     
     # 1. Check to make sure author of snap is current_user
     # 2. Delete Snap with snap_id in params
+    
     
     api_call_duration = Time.now.to_f - api_call_start
     LOGGING::Logging.logfunction(request,@current_user.id,'snap#destroy',nil,nil,api_call_duration,nil,nil,nil)
