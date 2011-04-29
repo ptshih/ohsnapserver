@@ -146,13 +146,36 @@ class SnapController < ApplicationController
     Rails.logger.info request.query_parameters.inspect
     api_call_start = Time.now.to_f
 
-    # 1. Create a new Snap for request param album_id
-    # 2. Fill Snap with POST data, set :album_id to request param album_id
-    # 3. Update Album (from request param) last_snap_id to newly created Snap
-    # 4. Update user last_snap_id to newly created Snap
-    # 5. Set albums_users join table entry for Album
-    
+    # Create the snap
+    if params[:snap_type]='video'
+      params[:video]=params[:media]
+    elsif params[:snap_type]='photo'
+      params[:photo]=params[:media]
+    else
+    end
+    s = Snap.create(
+      :album_id => params[:album_id],
+      :type => params[:snap_type],
+      :user_id => @current_user.id,
+      :photo => params[:photo],
+      :video => params[:video],
+      :message => params[:message]  
+    )
 
+    # Update user last snap_id
+    u = User.find_by_id(@current_user.id)
+    u.update_attribute(:last_snap_id, s.id)
+    
+    # Update album last snap_id
+    album = Album.find_by_id(params[:album_id])
+    album.update_attribute(:last_snap_id, s.id)
+
+    # Add user a album participant
+    query = " insert ignore into albums_users
+              (user_id, album_id)
+              select #{@current_user.id}, #{params[:album_id]}
+            "
+    mysqlresult = ActiveRecord::Base.connection.execute(query)
 
     response = {:success => "true"}
 

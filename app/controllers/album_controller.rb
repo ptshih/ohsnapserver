@@ -6,6 +6,7 @@ class AlbumController < ApplicationController
   end
 
   # Show a list of albums for the authenticated user (or optionally any user if public)
+  # @param REQUIRED list_type "all", "contributing"
   # @param REQUIRED access_token
   # @param OPTIONAL user_id
   # Authentication required
@@ -27,6 +28,22 @@ class AlbumController < ApplicationController
     #
     # A subhash inside row_hash (i.e. participants_hash) will have the same format, just no :paging
 
+    # Filter to show only albums where you are contributing
+    album_id_array = []
+    if params[:list_type]='contributing'
+      query = "select album_id from albums_users where user_id = @current_user.id"
+    # show all albums of your first degree connections
+    else
+      query = " select album_id
+                from albums_users
+                where user_id in (select friend_id from friendships where user_id=@current_user.id) or user_id=@current_user.id"
+    end
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      album_id_array << row['album_id']
+    end
+    album_id_string = album_id_array.uniq.join(',')
+    
     ###
     # Getting participants
     ###
@@ -37,6 +54,7 @@ class AlbumController < ApplicationController
       select au.album_id, u.id, u.name, u.first_name, u.picture_url
       from albums_users au
       join users u on au.user_id = u.id
+      where au.album_id in (#{album_id_string})
     "
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -64,6 +82,7 @@ class AlbumController < ApplicationController
       from albums a
       join snaps s on a.last_snap_id = s.id
       join users u on u.id = s.user_id
+      where a.album_id in (#{album_id_string})
     "
     
     # Fetch Results
@@ -109,6 +128,7 @@ class AlbumController < ApplicationController
   end
 
   # Create a new album along with the first snap associated to it
+  # @param REQUIRED name
   # @param REQUIRED access_token
   # Authentication required
   def create
@@ -123,37 +143,33 @@ class AlbumController < ApplicationController
     # tag_count = Event.count(:conditions => "tag LIKE '%#{tag}.%'")
     # tag = tag + ".#{tag_count + 1}"
 
-    # 1. Create a new Album
-    # 2. Fill Album with POST data
-    # 3. Create a new Snap
-    # 4. Fill Snap with POST data, set :album_id to newly created Album
-    # 5. Set Album last_snap_id to newly created Snap
-    # 6. Set albums_users join table entry for newly created Album
-
-    # e = Event.create(
-    #   :tag => tag,
-    #   :name => params[:name]
-    # )
-    #
-    # k = Kupo.create(
-    #   :source => params[:source],
-    #   :user_id => @current_user.id,
-    #   :facebook_place_id => params[:facebook_place_id],
-    #   :facebook_checkin_id => params[:facebook_checkin_id],
-    #   :message => params[:message],
-    #   :photo => params[:image],
-    #   :video => params[:video],
-    #   :has_photo => params[:image].nil? ? false : true,
-    #   :has_video => params[:video].nil? ? false : true,
-    #   :lat => params[:lat].nil? ? params[:lat] : nil,
-    #   :lng => params[:lng].nil? ? params[:lng] : nil
-    # )
-    #
-    # e.kupos << k
-    #
-    # e.update_attribute(:last_kupo_id, k.id)
-    #
-    # @current_user.events << e
+    # Create the album
+    album = Album.create(
+      :name => params[:name]
+    )
+    
+    # Create the snap
+    if params[:snap_type]='video'
+      params[:video]=params[:media]
+    elsif params[:snap_type]='photo'
+      params[:photo]=params[:media]
+    else
+    end
+    s = Snap.create(
+      :album_id => album.id,
+      :type => params[:snap_type],
+      :user_id => @current_user.id,
+      :photo => params[:photo],
+      :video => params[:video],
+      :message => params[:message]  
+    )
+    
+    # Update the album with last snap_id
+    album.update_attribute(:last_snap_id, s.id)
+    
+    # Update user last snap_id
+    u = User.find_by_id(@current_user.id)
+    u.update_attribute(:last_snap_id, s.id)
 
     response = {:success => "true"}
 
