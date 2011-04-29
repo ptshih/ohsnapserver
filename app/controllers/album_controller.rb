@@ -8,7 +8,7 @@ class AlbumController < ApplicationController
   # Show a list of albums for the authenticated user (or optionally any user if public)
   # @param REQUIRED list_type "all", "contributing"
   # @param REQUIRED access_token
-  # @param OPTIONAL user_id
+  # @param OPTIONAL user_id (future filter for public streams, maybe)
   # Authentication required
   def index
     self.authenticate_token
@@ -36,7 +36,8 @@ class AlbumController < ApplicationController
     else
       query = " select album_id
                 from albums_users
-                where user_id in (select friend_id from friendships where user_id=@current_user.id) or user_id=@current_user.id"
+                where user_id in (select friend_id from friendships where user_id=@current_user.id)
+                  or user_id=@current_user.id"
     end
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -71,6 +72,22 @@ class AlbumController < ApplicationController
     end
 
     ###
+    # Getting album stats
+    # comments, likes
+    ###
+    album_stats = { 'comment'=>{}, 'like'=>{}}
+    query = "select album_id, count(*) as thecount from snap_comments group by 1"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      album_stats['comment'][row['album_id'].to_s]=row['thecount']
+    end
+    query = "select album_id, count(*) as thecount from snap_likes group by 1"
+    mysqlresults = ActiveRecord::Base.connection.execute(query)
+    mysqlresults.each(:as => :hash) do |row|
+      album_stats['like'][row['album_id'].to_s]=row['thecount']
+    end
+    
+    ###
     # Getting albums
     ###
 
@@ -78,14 +95,20 @@ class AlbumController < ApplicationController
     query = "
       select
         a.id, a.name, s.user_id, u.name as 'user_name', u.picture_url,
-        s.message, s.type, s.lat, s.lng, a.updated_at
+        s.message, s.type, s.lat, s.lng, a.updated_at,
+        sum(case when s.type='photo' then 1 else 0 end) as photo_count,
+        sum(case when s.type='video' then 1 else 0 end) as video_count
       from albums a
       join snaps s on a.last_snap_id = s.id
       join users u on u.id = s.user_id
-      where a.album_id in (#{album_id_string})
+      join snaps s2 on s2.album_id = a.id
+      where a.id in (#{album_id_string})
+      group by 1
     "
     
     # Fetch Results
+    # http://s3.amazonaws.com/kupo/kupos/photos/".$places[$key]['id']."/original/".$places[$key]['photo_file_name']
+    # short square photo size; figure out how to pass this size later
     response_array = []
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -95,10 +118,14 @@ class AlbumController < ApplicationController
         :name => row['name'], # album name
         :user_id => row['user_id'], # last_snap user id
         :user_name => row['user_name'], # last_snap user name
-        :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
+        :user_picture_url => row['picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
-        :last_activity => last_activity,
+        :photo_url => "http://ftrsports.com/wp-content/uploads/2011/03/Charlie-Sheen-Winning-Poster-300x300.jpg",
         :type => row['type'], # last_snap type
+        :photo_count => row['photo_count'],
+        :video_count => row['video_count'],
+        :like_count => album_stats['like'][row['id'].to_s],
+        :comment_count => album_stats['comment'][row['id'].to_s],
         :lat => row['lat'],
         :lng => row['lng'],
         :participants => participants_hash[row['album_id'].to_s], # list of participants for this album
@@ -128,7 +155,9 @@ class AlbumController < ApplicationController
   end
 
   # Create a new album along with the first snap associated to it
+  # TODO construct FB post back to wall with tagged list
   # @param REQUIRED name
+  # @param REQUIRED tagged (comma separated of user ids)
   # @param REQUIRED access_token
   # Authentication required
   def create
