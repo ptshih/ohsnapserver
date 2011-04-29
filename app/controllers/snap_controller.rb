@@ -29,7 +29,7 @@ class SnapController < ApplicationController
 
     # Prepare Comment Query
     query = "
-      select c.snap_id, c.user_id, u.name as 'user_name', c.message
+      select c.snap_id, c.user_id, u.name as 'user_name', u.picture_url, c.message
       from snap_comments c
       join users u on c.user_id = u.id
       where c.album_id = #{params[:album_id]}
@@ -43,6 +43,7 @@ class SnapController < ApplicationController
         :snap_id => row['snap_id'],
         :user_id => row['user_id'],
         :user_name => row['user_name'],
+        :user_picture_url => row['picture_url'],
         :message => row['message']
       }
       comments_hash_array[row['snap_id'].to_s] << sub_hash
@@ -50,7 +51,7 @@ class SnapController < ApplicationController
 
     # Prepare Likes Query
     query = "
-      select l.snap_id, l.user_id, u.name as 'user_name'
+      select l.snap_id, l.user_id, u.name as 'user_name',u.picture_url
       from snap_likes l
       join users u on l.user_id = u.id
       where album_id = #{params[:album_id]}
@@ -63,7 +64,8 @@ class SnapController < ApplicationController
       sub_hash = {
         :snap_id => row['snap_id'],
         :user_id => row['user_id'],
-        :user_name => row['user_name']
+        :user_name => row['user_name'],
+        :user_picture_url => row['picture_url']
       }
       likes_hash_array[row['snap_id'].to_s] << sub_hash
     end
@@ -93,6 +95,8 @@ class SnapController < ApplicationController
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
       # Each response hash consists of album id, name, and last_snap details flattened
+      # http://s3.amazonaws.com/kupo/kupos/photos/".$places[$key]['id']."/original/".$places[$key]['photo_file_name']
+      # may or may not need to know photo dimensions
       row_hash = {
         :id => row['id'], # snap id
         :album_id => row['album_id'], # album id
@@ -101,14 +105,14 @@ class SnapController < ApplicationController
         :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
         :type => row['type'], # last_snap type
-        :photo_file_name => row['photo_file_name'], # photo file name or nil
-        :video_file_name => row['video_file_name'], # video file name or nil
+        :photo_url => nil, # construct entire s3 photo url
+        :video_url => nil, # construct entire s3 video url
         :lat => row['lat'],
         :lng => row['lng'],
-        :is_liked => likes_hash_array.has_key?(row['id'].to_s),
+        :is_liked => nil, # whether this user already liked it
         :comments => comments_hash_array[row['id'].to_s],
         :likes => likes_hash_array[row['id'].to_s],
-        :timestamp => row['updated_at'].to_i # snap updated_at
+        :timestamp => row['created_at'].to_i # snap created_at (because we don't want to send updated to the top of stream)
       }
       response_array << row_hash
     end
@@ -257,6 +261,7 @@ class SnapController < ApplicationController
   # @param REQUIRED snap_id
   # @param REQUIRED access_token
   # Authentication required
+  # TODO: Be able to unlike as well
   def like
     self.authenticate_token
 
