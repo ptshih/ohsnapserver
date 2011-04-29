@@ -101,7 +101,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "album_id",           :limit => 8,                                 :default => 0
     t.integer  "user_id",            :limit => 8,                                 :default => 0
     t.string   "message"
-    t.string   "type"
+    t.string   "type",               :limit => 0
     t.string   "photo_file_name"
     t.string   "photo_content_type"
     t.integer  "photo_file_size"
