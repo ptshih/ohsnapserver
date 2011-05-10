@@ -101,7 +101,7 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
     t.integer  "album_id",           :limit => 8,                                 :default => 0
     t.integer  "user_id",            :limit => 8,                                 :default => 0
     t.string   "message"
-    t.string   "type",               :limit => 0
+    t.string   "media_type",               :limit => 0
     t.string   "photo_file_name"
     t.string   "photo_content_type"
     t.integer  "photo_file_size"
@@ -115,7 +115,6 @@ ActiveRecord::Schema.define(:version => 20110202082319) do
   end
 
   add_index "snaps", ["album_id"], :name => "idx_album_id"
-  add_index "snaps", ["type"], :name => "idx_type"
   add_index "snaps", ["user_id"], :name => "idx_user_id"
 
   create_table "users", :force => true do |t|

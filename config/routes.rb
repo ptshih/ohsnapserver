@@ -32,7 +32,7 @@ Moogle::Application.routes.draw do
   ###
   # Snaps
   ###
-  match ':version/snaps', :to => 'snap#index', :via => :get # Auth Optional
+  match ':version/snaps', :to => 'snap#index', :via => :get # Auth Optional, parameter :album_id required
   match ':version/snaps', :to => 'snap#create', :via => :post # Auth Required
   match ':version/snaps/:snap_id', :to => 'snap#destroy', :via => :delete # Auth Required
   match ':version/snaps/comment/:snap_id', :to => 'snap#comment', :via => :post # Auth Required

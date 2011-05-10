@@ -172,6 +172,7 @@ module API
       u.facebook_id = user['id']
       u.facebook_access_token = facebook_access_token
       u.third_party_id = user['third_party_id']
+      u.picture_url = "https://graph.facebook.com/#{user['id']}/picture"
       u.name = user.has_key?('name') ? user['name'] : nil
       u.first_name = user.has_key?('first_name') ? user['first_name'] : nil
       u.last_name = user.has_key?('last_name') ? user['last_name'] : nil
@@ -199,18 +200,19 @@ module API
         # Create new user
         user_facebook_id = friend['id']
         third_party_id = friend['third_party_id']
+        picture_url = "https://graph.facebook.com/#{friend['id']}/picture"
         name = friend.has_key?('name') ? friend['name'] : nil
         first_name = friend.has_key?('first_name') ? friend['first_name'] : nil
         last_name = friend.has_key?('last_name') ? friend['last_name'] : nil
         locale = friend.has_key?('locale') ? friend['locale'] : nil
         verified = friend.has_key?('verified') ? friend['verified'] : nil
 
-        create_new_user << [user_facebook_id, third_party_id, name, first_name, last_name, locale, verified]
+        create_new_user << [user_facebook_id, third_party_id, picture_url, name, first_name, last_name, locale, verified]
         create_new_friend << [facebook_id, friend['id'], friend['name']]
         friend_id_array << friend['id']
       end
 
-      user_columns = [:facebook_id, :third_party_id, :name, :first_name, :last_name, :locale, :verified]
+      user_columns = [:facebook_id, :third_party_id, :picture_url, :name, :first_name, :last_name, :locale, :verified]
       friend_columns = [:facebook_id, :friend_id, :friend_name]
 
       User.import user_columns, create_new_user, :on_duplicate_key_update => [:name]

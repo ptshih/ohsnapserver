@@ -79,11 +79,12 @@ class SnapController < ApplicationController
         u.name as 'user_name',
         u.picture_url as 'user_picture_url',
         s.message,
-        s.type,
+        s.media_type,
         s.photo_file_name,
         s.video_file_name,
         s.lat,
         s.lng,
+        s.created_at,
         s.updated_at
       from snaps s
       join users u on s.user_id = u.id
@@ -98,14 +99,14 @@ class SnapController < ApplicationController
       # http://s3.amazonaws.com/kupo/kupos/photos/".$places[$key]['id']."/original/".$places[$key]['photo_file_name']
       # may or may not need to know photo dimensions
       row_hash = {
-        :id => row['id'], # snap id
-        :album_id => row['album_id'], # album id
-        :user_id => row['user_id'], # snap user id
+        :id => row['id'].to_s, # snap id
+        :album_id => row['album_id'].to_s, # album id
+        :user_id => row['user_id'].to_s, # snap user id
         :user_name => row['user_name'], # last_snap user name
         :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
-        :type => row['type'], # last_snap type
-        :photo_url => nil, # construct entire s3 photo url
+        :media_type => row['media_type'], # last_snap type
+        :photo_url => "#{S3_BASE_URL}/photos/#{row['id']}/original/#{row['photo_file_name']}", # construct entire s3 photo url
         :video_url => nil, # construct entire s3 video url
         :lat => row['lat'],
         :lng => row['lng'],
@@ -128,7 +129,7 @@ class SnapController < ApplicationController
     @response_hash[:paging] = paging_hash
 
     api_call_duration = Time.now.to_f - api_call_start
-    LOGGING::Logging.logfunction(request,@current_user.id,'snap#index',nil,nil,api_call_duration,nil,nil,nil)
+    LOGGING::Logging.logfunction(request,nil,'snap#index',nil,nil,api_call_duration,nil,nil,nil)
 
     respond_to do |format|
       format.html # event/kupos.html.erb template
@@ -159,7 +160,7 @@ class SnapController < ApplicationController
     end
     s = Snap.create(
       :album_id => params[:album_id],
-      :type => params[:snap_type],
+      :media_type => params[:media_type],
       :user_id => @current_user.id,
       :photo => params[:photo],
       :video => params[:video],
@@ -289,6 +290,7 @@ class SnapController < ApplicationController
   end
 
   def test
+    # missing comments and likes
     test_response = %{
       {
         "data" : [
@@ -298,11 +300,14 @@ class SnapController < ApplicationController
             "name" : "Poker Night 3",
             "user_id" : "1",
             "user_name" : "Peter Shih",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Lost $20 in one hand...",
             "type" : "photo",
+            "photo_url" : "http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc6/216292_10100350719577058_10723087_55839004_7673617_n.jpg",
+            "video_url" : null,
             "lat" : "37.7805",
             "lng" : "-122.4100",
+            "is_liked" : true,
             "timestamp" : 1300930808
           },
           {
@@ -311,11 +316,14 @@ class SnapController < ApplicationController
             "name" : "Girls Girls Girls!",
             "user_id" : "2",
             "user_name" : "James Liu",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Look at them booty!",
             "type" : "photo",
+            "photo_url" : "http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc6/216292_10100350719577058_10723087_55839004_7673617_n.jpg",
+            "video_url" : null,
             "lat" : "37.7815",
             "lng" : "-122.4101",
+            "is_liked" : false,
             "timestamp" : 1290150808
           },
           {
@@ -324,11 +332,14 @@ class SnapController < ApplicationController
             "name" : "Nice Cars, etc...",
             "user_id" : "3",
             "user_name" : "Nathan Bohannon",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "R8 in front of verde",
             "type" : "photo",
+            "photo_url" : "http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc6/216292_10100350719577058_10723087_55839004_7673617_n.jpg",
+            "video_url" : null,
             "lat" : "37.7825",
             "lng" : "-122.4102",
+            "is_liked" : false,
             "timestamp" : 1290140802
           },
           {
@@ -337,11 +348,14 @@ class SnapController < ApplicationController
             "name" : "Verde Tea",
             "user_id" : "3",
             "user_name" : "Thomas Liou",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Hotties!",
             "type" : "photo",
+            "photo_url" : "http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc6/216292_10100350719577058_10723087_55839004_7673617_n.jpg",
+            "video_url" : null,
             "lat" : "37.7825",
             "lng" : "-122.4102",
+            "is_liked" : false,
             "timestamp" : 1290130802
           }
         ],

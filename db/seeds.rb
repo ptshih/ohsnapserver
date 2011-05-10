@@ -21,7 +21,7 @@
 # User.create(:name => 'Biggie Smalls', :facebook_id => '100002117970046')
 
 # Event(id: integer, tag: string, name: string, is_private: boolean, last_kupo_id: integer, last_loc_lat: decimal, last_loc_lng: decimal, created_at: datetime, updated_at: datetime) 
-Event.create(:tag => '#lasvegas.1', :name => 'Las Vegas Party 2011', :is_private => false)
-Event.create(:tag => '#verde.1', :name => 'Verde Tea Cafe', :is_private => false)
-Event.create(:tag => '#jerryginawedding.1', :name => 'Jerry & Gina Wedding Seattle', :is_private => false)
+# Event.create(:tag => '#lasvegas.1', :name => 'Las Vegas Party 2011', :is_private => false)
+# Event.create(:tag => '#verde.1', :name => 'Verde Tea Cafe', :is_private => false)
+# Event.create(:tag => '#jerryginawedding.1', :name => 'Jerry & Gina Wedding Seattle', :is_private => false)
 

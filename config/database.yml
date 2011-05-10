@@ -23,21 +23,21 @@
 #   host: 127.0.0.1
 #   port: 10008
   
-# development:
-#   adapter:   mysql2
-#   database:  ohsnap
-#   username:  friendmash
-#   password:  Lik3aG6
-#   host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
-#   port: 3306
-
 development:
-    adapter:   mysql2
-    database:  ohsnap
-    username:  root 
-    password:  
-    host: localhost
-    port: 3306
+  adapter:   mysql2
+  database:  ohsnap
+  username:  friendmash
+  password:  Lik3aG6
+  host: friendmash-production.clhyg7sm4xmb.us-east-1.rds.amazonaws.com
+  port: 3306
+
+# development:
+#     adapter:   mysql2
+#     database:  ohsnap
+#     username:  root 
+#     password:  
+#     host: localhost
+#     port: 3306
 
 
 # Engine Yard

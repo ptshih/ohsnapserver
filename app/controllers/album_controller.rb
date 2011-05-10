@@ -31,13 +31,13 @@ class AlbumController < ApplicationController
     # Filter to show only albums where you are contributing
     album_id_array = []
     if params[:list_type]='contributing'
-      query = "select album_id from albums_users where user_id = @current_user.id"
+      query = "select album_id from albums_users where user_id = #{@current_user.id}"
     # show all albums of your first degree connections
     else
       query = " select album_id
                 from albums_users
-                where user_id in (select friend_id from friendships where user_id=@current_user.id)
-                  or user_id=@current_user.id"
+                where user_id in (select friend_id from friendships where user_id=#{@current_user.id})
+                  or user_id=#{@current_user.id}"
     end
     mysqlresults = ActiveRecord::Base.connection.execute(query)
     mysqlresults.each(:as => :hash) do |row|
@@ -94,10 +94,10 @@ class AlbumController < ApplicationController
     # Prepare Query
     query = "
       select
-        a.id, a.name, s.user_id, u.name as 'user_name', u.picture_url,
-        s.message, s.type, s.lat, s.lng, a.updated_at,
-        sum(case when s.type='photo' then 1 else 0 end) as photo_count,
-        sum(case when s.type='video' then 1 else 0 end) as video_count
+        a.id, a.last_snap_id, a.name, s.user_id, u.name as 'user_name', u.picture_url,
+        s.message, s.media_type, s.photo_file_name, s.lat, s.lng, a.updated_at,
+        sum(case when s.media_type='photo' then 1 else 0 end) as photo_count,
+        sum(case when s.media_type='video' then 1 else 0 end) as video_count
       from albums a
       join snaps s on a.last_snap_id = s.id
       join users u on u.id = s.user_id
@@ -114,14 +114,14 @@ class AlbumController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       # Each response hash consists of album id, name, and last_snap details flattened
       row_hash = {
-        :id => row['id'], # album id
+        :id => row['id'].to_s, # album id
         :name => row['name'], # album name
-        :user_id => row['user_id'], # last_snap user id
+        :user_id => row['user_id'].to_s, # last_snap user id
         :user_name => row['user_name'], # last_snap user name
         :user_picture_url => row['picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
-        :photo_url => "http://ftrsports.com/wp-content/uploads/2011/03/Charlie-Sheen-Winning-Poster-300x300.jpg",
-        :type => row['type'], # last_snap type
+        :photo_url => "#{S3_BASE_URL}/photos/#{row['last_snap_id']}/thumb/#{row['photo_file_name']}",
+        :media_type => row['media_type'], # last_snap type
         :photo_count => row['photo_count'],
         :video_count => row['video_count'],
         :like_count => album_stats['like'][row['id'].to_s],
@@ -186,7 +186,7 @@ class AlbumController < ApplicationController
     end
     s = Snap.create(
       :album_id => album.id,
-      :type => params[:snap_type],
+      :media_type => params[:media_type],
       :user_id => @current_user.id,
       :photo => params[:photo],
       :video => params[:video],
@@ -236,10 +236,10 @@ class AlbumController < ApplicationController
 
     # Content filter = Video, photo, or video and photo only
     content_type_conditions = ""
-    if params[:type].nil?
-    elsif params[:type]=="video_only"
+    if params[:media_type].nil?
+    elsif params[:media_type]=="video_only"
       content_type_conditions = " AND has_video=1"
-    elsif params[:type]=="photo_only"
+    elsif params[:media_type]=="photo_only"
       # it's a photo only, not a photo snapshot of video
       content_type_conditions = " AND has_photo=1 AND has_video=0"
     else
@@ -301,10 +301,10 @@ class AlbumController < ApplicationController
 
     # Video, photo, or video and photo only
     set_conditions = "event_id = #{params[:event_id]}"
-    if params[:type].nil?
-    elsif params[:type]=="video_only"
+    if params[:media_type].nil?
+    elsif params[:media_type]=="video_only"
       set_conditions = "event_id = #{params[:event_id]} AND has_video=1"
-    elsif params[:type]=="photo_only"
+    elsif params[:media_type]=="photo_only"
       # it's a photo only, not a photo snapshot of video
       set_conditions = "event_id = #{params[:event_id]} AND has_photo=1 AND has_video=0"
     else
@@ -355,9 +355,13 @@ class AlbumController < ApplicationController
             "name" : "Poker Night 3",
             "user_id" : "1",
             "user_name" : "Peter Shih",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Lost $20 in one hand...",
+            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
             "type" : "photo",
+            "photo_count" : "7",
+            "like_count" : "3",
+            "comment_count" : "2",
             "lat" : "37.7805",
             "lng" : "-122.4100",
             "timestamp" : 1300930808
@@ -367,9 +371,13 @@ class AlbumController < ApplicationController
             "name" : "Girls Girls Girls!",
             "user_id" : "2",
             "user_name" : "James Liu",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Look at them booty!",
+            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
             "type" : "photo",
+            "photo_count" : "7",
+            "like_count" : "3",
+            "comment_count" : "2",
             "lat" : "37.7815",
             "lng" : "-122.4101",
             "timestamp" : 1290150808
@@ -379,9 +387,13 @@ class AlbumController < ApplicationController
             "name" : "Nice Cars, etc...",
             "user_id" : "3",
             "user_name" : "Nathan Bohannon",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "R8 in front of verde",
+            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
             "type" : "photo",
+            "photo_count" : "7",
+            "like_count" : "3",
+            "comment_count" : "2",
             "lat" : "37.7825",
             "lng" : "-122.4102",
             "timestamp" : 1290140802
@@ -391,9 +403,13 @@ class AlbumController < ApplicationController
             "name" : "Verde Tea",
             "user_id" : "3",
             "user_name" : "Thomas Liou",
-            "user_picture_url" : "http://localhost:3000/tmp.png",
+            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
             "message" : "Hotties!",
+            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
             "type" : "photo",
+            "photo_count" : "7",
+            "like_count" : "3",
+            "comment_count" : "2",
             "lat" : "37.7825",
             "lng" : "-122.4102",
             "timestamp" : 1290130802
