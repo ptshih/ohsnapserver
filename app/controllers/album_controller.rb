@@ -30,7 +30,7 @@ class AlbumController < ApplicationController
 
     # Filter to show only albums where you are contributing
     album_id_array = []
-    if params[:list_type]='contributing'
+    if params[:list_type] == 'contributing'
       query = "select album_id from albums_users where user_id = #{@current_user.id}"
     # show all albums of your first degree connections
     else
@@ -43,6 +43,11 @@ class AlbumController < ApplicationController
     mysqlresults.each(:as => :hash) do |row|
       album_id_array << row['album_id']
     end
+    
+    #
+    # WARNING!!!
+    # CHECK FOR EMPTY ARRAY
+    #
     album_id_string = album_id_array.uniq.join(',')
     
     ###
