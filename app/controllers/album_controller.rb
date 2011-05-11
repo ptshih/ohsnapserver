@@ -15,6 +15,9 @@ class AlbumController < ApplicationController
 
     Rails.logger.info request.query_parameters.inspect
     api_call_start = Time.now.to_f
+    
+    ### TODO ###
+    # We should also provide a participants list for each album
 
     ########
     # NOTE #
@@ -127,10 +130,10 @@ class AlbumController < ApplicationController
         :message => row['message'], # last_snap message
         :photo_url => "#{S3_BASE_URL}/photos/#{row['last_snap_id']}/thumb/#{row['photo_file_name']}",
         :media_type => row['media_type'], # last_snap type
-        :photo_count => row['photo_count'],
-        :video_count => row['video_count'],
-        :like_count => album_stats['like'][row['id'].to_s],
-        :comment_count => album_stats['comment'][row['id'].to_s],
+        :photo_count => 0, # TODO
+        :video_count => 0, # TODO
+        :like_count => album_stats['like'][row['id'].to_s].nil? ? 0 : album_stats['like'][row['id'].to_s],
+        :comment_count => album_stats['comment'][row['id'].to_s].nil? ? 0 : album_stats['comment'][row['id'].to_s],
         :lat => row['lat'],
         :lng => row['lng'],
         :participants => participants_hash[row['album_id'].to_s], # list of participants for this album
