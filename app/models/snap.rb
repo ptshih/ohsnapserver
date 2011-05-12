@@ -12,7 +12,7 @@ class Snap < ActiveRecord::Base
     :url => "/:class/:attachment/:id/:style_:basename.:extension",
     :default_url => "/:class/:attachment/missing_:style.png",
     :whiny_thumbnails => true,
-    :styles => { :thumb => "300x300#" , :square => "50x50#" }
+    :styles => { :thumb => "240x240#" , :square => "50x50#" , :preview => "300x300#" }
     # has_attached_file :photo, 
     #   :storage => :s3, 
     #   :s3_credentials => "#{RAILS_ROOT}/config/s3.yml", 

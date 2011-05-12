@@ -106,7 +106,7 @@ class SnapController < ApplicationController
         :user_picture_url => row['user_picture_url'], #last_snap user picture url (facebook or google)
         :message => row['message'], # last_snap message
         :media_type => row['media_type'], # last_snap type
-        :photo_url => "#{S3_BASE_URL}/photos/#{row['id']}/original/#{row['photo_file_name']}", # construct entire s3 photo url
+        :photo_url => "#{S3_BASE_URL}/photos/#{row['id']}/preview/#{row['photo_file_name']}", # construct entire s3 photo url
         :video_url => nil, # construct entire s3 video url
         :lat => row['lat'],
         :lng => row['lng'],
