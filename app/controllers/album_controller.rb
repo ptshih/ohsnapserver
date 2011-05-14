@@ -50,8 +50,12 @@ class AlbumController < ApplicationController
     #
     # WARNING!!!
     # CHECK FOR EMPTY ARRAY
-    #
+    # DEFAULT TO "0" for now
+    if album_id_array.length==0
+      album_id_array << "0"
+    end
     album_id_string = album_id_array.uniq.join(',')
+    puts "this is the album #{album_id_string}"
     
     ###
     # Getting participants
@@ -144,9 +148,9 @@ class AlbumController < ApplicationController
 
     # Paging
     paging_hash = {}
-    paging_hash[:since] = response_array.first[:timestamp]
-    paging_hash[:until] = response_array.last[:timestamp]
-
+    paging_hash[:since] = response_array.first[:timestamp].nil? Time.now.to_i : response_array.first[:timestamp]
+    paging_hash[:until] = response_array.last[:timestamp].nil? Time.now.to_i : response_array.first[:timestamp]
+    
     # Construct Response
     @response_hash = {}
     @response_hash[:data] = response_array
