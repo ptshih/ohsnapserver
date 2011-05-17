@@ -388,7 +388,49 @@ class AlbumController < ApplicationController
             ],
             "photo_count" : 53,
             "participants" : "Peter S, Tom L, Nate B, and 27 more...",
-            "timestamp" : 1300910808
+            "timestamp" : 1305611455
+          },
+          {
+            "id" : "3",
+            "name" : "Girls Girls Girls",
+            "photo_urls" : [
+              "http://i.imgur.com/OUOqM.jpg",
+              "http://i.imgur.com/L7sJx.jpg",
+              "http://i.imgur.com/khk9G.jpg",
+              "http://i.imgur.com/k0s4p.jpg",
+              "http://i.imgur.com/5UfwI.jpg"
+            ],
+            "photo_count" : 53,
+            "participants" : "Peter S, Tom L, Nate B, and 27 more...",
+            "timestamp" : 1305521455
+          },
+          {
+            "id" : "4",
+            "name" : "Nightlife",
+            "photo_urls" : [
+              "http://premiertravelsc.com/yahoo_site_admin/assets/images/Times-Square-Parade.13161258.jpg",
+              "http://www.top-things-to-do.com/united-states/new-york-city/NYC_Times_Square_night.jpg",
+              "http://global.photobynight.com/images/20090210190358_times_square_new-york.jpg",
+              "http://4.bp.blogspot.com/_dL6N5GxRyQ8/THPMMOmfNLI/AAAAAAAAAII/1_JsJ1yy2_U/s1600/times-square-picture.jpg",
+              "http://www.dennisflood.com/photos/2005/500/busy_times_square_6550.jpg"
+            ],
+            "photo_count" : 53,
+            "participants" : "Peter S, Tom L, Nate B, and 27 more...",
+            "timestamp" : 1304621455
+          },
+          {
+            "id" : "5",
+            "name" : "FML Moments",
+            "photo_urls" : [
+              "http://citycynic.com/wp-content/uploads/2010/06/subway-fml.jpg",
+              "http://imagemacros.files.wordpress.com/2009/07/disregard_females.jpg?w=440&h=578",
+              "http://i.imgur.com/ftZqe.jpg",
+              "http://i.imgur.com/EjVR4.jpg",
+              "http://i.imgur.com/0pxaV.jpg"
+            ],
+            "photo_count" : 53,
+            "participants" : "Peter S, Tom L, Nate B, and 27 more...",
+            "timestamp" : 1303621455
           }
         ],
         "paging" : {
