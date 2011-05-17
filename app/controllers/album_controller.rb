@@ -367,7 +367,7 @@ class AlbumController < ApplicationController
             "name" : "LoL Cats",
             "photo_urls" : [
               "http://cache.ohinternet.com/images/b/b0/Lolcat.JPG",
-              "http://1.bp.blogspot.com/_-wOg-YptAFo/TTH69itIwHI/AAAAAAAAAOo/TbUL3_H8dG8/s1600/fix%2Bcomputer.jpg",
+              "http://i.imgur.com/GDXog.pnggs",
               "http://www.lunkos.com/wp-content/uploads/2009/11/schrodinger_s-lolcat.jpg",
               "http://randomizingtheweb.files.wordpress.com/2011/04/happy_lolcat.jpg",
               "http://images1.fanpop.com/images/photos/1600000/LOLcats-animal-humor-1664702-400-400.jpg"
