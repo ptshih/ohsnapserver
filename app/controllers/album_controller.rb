@@ -148,8 +148,8 @@ class AlbumController < ApplicationController
 
     # Paging
     paging_hash = {}
-    paging_hash[:since] = response_array.first[:timestamp].nil? Time.now.to_i : response_array.first[:timestamp]
-    paging_hash[:until] = response_array.last[:timestamp].nil? Time.now.to_i : response_array.first[:timestamp]
+    paging_hash[:since] = response_array.first[:timestamp].nil? ? Time.now.to_i : response_array.first[:timestamp]
+    paging_hash[:until] = response_array.last[:timestamp].nil? ? Time.now.to_i : response_array.first[:timestamp]
     
     # Construct Response
     @response_hash = {}
@@ -364,67 +364,31 @@ class AlbumController < ApplicationController
         "data" : [
           {
             "id" : "1",
-            "name" : "Poker Night 3",
-            "user_id" : "1",
-            "user_name" : "Peter Shih",
-            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
-            "message" : "Lost $20 in one hand...",
-            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
-            "type" : "photo",
-            "photo_count" : "7",
-            "like_count" : "3",
-            "comment_count" : "2",
-            "lat" : "37.7805",
-            "lng" : "-122.4100",
-            "timestamp" : 1300930808
+            "name" : "LoL Cats",
+            "photo_urls" : [
+              "http://cache.ohinternet.com/images/b/b0/Lolcat.JPG",
+              "http://1.bp.blogspot.com/_-wOg-YptAFo/TTH69itIwHI/AAAAAAAAAOo/TbUL3_H8dG8/s1600/fix%2Bcomputer.jpg",
+              "http://www.lunkos.com/wp-content/uploads/2009/11/schrodinger_s-lolcat.jpg",
+              "http://randomizingtheweb.files.wordpress.com/2011/04/happy_lolcat.jpg",
+              "http://images1.fanpop.com/images/photos/1600000/LOLcats-animal-humor-1664702-400-400.jpg"
+            ],
+            "photo_count" : 7,
+            "participants" : "Peter S, Tom L, Nate B, and 7 more...",
+            "timestamp" : 1305621455
           },
           {
             "id" : "2",
-            "name" : "Girls Girls Girls!",
-            "user_id" : "2",
-            "user_name" : "James Liu",
-            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
-            "message" : "Look at them booty!",
-            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
-            "type" : "photo",
-            "photo_count" : "7",
-            "like_count" : "3",
-            "comment_count" : "2",
-            "lat" : "37.7815",
-            "lng" : "-122.4101",
-            "timestamp" : 1290150808
-          },
-          {
-            "id" : "3",
-            "name" : "Nice Cars, etc...",
-            "user_id" : "3",
-            "user_name" : "Nathan Bohannon",
-            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
-            "message" : "R8 in front of verde",
-            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
-            "type" : "photo",
-            "photo_count" : "7",
-            "like_count" : "3",
-            "comment_count" : "2",
-            "lat" : "37.7825",
-            "lng" : "-122.4102",
-            "timestamp" : 1290140802
-          },
-          {
-            "id" : "4",
-            "name" : "Verde Tea",
-            "user_id" : "3",
-            "user_name" : "Thomas Liou",
-            "user_picture_url" : "https://graph.facebook.com/ptshih/picture",
-            "message" : "Hotties!",
-            "photo_url" : "http://a8.sphotos.ak.fbcdn.net/hphotos-ak-snc6/226475_1931611046467_1127993981_32240309_4949789_n.jpg",
-            "type" : "photo",
-            "photo_count" : "7",
-            "like_count" : "3",
-            "comment_count" : "2",
-            "lat" : "37.7825",
-            "lng" : "-122.4102",
-            "timestamp" : 1290130802
+            "name" : "Expensive Cars",
+            "photo_urls" : [
+              "http://www.cartype.com/pics/3632/small/audi_r8_led-lights_08.jpg",
+              "http://www.audi-r8-q7.com/images/audi-r8-1.jpg",
+              "http://www.tuningnews.net/news/071116d/ppi_audi_r8.jpg",
+              "http://www.blogcdn.com/green.autoblog.com/media/2008/01/r8-v12-tdi450.jpg",
+              "http://www.autospectator.com/cars/files/images/AU_2308_s.jpg"
+            ],
+            "photo_count" : 53,
+            "participants" : "Peter S, Tom L, Nate B, and 27 more...",
+            "timestamp" : 1300910808
           }
         ],
         "paging" : {
